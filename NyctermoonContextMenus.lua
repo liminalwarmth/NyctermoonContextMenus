@@ -1,4 +1,4 @@
--- NycterContextMenus.lua
+-- NyctermoonContextMenus.lua
 
 -- Define custom popup buttons and menus
 UnitPopupButtons["BOT_CONTROL"] = { text = "Bot Settings", dist = 0, nested = 1 }
@@ -28,7 +28,12 @@ UnitPopupButtons["BOT_ROGUE_STEALTH"] = { text = "Stealth Control", dist = 0, ne
 UnitPopupButtons["BOT_ROGUE_STEALTH_ON"] = { text = "Allow Stealth", dist = 0 }
 UnitPopupButtons["BOT_ROGUE_STEALTH_OFF"] = { text = "Prevent Stealth", dist = 0 }
 
--- MAGE: Specific commands for both Alliance and Horde portals
+-- DRUID: Stealth control on or off
+UnitPopupButtons["BOT_DRUID_STEALTH"] = { text = "Stealth Control", dist = 0, nested = 1 }
+UnitPopupButtons["BOT_DRUID_STEALTH_ON"] = { text = "Allow Stealth", dist = 0 }
+UnitPopupButtons["BOT_DRUID_STEALTH_OFF"] = { text = "Prevent Stealth", dist = 0 }
+
+-- MAGE: Specific portal commands for both Alliance and Horde portals
 UnitPopupButtons["BOT_OPEN_PORTAL"] = { text = "Open Portal", dist = 0, nested = 1 }
 UnitPopupButtons["BOT_PORTAL_STORMWIND"] = { text = "Stormwind", dist = 0 }
 UnitPopupButtons["BOT_PORTAL_IRONFORGE"] = { text = "Ironforge", dist = 0 }
@@ -69,6 +74,9 @@ UnitPopupButtons["BOT_WARLOCK_PET_VOIDWALKER"] = { text = "Voidwalker", dist = 0
 UnitPopupButtons["BOT_WARLOCK_PET_SUCCUBUS"] = { text = "Succubus", dist = 0 }
 UnitPopupButtons["BOT_WARLOCK_PET_FELHUNTER"] = { text = "Felhunter", dist = 0 }
 
+-- WARLOCK: Summon player ritual
+UnitPopupButtons["BOT_WARLOCK_SUMMON_PLAYER_RITUAL"] = { text = "Summon Player", dist = 0 }
+
 -- PALADIN: Choose blessing
 UnitPopupButtons["BOT_PALADIN_BLESSING"] = { text = "Set Blessing", dist = 0, nested = 1 }
 UnitPopupButtons["BOT_PALADIN_BLESSING_DEFAULT"] = { text = "Default (Cancel)", dist = 0 }
@@ -88,7 +96,6 @@ UnitPopupButtons["BOT_PALADIN_AURA_SHADOW_RESISTANCE"] = { text = "Shadow Resist
 UnitPopupButtons["BOT_PALADIN_AURA_FROST_RESISTANCE"] = { text = "Frost Resistance Aura", dist = 0 }
 UnitPopupButtons["BOT_PALADIN_AURA_FIRE_RESISTANCE"] = { text = "Fire Resistance Aura", dist = 0 }
 UnitPopupButtons["BOT_PALADIN_AURA_SANCTITY"] = { text = "Sanctity Aura", dist = 0 }
-
 
 -- SHAMAN: Choose air totem
 UnitPopupButtons["BOT_SHAMAN_AIR_TOTEM"] = { text = "Set Air Totem", dist = 0, nested = 1 }
@@ -181,10 +188,14 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         UnitPopupMenus["BOT_WARLOCK_PET"] = { "BOT_WARLOCK_PET_IMP", "BOT_WARLOCK_PET_VOIDWALKER", "BOT_WARLOCK_PET_SUCCUBUS", "BOT_WARLOCK_PET_FELHUNTER" }
         table.insert(UnitPopupMenus["PARTY"], 3, "BOT_PET_TOGGLE")
         table.insert(UnitPopupMenus["PARTY"], 4, "BOT_WARLOCK_PET")
+        if NYCTER_SELECTED_UNIT_LEVEL >= 50 then -- Ritual of Summoning is learned at level 50 in vanilla WoW 1.12.1
+            table.insert(UnitPopupMenus["PARTY"], 5, "BOT_WARLOCK_SUMMON_PLAYER_RITUAL")
+        end
         if NYCTER_SELECTED_UNIT_LEVEL >= 8 then -- Fear is learned at level 8
-            table.insert(UnitPopupMenus["PARTY"], 5, "BOT_DENY_DANGER_SPELLS")
+            table.insert(UnitPopupMenus["PARTY"], 6, "BOT_DENY_DANGER_SPELLS")
         end
     elseif NYCTER_SELECTED_UNIT_CLASS == "Paladin" then
+        -- TODO: swap for greater blessings at right levels
         local blessings = {}
         local auras = {}
         if NYCTER_SELECTED_UNIT_LEVEL >= 4 then
@@ -327,6 +338,11 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
             UnitPopupMenus["BOT_ROGUE_STEALTH"] = { "BOT_ROGUE_STEALTH_ON", "BOT_ROGUE_STEALTH_OFF" }
             table.insert(UnitPopupMenus["PARTY"], 3, "BOT_ROGUE_STEALTH")
         end
+    elseif NYCTER_SELECTED_UNIT_CLASS == "Druid" then
+        if NYCTER_SELECTED_UNIT_LEVEL >= 20 then -- Stealth is learned at level 20 (cat form)
+            UnitPopupMenus["BOT_DRUID_STEALTH"] = { "BOT_DRUID_STEALTH_ON", "BOT_DRUID_STEALTH_OFF" }
+            table.insert(UnitPopupMenus["PARTY"], 3, "BOT_DRUID_STEALTH")
+        end
     end
 
     -- Call the original function
@@ -338,13 +354,13 @@ local function SendTargetedBotZCommand(unit, command)
     local previousTarget = UnitName("target")
     -- Target the bot whose command we want to send
     TargetUnit(unit)
-    -- Use a non-blocking delay mechanism to let the target go through (c_timer does not work)
-    local delayTime = 0.3
+    -- Use a non-blocking delay mechanism to let the target go through (c_timer does not work, less than half a second misses them sometimes)
+    local delayTime = 0.5
     local frame = CreateFrame("Frame")
     frame:SetScript("OnUpdate", function()
         delayTime = delayTime - arg1
         if delayTime <= 0 then
-            SendChatMessage(".z " .. command, "SAY")
+            SendChatMessage(".z " .. command, "PARTY")
             -- Target the previous target after sending the message
             if previousTarget then
                 TargetByName(previousTarget)
@@ -397,6 +413,9 @@ function UnitPopup_OnClick()
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "cast Portal: Orgrimmar")
     elseif button == "BOT_PORTAL_THUNDER_BLUFF" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "cast Portal: Thunder Bluff")
+    -- Warlock summon player ritual
+    elseif button == "BOT_WARLOCK_SUMMON_PLAYER_RITUAL" then
+        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "cast Ritual of Summoning")
     -- Pet toggle
     elseif button == "BOT_PET_ON" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet on")
@@ -539,6 +558,11 @@ function UnitPopup_OnClick()
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny remove stealth")
     elseif button == "BOT_ROGUE_STEALTH_OFF" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add stealth")
+    -- Druid stealth control
+    elseif button == "BOT_DRUID_STEALTH_ON" then
+        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny remove prowl")
+    elseif button == "BOT_DRUID_STEALTH_OFF" then
+        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add prowl")
     else
         originalUnitPopupOnClick()
     end
