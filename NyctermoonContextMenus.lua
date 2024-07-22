@@ -2,16 +2,41 @@
 -- Coded for Vanilla WoW 1.12.1, using LUA version 5.1
 
 -- TODO: --
--- Add focus and cc marks settings for party
+-- Prompt on portals
+
+--[[------------------------------------
+    Send Z Commands (Bot Targeted)
+--------------------------------------]]
+local function SendTargetedBotZCommand(unit, command)
+    -- Target the bot whose command we want to send
+    TargetUnit(unit)
+    -- Use a non-blocking delay mechanism to let the target go through (c_timer does not work, less than a second misses them sometimes)
+    local delayTime = 1.0
+    local frame = CreateFrame("Frame")
+    frame:SetScript("OnUpdate", function()
+        delayTime = delayTime - arg1
+        if delayTime <= 0 then
+            SendChatMessage(".z " .. command, "PARTY")
+            frame:SetScript("OnUpdate", nil)
+        end
+    end)
+end
+
+--[[------------------------------------
+    Send Whisper Commands to Bot
+--------------------------------------]]
+local function SendTargetedBotWhisperCommand(name, command)
+    SendChatMessage(command, "WHISPER", nil, name)
+end
 
 --[[---------------------------------------------------------------------------------
   PLAYER (SELF) MENU COMMANDS
 ----------------------------------------------------------------------------------]]
 
 -- Dungeon Settings (Difficulty, Reset option)
-UnitPopupButtons["SELF_DUNGEON_SETTINGS"] = { text = "Dungeon Settings", dist = 0, nested = 1 }
-UnitPopupButtons["SELF_DUNGEON_NORMAL"] = { text = "Set Difficulty: Normal", dist = 0 }
-UnitPopupButtons["SELF_DUNGEON_HEROIC"] = { text = "Set Difficulty: Heroic", dist = 0 }
+UnitPopupButtons["SELF_DUNGEON_SETTINGS"] = { text = "|cFFD2B48CDungeon Settings|r", dist = 0, nested = 1 }
+UnitPopupButtons["SELF_DUNGEON_NORMAL"] = { text = "Set Difficulty: |cff1EFF00Normal|r", dist = 0 }
+UnitPopupButtons["SELF_DUNGEON_HEROIC"] = { text = "Set Difficulty: |cFFFFAA00Heroic|r", dist = 0 }
 UnitPopupButtons["SELF_RESET_INSTANCES"] = { text = "Reset all instances", dist = 0 }
 StaticPopupDialogs["SELF_RESET_INSTANCES_CONFIRM"] = {
 	text = "Do you really want to reset all of your instances?",
@@ -27,9 +52,9 @@ UnitPopupMenus["SELF_DUNGEON_SETTINGS"] = { "SELF_DUNGEON_NORMAL", "SELF_DUNGEON
 table.insert(UnitPopupMenus["SELF"],1,"SELF_DUNGEON_SETTINGS")
 
 -- View miscellaneous stats
-UnitPopupButtons["SELF_NYCTERMOON_STATS"] = { text = "Nyctermoon Stats", dist = 0, nested = 1 }
-UnitPopupButtons["SELF_LEGACY_BONUS"] = { text = "Legacy Overview", dist = 0 }
-UnitPopupButtons["SELF_XP_BONUS"] = { text = "Current XP Bonus", dist = 0 }
+UnitPopupButtons["SELF_NYCTERMOON_STATS"] = { text = "|cFFFFAA00Nyctermoon Stats|r", dist = 0, nested = 1 }
+UnitPopupButtons["SELF_LEGACY_BONUS"] = { text = "|cFFFFAA00Legacy Overview|r", dist = 0 }
+UnitPopupButtons["SELF_XP_BONUS"] = { text = "|cFFFFFFA0Current XP Bonus|r", dist = 0 }
 UnitPopupButtons["SELF_COMPANION_INFO"] = { text = "Companion Info", dist = 0 }
 UnitPopupMenus["SELF_NYCTERMOON_STATS"] = { "SELF_LEGACY_BONUS", "SELF_XP_BONUS", "SELF_COMPANION_INFO" }
 table.insert(UnitPopupMenus["SELF"], 1, "SELF_NYCTERMOON_STATS")
@@ -39,21 +64,21 @@ table.insert(UnitPopupMenus["SELF"], 1, "SELF_NYCTERMOON_STATS")
   COMPANION MENU COMMANDS
 ----------------------------------------------------------------------------------]]
 -- Define custom popup buttons and menus
-UnitPopupButtons["BOT_CONTROL"] = { text = "Companion Settings", dist = 0, nested = 1 }
+UnitPopupButtons["BOT_CONTROL"] = { text = "|cFFFFAA00Companion Settings|r", dist = 0, nested = 1 }
 UnitPopupButtons["BOT_TOGGLE_HELM"] = {text = "Toggle Helm", dist = 0}
 UnitPopupButtons["BOT_TOGGLE_CLOAK"] = { text = "Toggle Cloak", dist = 0 }
 UnitPopupButtons["BOT_TOGGLE_AOE"] = { text = "Toggle AoE", dist = 0 }
 UnitPopupMenus["BOT_CONTROL"] = { "BOT_TOGGLE_AOE","BOT_TOGGLE_HELM", "BOT_TOGGLE_CLOAK"}
 
 -- Define role settings
-UnitPopupButtons["BOT_ROLE_TANK"] = { text = "Set Role: Tank", dist = 0 }
-UnitPopupButtons["BOT_ROLE_HEALER"] = { text = "Set Role: Healer", dist = 0 }
-UnitPopupButtons["BOT_ROLE_DPS"] = { text = "Set Role: DPS", dist = 0 }
-UnitPopupButtons["BOT_ROLE_MDPS"] = { text = "Set Role: Melee DPS", dist = 0 }
-UnitPopupButtons["BOT_ROLE_RDPS"] = { text = "Set Role: Ranged DPS", dist = 0 }
+UnitPopupButtons["BOT_ROLE_TANK"] = { text = "|cFFFFAA00Set Role:|r |cFFC79C6ETank|r", dist = 0 }
+UnitPopupButtons["BOT_ROLE_HEALER"] = { text = "|cFFFFAA00Set Role:|r |cFFF58CBAHealer|r", dist = 0 }
+UnitPopupButtons["BOT_ROLE_DPS"] = { text = "|cFFFFAA00Set Role:|r |cFF69CCF0DPS|r", dist = 0 }
+UnitPopupButtons["BOT_ROLE_MDPS"] = { text = "|cFFFFAA00Set Role:|r |cFFFFF569Melee DPS|r", dist = 0 }
+UnitPopupButtons["BOT_ROLE_RDPS"] = { text = "|cFFFFAA00Set Role:|r |cFFABD473Ranged DPS|r", dist = 0 }
 
 -- Assign CC mark
-UnitPopupButtons["BOT_ASSIGN_CC_MARK"] = { text = "Set CC Mark", dist = 0, nested = 1 }
+UnitPopupButtons["BOT_ASSIGN_CC_MARK"] = { text = "Set |cff00ffffCC|r Mark", dist = 0, nested = 1 }
 UnitPopupButtons["BOT_ASSIGN_CC_MARK_STAR"] = { text = "|cffFFD100Star|r", dist = 0 }
 UnitPopupButtons["BOT_ASSIGN_CC_MARK_CIRCLE"] = { text = "|cffFF7F00Circle|r", dist = 0 }
 UnitPopupButtons["BOT_ASSIGN_CC_MARK_DIAMOND"] = { text = "|cffFF00FFDiamond|r", dist = 0 }
@@ -61,7 +86,7 @@ UnitPopupButtons["BOT_ASSIGN_CC_MARK_TRIANGLE"] = { text = "|cff1EFF00Triangle|r
 UnitPopupButtons["BOT_ASSIGN_CC_MARK_MOON"] = { text = "|cff6699CCMoon|r", dist = 0 }
 UnitPopupButtons["BOT_ASSIGN_CC_MARK_SQUARE"] = { text = "|cff00ffffSquare|r", dist = 0 }
 UnitPopupButtons["BOT_ASSIGN_CC_MARK_CROSS"] = { text = "|cffFF0000Cross|r", dist = 0 }
-UnitPopupButtons["BOT_ASSIGN_CC_MARK_SKULL"] = { text = "|cffFFFDE0Skull|r", dist = 0 }
+UnitPopupButtons["BOT_ASSIGN_CC_MARK_SKULL"] = { text = "|cFFFFFFA0Skull|r", dist = 0 }
 UnitPopupButtons["BOT_ASSIGN_CC_MARK_CLEAR"] = { text = "None (Default |cff6699CCMoon|r)", dist = 0 }
 
 UnitPopupMenus["BOT_ASSIGN_CC_MARK"] = {
@@ -77,7 +102,7 @@ UnitPopupMenus["BOT_ASSIGN_CC_MARK"] = {
 }
 
 -- Assign focus mark
-UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK"] = { text = "Set Focus Mark", dist = 0, nested = 1 }
+UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK"] = { text = "Set |cffFF0000Focus|r Mark", dist = 0, nested = 1 }
 UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_STAR"] = { text = "|cffFFD100Star|r", dist = 0 }
 UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_CIRCLE"] = { text = "|cffFF7F00Circle|r", dist = 0 }
 UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_DIAMOND"] = { text = "|cffFF00FFDiamond|r", dist = 0 }
@@ -85,8 +110,8 @@ UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_TRIANGLE"] = { text = "|cff1EFF00Triangl
 UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_MOON"] = { text = "|cff6699CCMoon|r", dist = 0 }
 UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_SQUARE"] = { text = "|cff00ffffSquare|r", dist = 0 }
 UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_CROSS"] = { text = "|cffFF0000Cross|r", dist = 0 }
-UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_SKULL"] = { text = "|cffFFFDE0Skull|r", dist = 0 }
-UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_CLEAR"] = { text = "None (Default |cffFFFDE0Skull|r)", dist = 0 }
+UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_SKULL"] = { text = "|cFFFFFFA0Skull|r", dist = 0 }
+UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_CLEAR"] = { text = "None (Default |cFFFFFFA0Skull|r)", dist = 0 }
 
 UnitPopupMenus["BOT_ASSIGN_FOCUS_MARK"] = {
     "BOT_ASSIGN_FOCUS_MARK_CLEAR",
@@ -100,24 +125,21 @@ UnitPopupMenus["BOT_ASSIGN_FOCUS_MARK"] = {
     "BOT_ASSIGN_FOCUS_MARK_SKULL"
 }
 
--- Insert custom buttons into the PARTY pc menu
-table.insert(UnitPopupMenus["PARTY"], 1, "BOT_CONTROL")
-
 -- Deny dangerous spells
 UnitPopupButtons["BOT_DENY_DANGER_SPELLS"] = { text = "Deny Danger Spells", dist = 0 }
 
 -- ROGUE: Stealth control on or off
-UnitPopupButtons["BOT_ROGUE_STEALTH"] = { text = "Stealth Control", dist = 0, nested = 1 }
+UnitPopupButtons["BOT_ROGUE_STEALTH"] = { text = "|cFFFFF569Stealth Control|r", dist = 0, nested = 1 }
 UnitPopupButtons["BOT_ROGUE_STEALTH_ON"] = { text = "Allow Stealth", dist = 0 }
 UnitPopupButtons["BOT_ROGUE_STEALTH_OFF"] = { text = "Prevent Stealth", dist = 0 }
 
 -- DRUID: Stealth control on or off
-UnitPopupButtons["BOT_DRUID_STEALTH"] = { text = "Stealth Control", dist = 0, nested = 1 }
+UnitPopupButtons["BOT_DRUID_STEALTH"] = { text = "|cFFFF7D0AStealth Control|r", dist = 0, nested = 1 }
 UnitPopupButtons["BOT_DRUID_STEALTH_ON"] = { text = "Allow Stealth", dist = 0 }
 UnitPopupButtons["BOT_DRUID_STEALTH_OFF"] = { text = "Prevent Stealth", dist = 0 }
 
 -- MAGE: Specific portal commands for both Alliance and Horde portals
-UnitPopupButtons["BOT_OPEN_PORTAL"] = { text = "Open Portal", dist = 0, nested = 1 }
+UnitPopupButtons["BOT_OPEN_PORTAL"] = { text = "|cFF69CCF0Open Portal|r", dist = 0, nested = 1 }
 UnitPopupButtons["BOT_PORTAL_STORMWIND"] = { text = "Stormwind", dist = 0 }
 UnitPopupButtons["BOT_PORTAL_IRONFORGE"] = { text = "Ironforge", dist = 0 }
 UnitPopupButtons["BOT_PORTAL_DARNASSUS"] = { text = "Darnassus", dist = 0 }
@@ -131,7 +153,7 @@ UnitPopupButtons["BOT_PET_ON"] = { text = "Summon Pet", dist = 0 }
 UnitPopupButtons["BOT_PET_OFF"] = { text = "Dismiss Pet", dist = 0 }
 
 -- HUNTER: Choose pet type
-UnitPopupButtons["BOT_HUNTER_PET"] = { text = "Choose Pet", dist = 0, nested = 1 }
+UnitPopupButtons["BOT_HUNTER_PET"] = { text = "|cFFABD473Choose Beast|r", dist = 0, nested = 1 }
 UnitPopupButtons["BOT_HUNTER_PET_BAT"] = { text = "Bat", dist = 0 }
 UnitPopupButtons["BOT_HUNTER_PET_BEAR"] = { text = "Bear", dist = 0 }
 UnitPopupButtons["BOT_HUNTER_PET_BIRD"] = { text = "Bird", dist = 0 }
@@ -151,17 +173,27 @@ UnitPopupButtons["BOT_HUNTER_PET_TURTLE"] = { text = "Turtle", dist = 0 }
 UnitPopupButtons["BOT_HUNTER_PET_WOLF"] = { text = "Wolf", dist = 0 }
 
 -- WARLOCK: Choose pet type
-UnitPopupButtons["BOT_WARLOCK_PET"] = { text = "Choose Demon", dist = 0, nested = 1 }
+UnitPopupButtons["BOT_WARLOCK_PET"] = { text = "|cFF9482C9Choose Demon|r", dist = 0, nested = 1 }
 UnitPopupButtons["BOT_WARLOCK_PET_IMP"] = { text = "Imp", dist = 0 }
 UnitPopupButtons["BOT_WARLOCK_PET_VOIDWALKER"] = { text = "Voidwalker", dist = 0 }
 UnitPopupButtons["BOT_WARLOCK_PET_SUCCUBUS"] = { text = "Succubus", dist = 0 }
 UnitPopupButtons["BOT_WARLOCK_PET_FELHUNTER"] = { text = "Felhunter", dist = 0 }
 
 -- WARLOCK: Summon player ritual
-UnitPopupButtons["BOT_WARLOCK_SUMMON_PLAYER_RITUAL"] = { text = "Summon Player", dist = 0 }
+UnitPopupButtons["BOT_WARLOCK_SUMMON_PLAYER_RITUAL"] = { text = "|cFF9482C9Summon Player|r", dist = 0 }
+StaticPopupDialogs["SUMMON_CONFIRM"] = {
+    text = "Are you sure you want to cast Ritual of Summoning on your current target? You have a limited number of uses.",
+    button1 = OKAY,
+    button2 = CANCEL,
+    OnAccept = function()
+        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "cast Ritual of Summoning")
+    end,
+    timeout = 0,
+    hideOnEscape = 1,
+}
 
 -- PALADIN: Choose blessing
-UnitPopupButtons["BOT_PALADIN_BLESSING"] = { text = "Set Blessing", dist = 0, nested = 1 }
+UnitPopupButtons["BOT_PALADIN_BLESSING"] = { text = "|cFFF58CBASet Blessing|r", dist = 0, nested = 1 }
 UnitPopupButtons["BOT_PALADIN_BLESSING_DEFAULT"] = { text = "AI Default (Clear Setting)", dist = 0 }
 UnitPopupButtons["BOT_PALADIN_BLESSING_MIGHT"] = { text = "Blessing of Might", dist = 0 }
 UnitPopupButtons["BOT_PALADIN_BLESSING_WISDOM"] = { text = "Blessing of Wisdom", dist = 0 }
@@ -170,7 +202,7 @@ UnitPopupButtons["BOT_PALADIN_BLESSING_LIGHT"] = { text = "Blessing of Light", d
 UnitPopupButtons["BOT_PALADIN_BLESSING_SALVATION"] = { text = "Blessing of Salvation", dist = 0 }
 
 -- PALADIN: Choose auras
-UnitPopupButtons["BOT_PALADIN_AURAS"] = { text = "Set Aura", dist = 0, nested = 1 }
+UnitPopupButtons["BOT_PALADIN_AURAS"] = { text = "|cFFF58CBASet Aura|r", dist = 0, nested = 1 }
 UnitPopupButtons["BOT_PALADIN_AURAS_DEFAULT"] = { text = "AI Default (Clear Setting)", dist = 0 }
 UnitPopupButtons["BOT_PALADIN_AURA_DEVOTION"] = { text = "Devotion Aura", dist = 0 }
 UnitPopupButtons["BOT_PALADIN_AURA_RETRIBUTION"] = { text = "Retribution Aura", dist = 0 }
@@ -180,21 +212,21 @@ UnitPopupButtons["BOT_PALADIN_AURA_FROST_RESISTANCE"] = { text = "Frost Resistan
 UnitPopupButtons["BOT_PALADIN_AURA_FIRE_RESISTANCE"] = { text = "Fire Resistance Aura", dist = 0 }
 
 -- SHAMAN: Choose air totem
-UnitPopupButtons["BOT_SHAMAN_AIR_TOTEM"] = { text = "Set Air Totem", dist = 0, nested = 1 }
+UnitPopupButtons["BOT_SHAMAN_AIR_TOTEM"] = { text = "|cFF0070DESet|r |cFFFFFFA0Air|r |cFF0070DETotem|r", dist = 0, nested = 1 }
 UnitPopupButtons["BOT_SHAMAN_AIR_TOTEM_GRACE"] = { text = "Grace of Air", dist = 0 }
 UnitPopupButtons["BOT_SHAMAN_AIR_TOTEM_NATURE"] = { text = "Nature Resistance", dist = 0 }
 UnitPopupButtons["BOT_SHAMAN_AIR_TOTEM_WINDFURY"] = { text = "Windfury", dist = 0 }
 UnitPopupButtons["BOT_SHAMAN_AIR_TOTEM_GROUNDING"] = { text = "Grounding", dist = 0 }
 
 -- SHAMAN: Choose earth totem
-UnitPopupButtons["BOT_SHAMAN_EARTH_TOTEM"] = { text = "Set Earth Totem", dist = 0, nested = 1 }
+UnitPopupButtons["BOT_SHAMAN_EARTH_TOTEM"] = { text = "|cFF0070DESet|r |cFFD2B48CEarth|r |cFF0070DETotem|r", dist = 0, nested = 1 }
 UnitPopupButtons["BOT_SHAMAN_EARTH_TOTEM_STONESKIN"] = { text = "Stoneskin", dist = 0 }
 UnitPopupButtons["BOT_SHAMAN_EARTH_TOTEM_EARTHBIND"] = { text = "Earthbind", dist = 0 }
 UnitPopupButtons["BOT_SHAMAN_EARTH_TOTEM_STRENGTH"] = { text = "Strength of Earth", dist = 0 }
 UnitPopupButtons["BOT_SHAMAN_EARTH_TOTEM_TREMOR"] = { text = "Tremor", dist = 0 }
 
 -- SHAMAN: Choose fire totem
-UnitPopupButtons["BOT_SHAMAN_FIRE_TOTEM"] = { text = "Set Fire Totem", dist = 0, nested = 1 }
+UnitPopupButtons["BOT_SHAMAN_FIRE_TOTEM"] = { text = "|cFF0070DESet|r |cFFFF4500Fire|r |cFF0070DETotem|r", dist = 0, nested = 1 }
 UnitPopupButtons["BOT_SHAMAN_FIRE_TOTEM_SEARING"] = { text = "Searing", dist = 0 }
 UnitPopupButtons["BOT_SHAMAN_FIRE_TOTEM_FIRE_NOVA"] = { text = "Fire Nova", dist = 0 }
 UnitPopupButtons["BOT_SHAMAN_FIRE_TOTEM_FROST_RESISTANCE"] = { text = "Frost Resistance", dist = 0 }
@@ -202,7 +234,7 @@ UnitPopupButtons["BOT_SHAMAN_FIRE_TOTEM_MAGMA"] = { text = "Magma", dist = 0 }
 UnitPopupButtons["BOT_SHAMAN_FIRE_TOTEM_FLAMETONGUE"] = { text = "Flametongue", dist = 0 }
 
 -- SHAMAN: Choose water totem
-UnitPopupButtons["BOT_SHAMAN_WATER_TOTEM"] = { text = "Set Water Totem", dist = 0, nested = 1 }
+UnitPopupButtons["BOT_SHAMAN_WATER_TOTEM"] = { text = "|cFF0070DESet|r |cFF7FFFD4Water|r |cFF0070DETotem|r", dist = 0, nested = 1 }
 UnitPopupButtons["BOT_SHAMAN_WATER_TOTEM_HEALING"] = { text = "Healing Stream", dist = 0 }
 UnitPopupButtons["BOT_SHAMAN_WATER_TOTEM_MANA_SPRING"] = { text = "Mana Spring", dist = 0 }
 UnitPopupButtons["BOT_SHAMAN_WATER_TOTEM_FIRE_RESISTANCE"] = { text = "Fire Resistance", dist = 0 }
@@ -210,7 +242,7 @@ UnitPopupButtons["BOT_SHAMAN_WATER_TOTEM_DISEASE_CLEANSING"] = { text = "Disease
 UnitPopupButtons["BOT_SHAMAN_WATER_TOTEM_POISON_CLEANSING"] = { text = "Poison Cleansing", dist = 0 }
 
 -- SHAMAN: Clear set totems
-UnitPopupButtons["BOT_SHAMAN_CLEAR_TOTEMS"] = { text = "Clear Set Totems", dist = 0 }
+UnitPopupButtons["BOT_SHAMAN_CLEAR_TOTEMS"] = { text = "Clear |cFF0070DEAll Totems|r", dist = 0 }
 
 -- Hook the UnitPopup_ShowMenu function to establish the variables of which party member is being clicked
 local originalUnitPopupShowMenu = UnitPopup_ShowMenu
@@ -226,7 +258,7 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     local i = table.getn(UnitPopupMenus["PARTY"])
     while i > 0 do
         local menu = UnitPopupMenus["PARTY"][i]
-        if string.find(menu, "^BOT_") and menu ~= "BOT_CONTROL" then
+        if string.find(menu, "^BOT_") then
             table.remove(UnitPopupMenus["PARTY"], i)
         end
         i = i - 1
@@ -242,32 +274,47 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         i = i - 1
     end
 
-    -- Add role options to BOT_CONTROL menu based on class
+    -- Add role options to BOT_CONTROL menu based on class and set color of companions menu
     if NYCTER_SELECTED_UNIT_CLASS == "Warrior" then
+        UnitPopupButtons["BOT_CONTROL"].text = "|cFFC79C6ECompanion Settings|r"
         table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_TANK")
         table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_DPS")
     elseif NYCTER_SELECTED_UNIT_CLASS == "Paladin" then
+        UnitPopupButtons["BOT_CONTROL"].text = "|cFFF58CBACompanion Settings|r"
         table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_TANK")
+        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_HEALER")
+        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_DPS")
+    elseif NYCTER_SELECTED_UNIT_CLASS == "Hunter" then
+        UnitPopupButtons["BOT_CONTROL"].text = "|cFFABD473Companion Settings|r"
+    elseif NYCTER_SELECTED_UNIT_CLASS == "Rogue" then
+        UnitPopupButtons["BOT_CONTROL"].text = "|cFFFFF569Companion Settings|r"
+    elseif NYCTER_SELECTED_UNIT_CLASS == "Priest" then
+        UnitPopupButtons["BOT_CONTROL"].text = "|cFFFFFFA0Companion Settings|r"
         table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_HEALER")
         table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_DPS")
     elseif NYCTER_SELECTED_UNIT_CLASS == "Shaman" then
+        UnitPopupButtons["BOT_CONTROL"].text = "|cFF0070DECompanion Settings|r"
         table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_TANK")
         table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_HEALER")
         table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_MDPS")
         table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_RDPS")
+    elseif NYCTER_SELECTED_UNIT_CLASS == "Mage" then
+        UnitPopupButtons["BOT_CONTROL"].text = "|cFF69CCF0Companion Settings|r"
+    elseif NYCTER_SELECTED_UNIT_CLASS == "Warlock" then
+        UnitPopupButtons["BOT_CONTROL"].text = "|cFF9482C9Companion Settings|r"
     elseif NYCTER_SELECTED_UNIT_CLASS == "Druid" then
+        UnitPopupButtons["BOT_CONTROL"].text = "|cFFFF7D0ACompanion Settings|r"
         table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_TANK")
         table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_HEALER")
         table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_MDPS")
         table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_RDPS")
-    elseif NYCTER_SELECTED_UNIT_CLASS == "Priest" then
-        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_HEALER")
-        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_DPS")
     end
+
+    -- Insert custom buttons into the PARTY pc menu
+    table.insert(UnitPopupMenus["PARTY"], 1, "BOT_CONTROL")
 
     -- Conditionally edit the tables for each class
     local dynamicMenus = {}
-
     --[[--------------------------
         Mage
     ----------------------------]]
@@ -293,6 +340,7 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
             end
         end
         if NYCTER_SELECTED_UNIT_LEVEL >= 22 then -- Blink is learned at level 22
+            UnitPopupButtons["BOT_DENY_DANGER_SPELLS"] = { text = "Deny |cFF69CCF0Danger Spells|r", dist = 0 }
             table.insert(dynamicMenus, "BOT_DENY_DANGER_SPELLS")
         end
     --[[--------------------------
@@ -302,6 +350,7 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         UnitPopupMenus["BOT_PET_TOGGLE"] = { "BOT_PET_ON", "BOT_PET_OFF" }
         UnitPopupMenus["BOT_HUNTER_PET"] = { "BOT_HUNTER_PET_BAT", "BOT_HUNTER_PET_BEAR", "BOT_HUNTER_PET_BIRD", "BOT_HUNTER_PET_BOAR", "BOT_HUNTER_PET_CAT", "BOT_HUNTER_PET_CRAB", "BOT_HUNTER_PET_CROC", "BOT_HUNTER_PET_GORILLA", "BOT_HUNTER_PET_HYENA", "BOT_HUNTER_PET_OWL", "BOT_HUNTER_PET_RAPTOR", "BOT_HUNTER_PET_SCORPID", "BOT_HUNTER_PET_SERPENT", "BOT_HUNTER_PET_SPIDER", "BOT_HUNTER_PET_STRIDER", "BOT_HUNTER_PET_TURTLE", "BOT_HUNTER_PET_WOLF" }
         if NYCTER_SELECTED_UNIT_LEVEL >= 10 then -- Hunters get pets at level 10
+            UnitPopupButtons["BOT_PET_TOGGLE"] = { text = "|cFFABD473Pet Control|r", dist = 0, nested = 1 }
             table.insert(dynamicMenus, "BOT_PET_TOGGLE")
             table.insert(dynamicMenus, "BOT_HUNTER_PET")
         end
@@ -311,12 +360,14 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     elseif NYCTER_SELECTED_UNIT_CLASS == "Warlock" then
         UnitPopupMenus["BOT_PET_TOGGLE"] = { "BOT_PET_ON", "BOT_PET_OFF" }
         UnitPopupMenus["BOT_WARLOCK_PET"] = { "BOT_WARLOCK_PET_IMP", "BOT_WARLOCK_PET_VOIDWALKER", "BOT_WARLOCK_PET_SUCCUBUS", "BOT_WARLOCK_PET_FELHUNTER" }
+        UnitPopupButtons["BOT_PET_TOGGLE"] = { text = "|cFF9482C9Pet Control|r", dist = 0, nested = 1 }
         table.insert(dynamicMenus, "BOT_PET_TOGGLE")
         table.insert(dynamicMenus, "BOT_WARLOCK_PET")
         if NYCTER_SELECTED_UNIT_LEVEL >= 50 then -- Ritual of Summoning is learned at level 50 in vanilla WoW 1.12.1
             table.insert(dynamicMenus, "BOT_WARLOCK_SUMMON_PLAYER_RITUAL")
         end
         if NYCTER_SELECTED_UNIT_LEVEL >= 8 then -- Fear is learned at level 8
+            UnitPopupButtons["BOT_DENY_DANGER_SPELLS"] = { text = "Deny |cFF9482C9Danger Spells|r", dist = 0 }
             table.insert(dynamicMenus, "BOT_DENY_DANGER_SPELLS")
         end
     --[[--------------------------
@@ -419,6 +470,7 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     ----------------------------]]
     elseif NYCTER_SELECTED_UNIT_CLASS == "Priest" then
         if NYCTER_SELECTED_UNIT_LEVEL >= 14 then -- Psychic Scream is learned at level 14
+            UnitPopupButtons["BOT_DENY_DANGER_SPELLS"] = { text = "Deny |cFFFFFFA0Danger Spells|r", dist = 0 }
             table.insert(dynamicMenus, "BOT_DENY_DANGER_SPELLS")
         end
     --[[--------------------------
@@ -426,6 +478,7 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     ----------------------------]]
     elseif NYCTER_SELECTED_UNIT_CLASS == "Warrior" then
         if NYCTER_SELECTED_UNIT_LEVEL >= 22 then -- Intimidating Shout is learned at level 22
+            UnitPopupButtons["BOT_DENY_DANGER_SPELLS"] = { text = "Deny |cFFC79C6EDanger Spells|r", dist = 0 }
             table.insert(dynamicMenus, "BOT_DENY_DANGER_SPELLS")
         end
     --[[--------------------------
@@ -458,39 +511,6 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
 
     -- Call the original function
     originalUnitPopupShowMenu(dropdownMenu, which, unit, name, userData)
-end
-
---[[------------------------------------
-    Send Z Commands (Bot Targeted)
---------------------------------------]]
-local function SendTargetedBotZCommand(unit, command)
-    -- DEPRECATED: Previous target reversion is unreliable with .z commands since they need to be used on the target
-        -- local previousTarget = UnitName("target")
-    -- Target the bot whose command we want to send
-    TargetUnit(unit)
-    -- Use a non-blocking delay mechanism to let the target go through (c_timer does not work, less than a second misses them sometimes)
-    local delayTime = 1.0
-    local frame = CreateFrame("Frame")
-    frame:SetScript("OnUpdate", function()
-        delayTime = delayTime - arg1
-        if delayTime <= 0 then
-            SendChatMessage(".z " .. command, "PARTY")
-            -- DEPRECATED (Unreliable with .z commands): Target the previous target after sending the message 
-                -- if previousTarget then
-                --     TargetByName(previousTarget)
-                -- else
-                --     ClearTarget()
-                -- end
-            frame:SetScript("OnUpdate", nil)
-        end
-    end)
-end
-
---[[------------------------------------
-    Send Whisper Commands to Bot
---------------------------------------]]
-local function SendTargetedBotWhisperCommand(name, command)
-    SendChatMessage(command, "WHISPER", nil, name)
 end
 
 --[[------------------------------------
@@ -594,7 +614,7 @@ function UnitPopup_OnClick()
     Warlock summon player ritual
     --------------------------------------]]
     elseif button == "BOT_WARLOCK_SUMMON_PLAYER_RITUAL" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "cast Ritual of Summoning")
+        StaticPopup_Show("SUMMON_CONFIRM")
     --[[------------------------------------
     Pet toggle
     --------------------------------------]]
