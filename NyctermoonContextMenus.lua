@@ -1,6 +1,54 @@
 -- NyctermoonContextMenus.lua
 -- Coded for Vanilla WoW 1.12.1, using LUA version 5.1
 
+-- TODO: --
+-- Add focus and cc marks settings for party
+
+--[[---------------------------------------------------------------------------------
+  PLAYER (SELF) MENU COMMANDS
+----------------------------------------------------------------------------------]]
+-- Reset instances
+UnitPopupButtons["SELF_RESET_INSTANCES"] = { text = "Reset all instances", dist = 0 }
+StaticPopupDialogs["SELF_RESET_INSTANCES_CONFIRM"] = {
+	text = "Do you really want to reset all of your instances?",
+	button1 = TEXT(OKAY),
+	button2 = TEXT(CANCEL),
+	OnAccept = function()
+		RunScript("ResetInstances()")
+	end,
+	timeout = 0,
+	hideOnEscape = 1
+}
+-- Function to check if pfUI is loaded and add our custom reset instances option only if it's not (since that has one already)
+local frame = CreateFrame("Frame")
+frame:RegisterEvent("PLAYER_LOGIN")
+frame:SetScript("OnEvent", function()
+    local isPfUILoaded = false
+    for i = 1, GetNumAddOns() do
+        local name = GetAddOnInfo(i)
+        if name == "pfUI" and IsAddOnLoaded(i) then
+            isPfUILoaded = true
+            break
+        end
+    end
+
+    if not isPfUILoaded then
+        table.insert(UnitPopupMenus["SELF"], 1, "SELF_RESET_INSTANCES")
+    end
+end)
+
+
+-- Set dungeon difficulty
+UnitPopupButtons["SELF_DUNGEON_DIFFICULTY"] = { text = "Dungeon Difficulty", dist = 0, nested = 1 }
+UnitPopupButtons["SELF_DUNGEON_NORMAL"] = { text = "Normal", dist = 0 }
+UnitPopupButtons["SELF_DUNGEON_HEROIC"] = { text = "Heroic", dist = 0 }
+UnitPopupMenus["SELF_DUNGEON_DIFFICULTY"] = { "SELF_DUNGEON_NORMAL", "SELF_DUNGEON_HEROIC" }
+table.insert(UnitPopupMenus["SELF"],1,"SELF_DUNGEON_DIFFICULTY")
+
+
+--[[---------------------------------------------------------------------------------
+  COMPANION MENU COMMANDS
+----------------------------------------------------------------------------------]]
 -- Define custom popup buttons and menus
 UnitPopupButtons["BOT_CONTROL"] = { text = "Companion Settings", dist = 0, nested = 1 }
 UnitPopupButtons["BOT_TOGGLE_HELM"] = {text = "Toggle Helm", dist = 0}
@@ -411,8 +459,15 @@ local originalUnitPopupOnClick = UnitPopup_OnClick
 function UnitPopup_OnClick()
 	local button = this.value;
     
+    -- Player (self commands)
+    if button == "SELF_RESET_INSTANCES" then
+        StaticPopup_Show("SELF_RESET_INSTANCES_CONFIRM")
+    elseif button == "SELF_DUNGEON_NORMAL" then
+        SendChatMessage(".settings difficulty normal", "SAY")
+    elseif button == "SELF_DUNGEON_HEROIC" then
+        SendChatMessage(".settings difficulty heroic", "SAY")
     -- Bot control toggles
-    if button == "BOT_TOGGLE_HELM" then
+    elseif button == "BOT_TOGGLE_HELM" then
         SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "toggle helm")
     elseif button == "BOT_TOGGLE_CLOAK" then
         SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "toggle cloak")
