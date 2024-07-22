@@ -52,6 +52,54 @@ UnitPopupButtons["BOT_ROLE_DPS"] = { text = "Set Role: DPS", dist = 0 }
 UnitPopupButtons["BOT_ROLE_MDPS"] = { text = "Set Role: Melee DPS", dist = 0 }
 UnitPopupButtons["BOT_ROLE_RDPS"] = { text = "Set Role: Ranged DPS", dist = 0 }
 
+-- Assign CC mark
+UnitPopupButtons["BOT_ASSIGN_CC_MARK"] = { text = "Set CC Mark", dist = 0, nested = 1 }
+UnitPopupButtons["BOT_ASSIGN_CC_MARK_STAR"] = { text = "|cffFFD100Star|r", dist = 0 }
+UnitPopupButtons["BOT_ASSIGN_CC_MARK_CIRCLE"] = { text = "|cffFF7F00Circle|r", dist = 0 }
+UnitPopupButtons["BOT_ASSIGN_CC_MARK_DIAMOND"] = { text = "|cffFF00FFDiamond|r", dist = 0 }
+UnitPopupButtons["BOT_ASSIGN_CC_MARK_TRIANGLE"] = { text = "|cff1EFF00Triangle|r", dist = 0 }
+UnitPopupButtons["BOT_ASSIGN_CC_MARK_MOON"] = { text = "|cff6699CCMoon|r", dist = 0 }
+UnitPopupButtons["BOT_ASSIGN_CC_MARK_SQUARE"] = { text = "|cff00ffffSquare|r", dist = 0 }
+UnitPopupButtons["BOT_ASSIGN_CC_MARK_CROSS"] = { text = "|cffFF0000Cross|r", dist = 0 }
+UnitPopupButtons["BOT_ASSIGN_CC_MARK_SKULL"] = { text = "|cffFFFDE0Skull|r", dist = 0 }
+UnitPopupButtons["BOT_ASSIGN_CC_MARK_CLEAR"] = { text = "None (Default |cff6699CCMoon|r)", dist = 0 }
+
+UnitPopupMenus["BOT_ASSIGN_CC_MARK"] = {
+    "BOT_ASSIGN_CC_MARK_CLEAR",
+    "BOT_ASSIGN_CC_MARK_STAR",
+    "BOT_ASSIGN_CC_MARK_CIRCLE",
+    "BOT_ASSIGN_CC_MARK_DIAMOND",
+    "BOT_ASSIGN_CC_MARK_TRIANGLE",
+    "BOT_ASSIGN_CC_MARK_MOON",
+    "BOT_ASSIGN_CC_MARK_SQUARE",
+    "BOT_ASSIGN_CC_MARK_CROSS",
+    "BOT_ASSIGN_CC_MARK_SKULL"
+}
+
+-- Assign focus mark
+UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK"] = { text = "Set Focus Mark", dist = 0, nested = 1 }
+UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_STAR"] = { text = "|cffFFD100Star|r", dist = 0 }
+UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_CIRCLE"] = { text = "|cffFF7F00Circle|r", dist = 0 }
+UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_DIAMOND"] = { text = "|cffFF00FFDiamond|r", dist = 0 }
+UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_TRIANGLE"] = { text = "|cff1EFF00Triangle|r", dist = 0 }
+UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_MOON"] = { text = "|cff6699CCMoon|r", dist = 0 }
+UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_SQUARE"] = { text = "|cff00ffffSquare|r", dist = 0 }
+UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_CROSS"] = { text = "|cffFF0000Cross|r", dist = 0 }
+UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_SKULL"] = { text = "|cffFFFDE0Skull|r", dist = 0 }
+UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_CLEAR"] = { text = "None (Default |cffFFFDE0Skull|r)", dist = 0 }
+
+UnitPopupMenus["BOT_ASSIGN_FOCUS_MARK"] = {
+    "BOT_ASSIGN_FOCUS_MARK_CLEAR",
+    "BOT_ASSIGN_FOCUS_MARK_STAR",
+    "BOT_ASSIGN_FOCUS_MARK_CIRCLE",
+    "BOT_ASSIGN_FOCUS_MARK_DIAMOND",
+    "BOT_ASSIGN_FOCUS_MARK_TRIANGLE",
+    "BOT_ASSIGN_FOCUS_MARK_MOON",
+    "BOT_ASSIGN_FOCUS_MARK_SQUARE",
+    "BOT_ASSIGN_FOCUS_MARK_CROSS",
+    "BOT_ASSIGN_FOCUS_MARK_SKULL"
+}
+
 -- Insert custom buttons into the PARTY pc menu
 table.insert(UnitPopupMenus["PARTY"], 1, "BOT_CONTROL")
 
@@ -398,6 +446,11 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         end
     end
 
+
+    -- Add cc and focus mark assignment to the dynamic menus in the last position
+    table.insert(dynamicMenus, "BOT_ASSIGN_CC_MARK")
+    table.insert(dynamicMenus, "BOT_ASSIGN_FOCUS_MARK")
+
     -- Insert dynamic menus at the top of the party menu, under BOT_CONTROL
     for i = table.getn(dynamicMenus), 1, -1 do
         table.insert(UnitPopupMenus["PARTY"], 2, dynamicMenus[i])
@@ -407,35 +460,42 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     originalUnitPopupShowMenu(dropdownMenu, which, unit, name, userData)
 end
 
--- Send a Z command to the bot requires targeting it
+--[[------------------------------------
+    Send Z Commands (Bot Targeted)
+--------------------------------------]]
 local function SendTargetedBotZCommand(unit, command)
-    local previousTarget = UnitName("target")
+    -- DEPRECATED: Previous target reversion is unreliable with .z commands since they need to be used on the target
+        -- local previousTarget = UnitName("target")
     -- Target the bot whose command we want to send
     TargetUnit(unit)
-    -- Use a non-blocking delay mechanism to let the target go through (c_timer does not work, less than half a second misses them sometimes)
-    local delayTime = 0.5
+    -- Use a non-blocking delay mechanism to let the target go through (c_timer does not work, less than a second misses them sometimes)
+    local delayTime = 1.0
     local frame = CreateFrame("Frame")
     frame:SetScript("OnUpdate", function()
         delayTime = delayTime - arg1
         if delayTime <= 0 then
             SendChatMessage(".z " .. command, "PARTY")
-            -- Target the previous target after sending the message
-            if previousTarget then
-                TargetByName(previousTarget)
-            else
-                ClearTarget()
-            end
+            -- DEPRECATED (Unreliable with .z commands): Target the previous target after sending the message 
+                -- if previousTarget then
+                --     TargetByName(previousTarget)
+                -- else
+                --     ClearTarget()
+                -- end
             frame:SetScript("OnUpdate", nil)
         end
     end)
 end
 
--- Send a whisper control to the bot that you are targeting
+--[[------------------------------------
+    Send Whisper Commands to Bot
+--------------------------------------]]
 local function SendTargetedBotWhisperCommand(name, command)
     SendChatMessage(command, "WHISPER", nil, name)
 end
 
--- Modify the UnitPopup_OnClick hook to control the clicks on custom menu options
+--[[------------------------------------
+    Handle Custom Menu Clicks
+--------------------------------------]]
 local originalUnitPopupOnClick = UnitPopup_OnClick
 function UnitPopup_OnClick()
 	local button = this.value;
@@ -476,6 +536,45 @@ function UnitPopup_OnClick()
         SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "set mdps")
     elseif button == "BOT_ROLE_RDPS" then
         SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "set rdps")
+    --[[------------------------------------
+    CC and Focus Mark Controls
+    --------------------------------------]]
+    elseif button == "BOT_ASSIGN_CC_MARK_STAR" then
+        SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "ccmark star")
+    elseif button == "BOT_ASSIGN_CC_MARK_CIRCLE" then
+        SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "ccmark circle")
+    elseif button == "BOT_ASSIGN_CC_MARK_DIAMOND" then
+        SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "ccmark diamond")
+    elseif button == "BOT_ASSIGN_CC_MARK_TRIANGLE" then
+        SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "ccmark triangle")
+    elseif button == "BOT_ASSIGN_CC_MARK_SQUARE" then
+        SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "ccmark square")
+    elseif button == "BOT_ASSIGN_CC_MARK_CROSS" then
+        SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "ccmark cross")
+    elseif button == "BOT_ASSIGN_CC_MARK_CLEAR" then
+        SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "clear ccmark")
+    elseif button == "BOT_ASSIGN_CC_MARK_MOON" then
+        SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "ccmark moon")
+    elseif button == "BOT_ASSIGN_CC_MARK_SKULL" then
+        SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "ccmark skull")
+    elseif button == "BOT_ASSIGN_FOCUS_MARK_STAR" then
+        SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "focusmark star")
+    elseif button == "BOT_ASSIGN_FOCUS_MARK_CIRCLE" then
+        SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "focusmark circle")
+    elseif button == "BOT_ASSIGN_FOCUS_MARK_DIAMOND" then
+        SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "focusmark diamond")
+    elseif button == "BOT_ASSIGN_FOCUS_MARK_TRIANGLE" then
+        SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "focusmark triangle")
+    elseif button == "BOT_ASSIGN_FOCUS_MARK_SQUARE" then
+        SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "focusmark square")
+    elseif button == "BOT_ASSIGN_FOCUS_MARK_CROSS" then
+        SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "focusmark cross")
+    elseif button == "BOT_ASSIGN_FOCUS_MARK_CLEAR" then
+        SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "clear focusmark")
+    elseif button == "BOT_ASSIGN_FOCUS_MARK_MOON" then
+        SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "focusmark moon")
+    elseif button == "BOT_ASSIGN_FOCUS_MARK_SKULL" then
+        SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "focusmark skull")
     --[[------------------------------------
     Mage portals
     --------------------------------------]]
