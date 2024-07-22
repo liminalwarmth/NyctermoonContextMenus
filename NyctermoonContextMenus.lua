@@ -5,7 +5,7 @@ UnitPopupButtons["BOT_CONTROL"] = { text = "Bot Settings", dist = 0, nested = 1 
 UnitPopupButtons["BOT_TOGGLE_HELM"] = {text = "Toggle Helm", dist = 0}
 UnitPopupButtons["BOT_TOGGLE_CLOAK"] = { text = "Toggle Cloak", dist = 0 }
 UnitPopupButtons["BOT_TOGGLE_AOE"] = { text = "Toggle AoE", dist = 0 }
-UnitPopupMenus["BOT_CONTROL"] = { "BOT_TOGGLE_HELM", "BOT_TOGGLE_CLOAK", "BOT_TOGGLE_AOE"}
+UnitPopupMenus["BOT_CONTROL"] = { "BOT_TOGGLE_AOE","BOT_TOGGLE_HELM", "BOT_TOGGLE_CLOAK"}
 
 -- Define role settings
 UnitPopupButtons["BOT_SET_ROLE"] = { text = "Set Role", dist = 0, nested = 1 }
@@ -546,10 +546,14 @@ function UnitPopup_OnClick()
             SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add blink")
         elseif NYCTER_SELECTED_UNIT_CLASS == "Priest" then
             SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add psychic scream")
-            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add holy nova")
+            if NYCTER_SELECTED_UNIT_LEVEL >= 20 then
+                SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add holy nova")
+            end
         elseif NYCTER_SELECTED_UNIT_CLASS == "Warlock" then
             SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add fear")
-            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add howl of terror")
+            if NYCTER_SELECTED_UNIT_LEVEL >= 40 then
+                SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add howl of terror")
+            end
         elseif NYCTER_SELECTED_UNIT_CLASS == "Warrior" then
             SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add intimidating shout")
         end
