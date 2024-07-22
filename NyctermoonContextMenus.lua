@@ -75,14 +75,13 @@ UnitPopupButtons["BOT_WARLOCK_PET_FELHUNTER"] = { text = "Felhunter", dist = 0 }
 UnitPopupButtons["BOT_WARLOCK_SUMMON_PLAYER_RITUAL"] = { text = "Summon Player", dist = 0 }
 
 -- PALADIN: Choose blessing
-UnitPopupButtons["BOT_PALADIN_BLESSING"] = { text = "Set Blessing", dist = 0, nested = 1 }
-UnitPopupButtons["BOT_PALADIN_BLESSING_DEFAULT"] = { text = "Default (Cancel)", dist = 0 }
+UnitPopupButtons["BOT_PALADIN_BLESSING"] = { text = "Set Blessing (Forced)", dist = 0, nested = 1 }
+UnitPopupButtons["BOT_PALADIN_BLESSING_DEFAULT"] = { text = "Default (Clear Setting)", dist = 0 }
 UnitPopupButtons["BOT_PALADIN_BLESSING_MIGHT"] = { text = "Blessing of Might", dist = 0 }
 UnitPopupButtons["BOT_PALADIN_BLESSING_WISDOM"] = { text = "Blessing of Wisdom", dist = 0 }
 UnitPopupButtons["BOT_PALADIN_BLESSING_KINGS"] = { text = "Blessing of Kings", dist = 0 }
 UnitPopupButtons["BOT_PALADIN_BLESSING_LIGHT"] = { text = "Blessing of Light", dist = 0 }
 UnitPopupButtons["BOT_PALADIN_BLESSING_SALVATION"] = { text = "Blessing of Salvation", dist = 0 }
-UnitPopupButtons["BOT_PALADIN_BLESSING_SANCTUARY"] = { text = "Blessing of Sanctuary", dist = 0 }
 
 -- PALADIN: Choose auras
 UnitPopupButtons["BOT_PALADIN_AURAS"] = { text = "Set Aura", dist = 0, nested = 1 }
@@ -182,6 +181,8 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     end
 
     -- Conditionally edit the tables for each class
+    local dynamicMenus = {}
+
     if NYCTER_SELECTED_UNIT_CLASS == "Mage" then
         local portals = {}
         if NYCTER_SELECTED_UNIT_LEVEL >= 40 then
@@ -200,29 +201,29 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
             end
             if table.getn(portals) > 0 then
                 UnitPopupMenus["BOT_OPEN_PORTAL"] = portals
-                table.insert(UnitPopupMenus["PARTY"], 3, "BOT_OPEN_PORTAL")
+                table.insert(dynamicMenus, "BOT_OPEN_PORTAL")
             end
         end
         if NYCTER_SELECTED_UNIT_LEVEL >= 22 then -- Blink is learned at level 22
-            table.insert(UnitPopupMenus["PARTY"], 4, "BOT_DENY_DANGER_SPELLS")
+            table.insert(dynamicMenus, "BOT_DENY_DANGER_SPELLS")
         end
     elseif NYCTER_SELECTED_UNIT_CLASS == "Hunter" then
         UnitPopupMenus["BOT_PET_TOGGLE"] = { "BOT_PET_ON", "BOT_PET_OFF" }
         UnitPopupMenus["BOT_HUNTER_PET"] = { "BOT_HUNTER_PET_BAT", "BOT_HUNTER_PET_BEAR", "BOT_HUNTER_PET_BIRD", "BOT_HUNTER_PET_BOAR", "BOT_HUNTER_PET_CAT", "BOT_HUNTER_PET_CRAB", "BOT_HUNTER_PET_CROC", "BOT_HUNTER_PET_GORILLA", "BOT_HUNTER_PET_HYENA", "BOT_HUNTER_PET_OWL", "BOT_HUNTER_PET_RAPTOR", "BOT_HUNTER_PET_SCORPID", "BOT_HUNTER_PET_SERPENT", "BOT_HUNTER_PET_SPIDER", "BOT_HUNTER_PET_STRIDER", "BOT_HUNTER_PET_TURTLE", "BOT_HUNTER_PET_WOLF" }
         if NYCTER_SELECTED_UNIT_LEVEL >= 10 then -- Hunters get pets at level 10
-            table.insert(UnitPopupMenus["PARTY"], 3, "BOT_PET_TOGGLE")
-            table.insert(UnitPopupMenus["PARTY"], 4, "BOT_HUNTER_PET")
+            table.insert(dynamicMenus, "BOT_PET_TOGGLE")
+            table.insert(dynamicMenus, "BOT_HUNTER_PET")
         end
     elseif NYCTER_SELECTED_UNIT_CLASS == "Warlock" then
         UnitPopupMenus["BOT_PET_TOGGLE"] = { "BOT_PET_ON", "BOT_PET_OFF" }
         UnitPopupMenus["BOT_WARLOCK_PET"] = { "BOT_WARLOCK_PET_IMP", "BOT_WARLOCK_PET_VOIDWALKER", "BOT_WARLOCK_PET_SUCCUBUS", "BOT_WARLOCK_PET_FELHUNTER" }
-        table.insert(UnitPopupMenus["PARTY"], 3, "BOT_PET_TOGGLE")
-        table.insert(UnitPopupMenus["PARTY"], 4, "BOT_WARLOCK_PET")
+        table.insert(dynamicMenus, "BOT_PET_TOGGLE")
+        table.insert(dynamicMenus, "BOT_WARLOCK_PET")
         if NYCTER_SELECTED_UNIT_LEVEL >= 50 then -- Ritual of Summoning is learned at level 50 in vanilla WoW 1.12.1
-            table.insert(UnitPopupMenus["PARTY"], 5, "BOT_WARLOCK_SUMMON_PLAYER_RITUAL")
+            table.insert(dynamicMenus, "BOT_WARLOCK_SUMMON_PLAYER_RITUAL")
         end
         if NYCTER_SELECTED_UNIT_LEVEL >= 8 then -- Fear is learned at level 8
-            table.insert(UnitPopupMenus["PARTY"], 6, "BOT_DENY_DANGER_SPELLS")
+            table.insert(dynamicMenus, "BOT_DENY_DANGER_SPELLS")
         end
     elseif NYCTER_SELECTED_UNIT_CLASS == "Paladin" then
         -- TODO: swap for greater blessings at right levels
@@ -240,17 +241,13 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         if NYCTER_SELECTED_UNIT_LEVEL >= 40 then
             table.insert(blessings, "BOT_PALADIN_BLESSING_LIGHT")
         end
-        -- TODO: Double check sanctuary, might be a greater blessing
-        if NYCTER_SELECTED_UNIT_LEVEL >= 60 then
-            table.insert(blessings, "BOT_PALADIN_BLESSING_SANCTUARY")
-        end
         if NYCTER_SELECTED_UNIT_LEVEL >= 60 then
             table.insert(blessings, "BOT_PALADIN_BLESSING_KINGS")
         end
         if table.getn(blessings) > 0 then
             table.insert(blessings, 1, "BOT_PALADIN_BLESSING_DEFAULT")
             UnitPopupMenus["BOT_PALADIN_BLESSING"] = blessings
-            table.insert(UnitPopupMenus["PARTY"], 3, "BOT_PALADIN_BLESSING")
+            table.insert(dynamicMenus, "BOT_PALADIN_BLESSING")
         end
         if NYCTER_SELECTED_UNIT_LEVEL >= 1 then
             table.insert(auras, "BOT_PALADIN_AURA_DEVOTION")
@@ -272,7 +269,7 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         end
         if table.getn(auras) > 0 then
             UnitPopupMenus["BOT_PALADIN_AURAS"] = auras
-            table.insert(UnitPopupMenus["PARTY"], 4, "BOT_PALADIN_AURAS")
+            table.insert(dynamicMenus, "BOT_PALADIN_AURAS")
         end
     elseif NYCTER_SELECTED_UNIT_CLASS == "Shaman" then
         local air_totems = {}
@@ -338,41 +335,46 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         end
         if table.getn(air_totems) > 0 then
             UnitPopupMenus["BOT_SHAMAN_AIR_TOTEM"] = air_totems
-            table.insert(UnitPopupMenus["PARTY"], 3, "BOT_SHAMAN_AIR_TOTEM")
+            table.insert(dynamicMenus, "BOT_SHAMAN_AIR_TOTEM")
         end
         if table.getn(earth_totems) > 0 then
             UnitPopupMenus["BOT_SHAMAN_EARTH_TOTEM"] = earth_totems
-            table.insert(UnitPopupMenus["PARTY"], 4, "BOT_SHAMAN_EARTH_TOTEM")
+            table.insert(dynamicMenus, "BOT_SHAMAN_EARTH_TOTEM")
         end
         if table.getn(fire_totems) > 0 then
             UnitPopupMenus["BOT_SHAMAN_FIRE_TOTEM"] = fire_totems
-            table.insert(UnitPopupMenus["PARTY"], 5, "BOT_SHAMAN_FIRE_TOTEM")
+            table.insert(dynamicMenus, "BOT_SHAMAN_FIRE_TOTEM")
         end
         if table.getn(water_totems) > 0 then
             UnitPopupMenus["BOT_SHAMAN_WATER_TOTEM"] = water_totems
-            table.insert(UnitPopupMenus["PARTY"], 6, "BOT_SHAMAN_WATER_TOTEM")
+            table.insert(dynamicMenus, "BOT_SHAMAN_WATER_TOTEM")
         end
         if NYCTER_SELECTED_UNIT_LEVEL >= 10 then -- First totem is available at level 10
-            table.insert(UnitPopupMenus["PARTY"], 7, "BOT_SHAMAN_CLEAR_TOTEMS")
+            table.insert(dynamicMenus, "BOT_SHAMAN_CLEAR_TOTEMS")
         end
     elseif NYCTER_SELECTED_UNIT_CLASS == "Priest" then
         if NYCTER_SELECTED_UNIT_LEVEL >= 14 then -- Psychic Scream is learned at level 14
-            table.insert(UnitPopupMenus["PARTY"], 3, "BOT_DENY_DANGER_SPELLS")
+            table.insert(dynamicMenus, "BOT_DENY_DANGER_SPELLS")
         end
     elseif NYCTER_SELECTED_UNIT_CLASS == "Warrior" then
         if NYCTER_SELECTED_UNIT_LEVEL >= 22 then -- Intimidating Shout is learned at level 22
-            table.insert(UnitPopupMenus["PARTY"], 3, "BOT_DENY_DANGER_SPELLS")
+            table.insert(dynamicMenus, "BOT_DENY_DANGER_SPELLS")
         end
     elseif NYCTER_SELECTED_UNIT_CLASS == "Rogue" then
         if NYCTER_SELECTED_UNIT_LEVEL >= 10 then -- Stealth is learned at level 10
             UnitPopupMenus["BOT_ROGUE_STEALTH"] = { "BOT_ROGUE_STEALTH_ON", "BOT_ROGUE_STEALTH_OFF" }
-            table.insert(UnitPopupMenus["PARTY"], 3, "BOT_ROGUE_STEALTH")
+            table.insert(dynamicMenus, "BOT_ROGUE_STEALTH")
         end
     elseif NYCTER_SELECTED_UNIT_CLASS == "Druid" then
         if NYCTER_SELECTED_UNIT_LEVEL >= 20 then -- Stealth is learned at level 20 (cat form)
             UnitPopupMenus["BOT_DRUID_STEALTH"] = { "BOT_DRUID_STEALTH_ON", "BOT_DRUID_STEALTH_OFF" }
-            table.insert(UnitPopupMenus["PARTY"], 3, "BOT_DRUID_STEALTH")
+            table.insert(dynamicMenus, "BOT_DRUID_STEALTH")
         end
+    end
+
+    -- Insert dynamic menus at the top of the party menu, under BOT_CONTROL
+    for i = table.getn(dynamicMenus), 1, -1 do
+        table.insert(UnitPopupMenus["PARTY"], 2, dynamicMenus[i])
     end
 
     -- Call the original function
@@ -499,17 +501,35 @@ function UnitPopup_OnClick()
     elseif button == "BOT_PALADIN_BLESSING_DEFAULT" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing cancel")
     elseif button == "BOT_PALADIN_BLESSING_MIGHT" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing Blessing of Might")
+        if NYCTER_SELECTED_UNIT_LEVEL >= 52 then
+            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing Greater Blessing of Might")
+        else
+            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing Blessing of Might")
+        end
     elseif button == "BOT_PALADIN_BLESSING_WISDOM" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing Blessing of Wisdom")
+        if NYCTER_SELECTED_UNIT_LEVEL >= 54 then
+            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing Greater Blessing of Wisdom")
+        else
+            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing Blessing of Wisdom")
+        end
     elseif button == "BOT_PALADIN_BLESSING_KINGS" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing Blessing of Kings")
+        if NYCTER_SELECTED_UNIT_LEVEL >= 60 then
+            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing Greater Blessing of Kings")
+        else
+            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing Blessing of Kings")
+        end
     elseif button == "BOT_PALADIN_BLESSING_LIGHT" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing Blessing of Light")
+        if NYCTER_SELECTED_UNIT_LEVEL >= 60 then
+            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing Greater Blessing of Light")
+        else
+            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing Blessing of Light")
+        end
     elseif button == "BOT_PALADIN_BLESSING_SALVATION" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing Blessing of Salvation")
-    elseif button == "BOT_PALADIN_BLESSING_SANCTUARY" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing Blessing of Sanctuary")
+        if NYCTER_SELECTED_UNIT_LEVEL >= 56 then
+            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing Greater Blessing of Salvation")
+        else
+            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing Blessing of Salvation")
+        end
     -- Paladin auras
     elseif button == "BOT_PALADIN_AURA_DEVOTION" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "cast Devotion Aura")
