@@ -1,0 +1,7 @@
+## Interface: 11200
+## Title: NycterContextMenus
+## Notes: Custom addon for controlling bots on Nyctermoon server. Built for Vanilla WoW version 1.12.1 and LUA 5.0.
+## Author: Liminal_Warmth
+## Version: 1.0
+
+NycterContextMenus.lua
