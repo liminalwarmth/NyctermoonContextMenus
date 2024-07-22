@@ -1,24 +1,21 @@
 -- NyctermoonContextMenus.lua
 
 -- Define custom popup buttons and menus
-UnitPopupButtons["BOT_CONTROL"] = { text = "Bot Settings", dist = 0, nested = 1 }
+UnitPopupButtons["BOT_CONTROL"] = { text = "Companion Settings", dist = 0, nested = 1 }
 UnitPopupButtons["BOT_TOGGLE_HELM"] = {text = "Toggle Helm", dist = 0}
 UnitPopupButtons["BOT_TOGGLE_CLOAK"] = { text = "Toggle Cloak", dist = 0 }
 UnitPopupButtons["BOT_TOGGLE_AOE"] = { text = "Toggle AoE", dist = 0 }
 UnitPopupMenus["BOT_CONTROL"] = { "BOT_TOGGLE_AOE","BOT_TOGGLE_HELM", "BOT_TOGGLE_CLOAK"}
 
 -- Define role settings
-UnitPopupButtons["BOT_SET_ROLE"] = { text = "Set Role", dist = 0, nested = 1 }
-UnitPopupButtons["BOT_ROLE_TANK"] = { text = "Tank", dist = 0 }
-UnitPopupButtons["BOT_ROLE_HEALER"] = { text = "Healer", dist = 0 }
-UnitPopupButtons["BOT_ROLE_DPS"] = { text = "DPS", dist = 0 }
-UnitPopupButtons["BOT_ROLE_MDPS"] = { text = "Melee DPS", dist = 0 }
-UnitPopupButtons["BOT_ROLE_RDPS"] = { text = "Ranged DPS", dist = 0 }
-UnitPopupMenus["BOT_SET_ROLE"] = { "BOT_ROLE_TANK", "BOT_ROLE_HEALER", "BOT_ROLE_DPS", "BOT_ROLE_MDPS", "BOT_ROLE_RDPS" }
+UnitPopupButtons["BOT_ROLE_TANK"] = { text = "Set Role: Tank", dist = 0 }
+UnitPopupButtons["BOT_ROLE_HEALER"] = { text = "Set Role: Healer", dist = 0 }
+UnitPopupButtons["BOT_ROLE_DPS"] = { text = "Set Role: DPS", dist = 0 }
+UnitPopupButtons["BOT_ROLE_MDPS"] = { text = "Set Role: Melee DPS", dist = 0 }
+UnitPopupButtons["BOT_ROLE_RDPS"] = { text = "Set Role: Ranged DPS", dist = 0 }
 
 -- Insert custom buttons into the PARTY pc menu
 table.insert(UnitPopupMenus["PARTY"], 1, "BOT_CONTROL")
-table.insert(UnitPopupMenus["PARTY"], 2, "BOT_SET_ROLE")
 
 -- Deny dangerous spells
 UnitPopupButtons["BOT_DENY_DANGER_SPELLS"] = { text = "Deny Danger Spells", dist = 0 }
@@ -145,10 +142,43 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     local i = table.getn(UnitPopupMenus["PARTY"])
     while i > 0 do
         local menu = UnitPopupMenus["PARTY"][i]
-        if string.find(menu, "^BOT_") and menu ~= "BOT_CONTROL" and menu ~= "BOT_SET_ROLE" then
+        if string.find(menu, "^BOT_") and menu ~= "BOT_CONTROL" then
             table.remove(UnitPopupMenus["PARTY"], i)
         end
         i = i - 1
+    end
+
+    -- Remove any existing role options from BOT_CONTROL menu
+    i = table.getn(UnitPopupMenus["BOT_CONTROL"])
+    while i > 0 do
+        local option = UnitPopupMenus["BOT_CONTROL"][i]
+        if string.find(option, "^BOT_ROLE_") then
+            table.remove(UnitPopupMenus["BOT_CONTROL"], i)
+        end
+        i = i - 1
+    end
+
+    -- Add role options to BOT_CONTROL menu based on class
+    if NYCTER_SELECTED_UNIT_CLASS == "Warrior" then
+        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_TANK")
+        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_DPS")
+    elseif NYCTER_SELECTED_UNIT_CLASS == "Paladin" then
+        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_TANK")
+        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_HEALER")
+        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_DPS")
+    elseif NYCTER_SELECTED_UNIT_CLASS == "Shaman" then
+        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_TANK")
+        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_HEALER")
+        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_MDPS")
+        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_RDPS")
+    elseif NYCTER_SELECTED_UNIT_CLASS == "Druid" then
+        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_TANK")
+        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_HEALER")
+        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_MDPS")
+        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_RDPS")
+    elseif NYCTER_SELECTED_UNIT_CLASS == "Priest" then
+        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_HEALER")
+        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_DPS")
     end
 
     -- Conditionally edit the tables for each class
