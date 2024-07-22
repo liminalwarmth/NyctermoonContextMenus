@@ -7,7 +7,11 @@
 --[[---------------------------------------------------------------------------------
   PLAYER (SELF) MENU COMMANDS
 ----------------------------------------------------------------------------------]]
--- Reset instances
+
+-- Dungeon Settings (Difficulty, Reset option)
+UnitPopupButtons["SELF_DUNGEON_SETTINGS"] = { text = "Dungeon Settings", dist = 0, nested = 1 }
+UnitPopupButtons["SELF_DUNGEON_NORMAL"] = { text = "Set Difficulty: Normal", dist = 0 }
+UnitPopupButtons["SELF_DUNGEON_HEROIC"] = { text = "Set Difficulty: Heroic", dist = 0 }
 UnitPopupButtons["SELF_RESET_INSTANCES"] = { text = "Reset all instances", dist = 0 }
 StaticPopupDialogs["SELF_RESET_INSTANCES_CONFIRM"] = {
 	text = "Do you really want to reset all of your instances?",
@@ -19,37 +23,15 @@ StaticPopupDialogs["SELF_RESET_INSTANCES_CONFIRM"] = {
 	timeout = 0,
 	hideOnEscape = 1
 }
--- Function to check if pfUI is loaded and add our custom reset instances option only if it's not (since that has one already)
-local frame = CreateFrame("Frame")
-frame:RegisterEvent("PLAYER_LOGIN")
-frame:SetScript("OnEvent", function()
-    local isPfUILoaded = false
-    for i = 1, GetNumAddOns() do
-        local name = GetAddOnInfo(i)
-        if name == "pfUI" and IsAddOnLoaded(i) then
-            isPfUILoaded = true
-            break
-        end
-    end
-
-    if not isPfUILoaded then
-        table.insert(UnitPopupMenus["SELF"], 1, "SELF_RESET_INSTANCES")
-    end
-end)
-
-
--- Set dungeon difficulty
-UnitPopupButtons["SELF_DUNGEON_DIFFICULTY"] = { text = "Dungeon Difficulty", dist = 0, nested = 1 }
-UnitPopupButtons["SELF_DUNGEON_NORMAL"] = { text = "Normal", dist = 0 }
-UnitPopupButtons["SELF_DUNGEON_HEROIC"] = { text = "Heroic", dist = 0 }
-UnitPopupMenus["SELF_DUNGEON_DIFFICULTY"] = { "SELF_DUNGEON_NORMAL", "SELF_DUNGEON_HEROIC" }
-table.insert(UnitPopupMenus["SELF"],1,"SELF_DUNGEON_DIFFICULTY")
+UnitPopupMenus["SELF_DUNGEON_SETTINGS"] = { "SELF_DUNGEON_NORMAL", "SELF_DUNGEON_HEROIC", "SELF_RESET_INSTANCES" }
+table.insert(UnitPopupMenus["SELF"],1,"SELF_DUNGEON_SETTINGS")
 
 -- View miscellaneous stats
 UnitPopupButtons["SELF_NYCTERMOON_STATS"] = { text = "Nyctermoon Stats", dist = 0, nested = 1 }
 UnitPopupButtons["SELF_LEGACY_BONUS"] = { text = "Legacy Overview", dist = 0 }
 UnitPopupButtons["SELF_XP_BONUS"] = { text = "Current XP Bonus", dist = 0 }
-UnitPopupMenus["SELF_NYCTERMOON_STATS"] = { "SELF_LEGACY_BONUS", "SELF_XP_BONUS" }
+UnitPopupButtons["SELF_COMPANION_INFO"] = { text = "Companion Info", dist = 0 }
+UnitPopupMenus["SELF_NYCTERMOON_STATS"] = { "SELF_LEGACY_BONUS", "SELF_XP_BONUS", "SELF_COMPANION_INFO" }
 table.insert(UnitPopupMenus["SELF"], 1, "SELF_NYCTERMOON_STATS")
 
 
@@ -293,49 +275,46 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         Paladin
     ----------------------------]]
     elseif NYCTER_SELECTED_UNIT_CLASS == "Paladin" then
-        local blessings = {}
-        local auras = {}
-        if NYCTER_SELECTED_UNIT_LEVEL >= 4 then
-            table.insert(blessings, "BOT_PALADIN_BLESSING_MIGHT")
+        local blessings = {
+            {level = 4,  id = "BOT_PALADIN_BLESSING_MIGHT"},
+            {level = 14, id = "BOT_PALADIN_BLESSING_WISDOM"},
+            {level = 26, id = "BOT_PALADIN_BLESSING_SALVATION"},
+            {level = 40, id = "BOT_PALADIN_BLESSING_LIGHT"},
+            {level = 60, id = "BOT_PALADIN_BLESSING_KINGS"}
+        }
+        local auras = {
+            {level = 1,  id = "BOT_PALADIN_AURA_DEVOTION"},
+            {level = 16, id = "BOT_PALADIN_AURA_RETRIBUTION"},
+            {level = 22, id = "BOT_PALADIN_AURA_CONCENTRATION"},
+            {level = 28, id = "BOT_PALADIN_AURA_SHADOW_RESISTANCE"},
+            {level = 32, id = "BOT_PALADIN_AURA_FROST_RESISTANCE"},
+            {level = 36, id = "BOT_PALADIN_AURA_FIRE_RESISTANCE"}
+        }
+
+        local blessingItems = {}
+        local auraItems = {}
+
+        for _, blessing in ipairs(blessings) do
+            if NYCTER_SELECTED_UNIT_LEVEL >= blessing.level then
+                table.insert(blessingItems, blessing.id)
+            end
         end
-        if NYCTER_SELECTED_UNIT_LEVEL >= 14 then
-            table.insert(blessings, "BOT_PALADIN_BLESSING_WISDOM")
+
+        for _, aura in ipairs(auras) do
+            if NYCTER_SELECTED_UNIT_LEVEL >= aura.level then
+                table.insert(auraItems, aura.id)
+            end
         end
-        if NYCTER_SELECTED_UNIT_LEVEL >= 26 then
-            table.insert(blessings, "BOT_PALADIN_BLESSING_SALVATION")
-        end
-        if NYCTER_SELECTED_UNIT_LEVEL >= 40 then
-            table.insert(blessings, "BOT_PALADIN_BLESSING_LIGHT")
-        end
-        if NYCTER_SELECTED_UNIT_LEVEL >= 60 then
-            table.insert(blessings, "BOT_PALADIN_BLESSING_KINGS")
-        end
-        if table.getn(blessings) > 0 then
-            table.insert(blessings, 1, "BOT_PALADIN_BLESSING_DEFAULT")
-            UnitPopupMenus["BOT_PALADIN_BLESSING"] = blessings
+
+        if table.getn(blessingItems) > 0 then
+            table.insert(blessingItems, 1, "BOT_PALADIN_BLESSING_DEFAULT")
+            UnitPopupMenus["BOT_PALADIN_BLESSING"] = blessingItems
             table.insert(dynamicMenus, "BOT_PALADIN_BLESSING")
         end
-        if NYCTER_SELECTED_UNIT_LEVEL >= 1 then
-            table.insert(auras, "BOT_PALADIN_AURA_DEVOTION")
-        end
-        if NYCTER_SELECTED_UNIT_LEVEL >= 16 then
-            table.insert(auras, "BOT_PALADIN_AURA_RETRIBUTION")
-        end
-        if NYCTER_SELECTED_UNIT_LEVEL >= 22 then
-            table.insert(auras, "BOT_PALADIN_AURA_CONCENTRATION")
-        end
-        if NYCTER_SELECTED_UNIT_LEVEL >= 28 then
-            table.insert(auras, "BOT_PALADIN_AURA_SHADOW_RESISTANCE")
-        end
-        if NYCTER_SELECTED_UNIT_LEVEL >= 32 then
-            table.insert(auras, "BOT_PALADIN_AURA_FROST_RESISTANCE")
-        end
-        if NYCTER_SELECTED_UNIT_LEVEL >= 36 then
-            table.insert(auras, "BOT_PALADIN_AURA_FIRE_RESISTANCE")
-        end
-        if table.getn(auras) > 0 then
-            table.insert(auras, 1, "BOT_PALADIN_AURAS_DEFAULT")
-            UnitPopupMenus["BOT_PALADIN_AURAS"] = auras
+
+        if table.getn(auraItems) > 0 then
+            table.insert(auraItems, 1, "BOT_PALADIN_AURAS_DEFAULT")
+            UnitPopupMenus["BOT_PALADIN_AURAS"] = auraItems
             table.insert(dynamicMenus, "BOT_PALADIN_AURAS")
         end
     --[[--------------------------
@@ -470,6 +449,14 @@ function UnitPopup_OnClick()
         SendChatMessage(".settings difficulty normal", "SAY")
     elseif button == "SELF_DUNGEON_HEROIC" then
         SendChatMessage(".settings difficulty heroic", "SAY")
+    elseif button == "SELF_LEGACY_BONUS" then
+        SendChatMessage(".legacy", "SAY")
+    elseif button == "SELF_XP_BONUS" then
+        ClearTarget()
+        SendChatMessage(".stats misc", "SAY")
+    elseif button == "SELF_COMPANION_INFO" then
+        ClearTarget()
+        SendChatMessage(".z who", "SAY")
     --[[------------------------------------
     Companion Control
     --------------------------------------]]
