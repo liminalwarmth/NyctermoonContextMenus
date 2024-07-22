@@ -45,6 +45,13 @@ UnitPopupButtons["SELF_DUNGEON_HEROIC"] = { text = "Heroic", dist = 0 }
 UnitPopupMenus["SELF_DUNGEON_DIFFICULTY"] = { "SELF_DUNGEON_NORMAL", "SELF_DUNGEON_HEROIC" }
 table.insert(UnitPopupMenus["SELF"],1,"SELF_DUNGEON_DIFFICULTY")
 
+-- View miscellaneous stats
+UnitPopupButtons["SELF_NYCTERMOON_STATS"] = { text = "Nyctermoon Stats", dist = 0, nested = 1 }
+UnitPopupButtons["SELF_LEGACY_BONUS"] = { text = "Legacy Overview", dist = 0 }
+UnitPopupButtons["SELF_XP_BONUS"] = { text = "Current XP Bonus", dist = 0 }
+UnitPopupMenus["SELF_NYCTERMOON_STATS"] = { "SELF_LEGACY_BONUS", "SELF_XP_BONUS" }
+table.insert(UnitPopupMenus["SELF"], 1, "SELF_NYCTERMOON_STATS")
+
 
 --[[---------------------------------------------------------------------------------
   COMPANION MENU COMMANDS
@@ -231,6 +238,9 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     -- Conditionally edit the tables for each class
     local dynamicMenus = {}
 
+    --[[--------------------------
+        Mage
+    ----------------------------]]
     if NYCTER_SELECTED_UNIT_CLASS == "Mage" then
         local portals = {}
         if NYCTER_SELECTED_UNIT_LEVEL >= 40 then
@@ -255,6 +265,9 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         if NYCTER_SELECTED_UNIT_LEVEL >= 22 then -- Blink is learned at level 22
             table.insert(dynamicMenus, "BOT_DENY_DANGER_SPELLS")
         end
+    --[[--------------------------
+        Hunter
+    ----------------------------]]
     elseif NYCTER_SELECTED_UNIT_CLASS == "Hunter" then
         UnitPopupMenus["BOT_PET_TOGGLE"] = { "BOT_PET_ON", "BOT_PET_OFF" }
         UnitPopupMenus["BOT_HUNTER_PET"] = { "BOT_HUNTER_PET_BAT", "BOT_HUNTER_PET_BEAR", "BOT_HUNTER_PET_BIRD", "BOT_HUNTER_PET_BOAR", "BOT_HUNTER_PET_CAT", "BOT_HUNTER_PET_CRAB", "BOT_HUNTER_PET_CROC", "BOT_HUNTER_PET_GORILLA", "BOT_HUNTER_PET_HYENA", "BOT_HUNTER_PET_OWL", "BOT_HUNTER_PET_RAPTOR", "BOT_HUNTER_PET_SCORPID", "BOT_HUNTER_PET_SERPENT", "BOT_HUNTER_PET_SPIDER", "BOT_HUNTER_PET_STRIDER", "BOT_HUNTER_PET_TURTLE", "BOT_HUNTER_PET_WOLF" }
@@ -262,6 +275,9 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
             table.insert(dynamicMenus, "BOT_PET_TOGGLE")
             table.insert(dynamicMenus, "BOT_HUNTER_PET")
         end
+    --[[--------------------------
+        Warlock
+    ----------------------------]]
     elseif NYCTER_SELECTED_UNIT_CLASS == "Warlock" then
         UnitPopupMenus["BOT_PET_TOGGLE"] = { "BOT_PET_ON", "BOT_PET_OFF" }
         UnitPopupMenus["BOT_WARLOCK_PET"] = { "BOT_WARLOCK_PET_IMP", "BOT_WARLOCK_PET_VOIDWALKER", "BOT_WARLOCK_PET_SUCCUBUS", "BOT_WARLOCK_PET_FELHUNTER" }
@@ -273,6 +289,9 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         if NYCTER_SELECTED_UNIT_LEVEL >= 8 then -- Fear is learned at level 8
             table.insert(dynamicMenus, "BOT_DENY_DANGER_SPELLS")
         end
+    --[[--------------------------
+        Paladin
+    ----------------------------]]
     elseif NYCTER_SELECTED_UNIT_CLASS == "Paladin" then
         local blessings = {}
         local auras = {}
@@ -319,97 +338,80 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
             UnitPopupMenus["BOT_PALADIN_AURAS"] = auras
             table.insert(dynamicMenus, "BOT_PALADIN_AURAS")
         end
+    --[[--------------------------
+        Shaman
+    ----------------------------]]
     elseif NYCTER_SELECTED_UNIT_CLASS == "Shaman" then
-        local air_totems = {}
-        local earth_totems = {}
-        local fire_totems = {}
-        local water_totems = {}
-        if NYCTER_SELECTED_UNIT_LEVEL >= 30 then
-            table.insert(air_totems, "BOT_SHAMAN_AIR_TOTEM_NATURE")
-        end
-        if NYCTER_SELECTED_UNIT_LEVEL >= 30 then
-            table.insert(air_totems, "BOT_SHAMAN_AIR_TOTEM_GROUNDING")
-        end
-        if NYCTER_SELECTED_UNIT_LEVEL >= 32 then
-            table.insert(air_totems, "BOT_SHAMAN_AIR_TOTEM_WINDFURY")
-        end
-        if NYCTER_SELECTED_UNIT_LEVEL >= 42 then
-            table.insert(air_totems, "BOT_SHAMAN_AIR_TOTEM_GRACE")
-        end
-        if NYCTER_SELECTED_UNIT_LEVEL >= 4 then
-            table.insert(earth_totems, "BOT_SHAMAN_EARTH_TOTEM_STONESKIN")
-        end
-        if NYCTER_SELECTED_UNIT_LEVEL >= 6 then
-            table.insert(earth_totems, "BOT_SHAMAN_EARTH_TOTEM_EARTHBIND")
-        end
-        if NYCTER_SELECTED_UNIT_LEVEL >= 10 then
-            table.insert(earth_totems, "BOT_SHAMAN_EARTH_TOTEM_STRENGTH")
-        end
-        if NYCTER_SELECTED_UNIT_LEVEL >= 18 then
-            table.insert(earth_totems, "BOT_SHAMAN_EARTH_TOTEM_TREMOR")
-        end
-        if NYCTER_SELECTED_UNIT_LEVEL >= 10 then
-            table.insert(fire_totems, "BOT_SHAMAN_FIRE_TOTEM_SEARING")
-        end
-        if NYCTER_SELECTED_UNIT_LEVEL >= 12 then
-            table.insert(fire_totems, "BOT_SHAMAN_FIRE_TOTEM_FIRE_NOVA")
-        end
-        if NYCTER_SELECTED_UNIT_LEVEL >= 24 then
-            table.insert(fire_totems, "BOT_SHAMAN_FIRE_TOTEM_FROST_RESISTANCE")
-        end
-        if NYCTER_SELECTED_UNIT_LEVEL >= 26 then
-            table.insert(fire_totems, "BOT_SHAMAN_FIRE_TOTEM_MAGMA")
-        end
-        if NYCTER_SELECTED_UNIT_LEVEL >= 28 then
-            table.insert(fire_totems, "BOT_SHAMAN_FIRE_TOTEM_FLAMETONGUE")
-        end
-        if NYCTER_SELECTED_UNIT_LEVEL >= 20 then
-            table.insert(water_totems, "BOT_SHAMAN_WATER_TOTEM_HEALING")
-        end
-        if NYCTER_SELECTED_UNIT_LEVEL >= 26 then
-            table.insert(water_totems, "BOT_SHAMAN_WATER_TOTEM_MANA_SPRING")
-        end
-        if NYCTER_SELECTED_UNIT_LEVEL >= 28 then
-            table.insert(water_totems, "BOT_SHAMAN_WATER_TOTEM_FIRE_RESISTANCE")
-        end
-        if NYCTER_SELECTED_UNIT_LEVEL >= 38 then
-            table.insert(water_totems, "BOT_SHAMAN_WATER_TOTEM_DISEASE_CLEANSING")
-        end
-        if NYCTER_SELECTED_UNIT_LEVEL >= 22 then
-            table.insert(water_totems, "BOT_SHAMAN_WATER_TOTEM_POISON_CLEANSING")
-        end
-        if table.getn(air_totems) > 0 then
-            UnitPopupMenus["BOT_SHAMAN_AIR_TOTEM"] = air_totems
-            table.insert(dynamicMenus, "BOT_SHAMAN_AIR_TOTEM")
-        end
-        if table.getn(earth_totems) > 0 then
-            UnitPopupMenus["BOT_SHAMAN_EARTH_TOTEM"] = earth_totems
-            table.insert(dynamicMenus, "BOT_SHAMAN_EARTH_TOTEM")
-        end
-        if table.getn(fire_totems) > 0 then
-            UnitPopupMenus["BOT_SHAMAN_FIRE_TOTEM"] = fire_totems
-            table.insert(dynamicMenus, "BOT_SHAMAN_FIRE_TOTEM")
-        end
-        if table.getn(water_totems) > 0 then
-            UnitPopupMenus["BOT_SHAMAN_WATER_TOTEM"] = water_totems
-            table.insert(dynamicMenus, "BOT_SHAMAN_WATER_TOTEM")
+        local totems = {
+            earth = {
+                {level = 4,  id = "BOT_SHAMAN_EARTH_TOTEM_STONESKIN"},
+                {level = 6,  id = "BOT_SHAMAN_EARTH_TOTEM_EARTHBIND"},
+                {level = 10, id = "BOT_SHAMAN_EARTH_TOTEM_STRENGTH"},
+                {level = 18, id = "BOT_SHAMAN_EARTH_TOTEM_TREMOR"}
+            },
+            fire = {
+                {level = 10, id = "BOT_SHAMAN_FIRE_TOTEM_SEARING"},
+                {level = 12, id = "BOT_SHAMAN_FIRE_TOTEM_FIRE_NOVA"},
+                {level = 24, id = "BOT_SHAMAN_FIRE_TOTEM_FROST_RESISTANCE"},
+                {level = 26, id = "BOT_SHAMAN_FIRE_TOTEM_MAGMA"},
+                {level = 28, id = "BOT_SHAMAN_FIRE_TOTEM_FLAMETONGUE"}
+            },
+            water = {
+                {level = 20, id = "BOT_SHAMAN_WATER_TOTEM_HEALING"},
+                {level = 22, id = "BOT_SHAMAN_WATER_TOTEM_POISON_CLEANSING"},
+                {level = 26, id = "BOT_SHAMAN_WATER_TOTEM_MANA_SPRING"},
+                {level = 28, id = "BOT_SHAMAN_WATER_TOTEM_FIRE_RESISTANCE"},
+                {level = 38, id = "BOT_SHAMAN_WATER_TOTEM_DISEASE_CLEANSING"}
+            },
+            air = {
+                {level = 30, id = "BOT_SHAMAN_AIR_TOTEM_NATURE"},
+                {level = 30, id = "BOT_SHAMAN_AIR_TOTEM_GROUNDING"},
+                {level = 32, id = "BOT_SHAMAN_AIR_TOTEM_WINDFURY"},
+                {level = 42, id = "BOT_SHAMAN_AIR_TOTEM_GRACE"}
+            }
+        }
+
+        local elementOrder = {"earth", "fire", "water", "air"}
+        for _, element in ipairs(elementOrder) do
+            local menuItems = {}
+            for _, totem in ipairs(totems[element]) do
+                if NYCTER_SELECTED_UNIT_LEVEL >= totem.level then
+                    table.insert(menuItems, totem.id)
+                end
+            end
+            if table.getn(menuItems) > 0 then
+                UnitPopupMenus["BOT_SHAMAN_"..string.upper(element).."_TOTEM"] = menuItems
+                table.insert(dynamicMenus, "BOT_SHAMAN_"..string.upper(element).."_TOTEM")
+            end
         end
         if NYCTER_SELECTED_UNIT_LEVEL >= 10 then -- First totem is available at level 10
             table.insert(dynamicMenus, "BOT_SHAMAN_CLEAR_TOTEMS")
         end
+    --[[--------------------------
+        Priest
+    ----------------------------]]
     elseif NYCTER_SELECTED_UNIT_CLASS == "Priest" then
         if NYCTER_SELECTED_UNIT_LEVEL >= 14 then -- Psychic Scream is learned at level 14
             table.insert(dynamicMenus, "BOT_DENY_DANGER_SPELLS")
         end
+    --[[--------------------------
+        Warrior
+    ----------------------------]]
     elseif NYCTER_SELECTED_UNIT_CLASS == "Warrior" then
         if NYCTER_SELECTED_UNIT_LEVEL >= 22 then -- Intimidating Shout is learned at level 22
             table.insert(dynamicMenus, "BOT_DENY_DANGER_SPELLS")
         end
+    --[[--------------------------
+        Rogue
+    ----------------------------]]
     elseif NYCTER_SELECTED_UNIT_CLASS == "Rogue" then
         if NYCTER_SELECTED_UNIT_LEVEL >= 10 then -- Stealth is learned at level 10
             UnitPopupMenus["BOT_ROGUE_STEALTH"] = { "BOT_ROGUE_STEALTH_ON", "BOT_ROGUE_STEALTH_OFF" }
             table.insert(dynamicMenus, "BOT_ROGUE_STEALTH")
         end
+    --[[--------------------------
+        Druid
+    ----------------------------]]
     elseif NYCTER_SELECTED_UNIT_CLASS == "Druid" then
         if NYCTER_SELECTED_UNIT_LEVEL >= 20 then -- Stealth is learned at level 20 (cat form)
             UnitPopupMenus["BOT_DRUID_STEALTH"] = { "BOT_DRUID_STEALTH_ON", "BOT_DRUID_STEALTH_OFF" }
@@ -459,21 +461,24 @@ local originalUnitPopupOnClick = UnitPopup_OnClick
 function UnitPopup_OnClick()
 	local button = this.value;
     
-    -- Player (self commands)
+    --[[------------------------------------
+    Player (self commands)
+    --------------------------------------]]
     if button == "SELF_RESET_INSTANCES" then
         StaticPopup_Show("SELF_RESET_INSTANCES_CONFIRM")
     elseif button == "SELF_DUNGEON_NORMAL" then
         SendChatMessage(".settings difficulty normal", "SAY")
     elseif button == "SELF_DUNGEON_HEROIC" then
         SendChatMessage(".settings difficulty heroic", "SAY")
-    -- Bot control toggles
+    --[[------------------------------------
+    Companion Control
+    --------------------------------------]]
     elseif button == "BOT_TOGGLE_HELM" then
         SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "toggle helm")
     elseif button == "BOT_TOGGLE_CLOAK" then
         SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "toggle cloak")
     elseif button == "BOT_TOGGLE_AOE" then
         SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "toggle aoe")
-    -- Bot set roles
     elseif button == "BOT_ROLE_TANK" then
         SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "set tank")
     elseif button == "BOT_ROLE_HEALER" then
@@ -484,7 +489,9 @@ function UnitPopup_OnClick()
         SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "set mdps")
     elseif button == "BOT_ROLE_RDPS" then
         SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "set rdps")
-    -- Mage portals
+    --[[------------------------------------
+    Mage portals
+    --------------------------------------]]
     elseif button == "BOT_PORTAL_STORMWIND" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "cast Portal: Stormwind")
     elseif button == "BOT_PORTAL_IRONFORGE" then
@@ -497,15 +504,21 @@ function UnitPopup_OnClick()
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "cast Portal: Orgrimmar")
     elseif button == "BOT_PORTAL_THUNDER_BLUFF" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "cast Portal: Thunder Bluff")
-    -- Warlock summon player ritual
+    --[[------------------------------------
+    Warlock summon player ritual
+    --------------------------------------]]
     elseif button == "BOT_WARLOCK_SUMMON_PLAYER_RITUAL" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "cast Ritual of Summoning")
-    -- Pet toggle
+    --[[------------------------------------
+    Pet toggle
+    --------------------------------------]]
     elseif button == "BOT_PET_ON" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet on")
     elseif button == "BOT_PET_OFF" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet off")
-    -- Hunter pets
+    --[[------------------------------------
+    Hunter pets
+    --------------------------------------]]
     elseif button == "BOT_HUNTER_PET_BAT" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet bat")
     elseif button == "BOT_HUNTER_PET_BEAR" then
@@ -540,7 +553,9 @@ function UnitPopup_OnClick()
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet turtle")
     elseif button == "BOT_HUNTER_PET_WOLF" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet wolf")
-    -- Warlock pets
+    --[[------------------------------------
+    Warlock pets
+    --------------------------------------]]
     elseif button == "BOT_WARLOCK_PET_IMP" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet imp")
     elseif button == "BOT_WARLOCK_PET_VOIDWALKER" then
@@ -549,7 +564,9 @@ function UnitPopup_OnClick()
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet succubus")
     elseif button == "BOT_WARLOCK_PET_FELHUNTER" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet felhunter")
-    -- Paladin blessings
+    --[[------------------------------------
+    Paladin blessings
+    --------------------------------------]]
     elseif button == "BOT_PALADIN_BLESSING_DEFAULT" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing cancel")
     elseif button == "BOT_PALADIN_BLESSING_MIGHT" then
@@ -582,7 +599,9 @@ function UnitPopup_OnClick()
         else
             SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing Blessing of Salvation")
         end
-    -- Paladin auras
+    --[[------------------------------------
+    Paladin auras
+    --------------------------------------]]
     elseif button == "BOT_PALADIN_AURAS_DEFAULT" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aura cancel")
     elseif button == "BOT_PALADIN_AURA_DEVOTION" then
@@ -597,7 +616,9 @@ function UnitPopup_OnClick()
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aura Frost Resistance Aura")
     elseif button == "BOT_PALADIN_AURA_FIRE_RESISTANCE" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aura Fire Resistance Aura")
-    -- Shaman air totems
+    --[[------------------------------------
+    Shaman air totems
+    --------------------------------------]]
     elseif button == "BOT_SHAMAN_AIR_TOTEM_GRACE" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Grace of Air Totem")
     elseif button == "BOT_SHAMAN_AIR_TOTEM_NATURE" then
@@ -606,7 +627,9 @@ function UnitPopup_OnClick()
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Windfury Totem")
     elseif button == "BOT_SHAMAN_AIR_TOTEM_GROUNDING" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Grounding Totem")
-    -- Shaman earth totems
+    --[[------------------------------------
+    Shaman earth totems
+    --------------------------------------]]
     elseif button == "BOT_SHAMAN_EARTH_TOTEM_STONESKIN" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Stoneskin Totem")
     elseif button == "BOT_SHAMAN_EARTH_TOTEM_EARTHBIND" then
@@ -615,7 +638,9 @@ function UnitPopup_OnClick()
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Strength of Earth Totem")
     elseif button == "BOT_SHAMAN_EARTH_TOTEM_TREMOR" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Tremor Totem")
-    -- Shaman fire totems
+    --[[------------------------------------
+    Shaman fire totems
+    --------------------------------------]]
     elseif button == "BOT_SHAMAN_FIRE_TOTEM_SEARING" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Searing Totem")
     elseif button == "BOT_SHAMAN_FIRE_TOTEM_FIRE_NOVA" then
@@ -626,7 +651,9 @@ function UnitPopup_OnClick()
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Magma Totem")
     elseif button == "BOT_SHAMAN_FIRE_TOTEM_FLAMETONGUE" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Flametongue Totem")
-    -- Shaman water totems
+    --[[------------------------------------
+    Shaman water totems
+    --------------------------------------]]
     elseif button == "BOT_SHAMAN_WATER_TOTEM_HEALING" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Healing Stream Totem")
     elseif button == "BOT_SHAMAN_WATER_TOTEM_MANA_SPRING" then
@@ -637,10 +664,14 @@ function UnitPopup_OnClick()
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Disease Cleansing Totem")
     elseif button == "BOT_SHAMAN_WATER_TOTEM_POISON_CLEANSING" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Poison Cleansing Totem")
-    -- Clear all totems
+    --[[------------------------------------
+    Clear all totems
+    --------------------------------------]]
     elseif button == "BOT_SHAMAN_CLEAR_TOTEMS" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem cancel")
-    -- Deny danger spells
+    --[[------------------------------------
+    Deny danger spells
+    --------------------------------------]]
     elseif button == "BOT_DENY_DANGER_SPELLS" then
         if NYCTER_SELECTED_UNIT_CLASS == "Mage" then
             SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add blink")
@@ -657,12 +688,16 @@ function UnitPopup_OnClick()
         elseif NYCTER_SELECTED_UNIT_CLASS == "Warrior" then
             SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add intimidating shout")
         end
-    -- Rogue stealth control
+    --[[------------------------------------
+    Rogue stealth control
+    --------------------------------------]]
     elseif button == "BOT_ROGUE_STEALTH_ON" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny remove stealth")
     elseif button == "BOT_ROGUE_STEALTH_OFF" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add stealth")
-    -- Druid stealth control
+    --[[------------------------------------
+    Druid stealth control
+    --------------------------------------]]
     elseif button == "BOT_DRUID_STEALTH_ON" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny remove prowl")
     elseif button == "BOT_DRUID_STEALTH_OFF" then
