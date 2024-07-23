@@ -6,6 +6,8 @@ It also adds some Nyctermoon-specific informational commands and settings that c
 
 ### Features
 
+All of these functions and more are available from right-click context menus:
+
 - View Nyctermoon-specific XP bonus and Legacy info
 - Swap between Normal and Heroic dungeon difficulty settings and reset instances
 - Change Companion role and toggle helm/cloak display
@@ -15,6 +17,7 @@ It also adds some Nyctermoon-specific informational commands and settings that c
   - Easily set and change Shaman Totems and Paladin Buffs/Auras
   - Choose Hunter and Warlock pets, and summon or dismiss them as needed
   - Toggle stealth on and off for Rogues and Druids
+- Automatically prevent companions from using dangerous spells at the levels classes get them with a single click
 - Dynamic menu options: class skills and role toggles will only appear on the menus when you can actually use them
 - Native pfUI support.
 
