@@ -1,8 +1,30 @@
 -- NyctermoonContextMenus.lua
 -- Coded for Vanilla WoW 1.12.1, using LUA version 5.1
 
--- TODO: --
--- Prompt on portals
+--[[ TODO:
+- Prompt on portals
+- Add tooltips to menu commands
+- Add .z toggle totems for shamans
+- slash commands and options menu
+- set follow on command
+- Right click name from chat causes error in line 268 (can't invite from right click)
+- change none to "Clear" for focus and CC to better explain what's happening
+- Hunters: set aspect
+- Portal Issue: When ordering a mage to cast a portal, as an ally controller with both ally and horde comps transferred to me, 
+I am given the ally options only (SW/IF/D) regardless of the race of the companion mage. IE, all the horde + ally mages in my raid, have the same 3 city options.
+- Look into Luna frames ResetInstances button infinite loop:
+
+LunaUnitFrames/modules/units.lua
+
+local function initPlayerDrop()
+    UnitPopup_ShowMenu(PlayerFrameDropDown, "SELF", "player")
+    if not (UnitInRaid("player") or GetNumPartyMembers() > 0) or UnitIsPartyLeader("player") and PlayerFrameDropDown.init and not CanShowResetInstances() then
+        UIDropDownMenu_AddButton({text = RESET_INSTANCES, func = ResetInstances, notCheckable = 1}, 1)
+        PlayerFrameDropDown.init = nil
+    end
+end
+
+--]]
 
 --[[------------------------------------
     Send Z Commands (Bot Targeted)
