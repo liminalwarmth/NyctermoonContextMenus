@@ -4,7 +4,7 @@
 --[[ TODO:
 
 [NEXT]
-- Add Sanctity aura back to the paladin aura list
+- DONE Add Sanctity aura back to the paladin aura list
 - Add .z toggle totems for shamans
 - set follow on command
 - DONE change none to "Clear" for focus and CC to better explain what's happening
@@ -251,14 +251,14 @@ UnitPopupButtons["BOT_PALADIN_AURA_FROST_RESISTANCE"] = { text = "Frost Resistan
 UnitPopupButtons["BOT_PALADIN_AURA_FIRE_RESISTANCE"] = { text = "Fire Resistance Aura", dist = 0 }
 
 -- SHAMAN: Choose air totem
-UnitPopupButtons["BOT_SHAMAN_AIR_TOTEM"] = { text = "|cFF0070DESet|r |cFFFFFFA0Air|r |cFF0070DETotem|r", dist = 0, nested = 1 }
+UnitPopupButtons["BOT_SHAMAN_AIR_TOTEM"] = { text = "|cFF0070DESet|r |cFFb8bcffAir|r |cFF0070DETotem|r", dist = 0, nested = 1 }
 UnitPopupButtons["BOT_SHAMAN_AIR_TOTEM_GRACE"] = { text = "Grace of Air", dist = 0 }
 UnitPopupButtons["BOT_SHAMAN_AIR_TOTEM_NATURE"] = { text = "Nature Resistance", dist = 0 }
 UnitPopupButtons["BOT_SHAMAN_AIR_TOTEM_WINDFURY"] = { text = "Windfury", dist = 0 }
 UnitPopupButtons["BOT_SHAMAN_AIR_TOTEM_GROUNDING"] = { text = "Grounding", dist = 0 }
 
 -- SHAMAN: Choose earth totem
-UnitPopupButtons["BOT_SHAMAN_EARTH_TOTEM"] = { text = "|cFF0070DESet|r |cFFD2B48CEarth|r |cFF0070DETotem|r", dist = 0, nested = 1 }
+UnitPopupButtons["BOT_SHAMAN_EARTH_TOTEM"] = { text = "|cFF0070DESet|r |cFF4dd943Earth|r |cFF0070DETotem|r", dist = 0, nested = 1 }
 UnitPopupButtons["BOT_SHAMAN_EARTH_TOTEM_STONESKIN"] = { text = "Stoneskin", dist = 0 }
 UnitPopupButtons["BOT_SHAMAN_EARTH_TOTEM_EARTHBIND"] = { text = "Earthbind", dist = 0 }
 UnitPopupButtons["BOT_SHAMAN_EARTH_TOTEM_STRENGTH"] = { text = "Strength of Earth", dist = 0 }
@@ -273,15 +273,16 @@ UnitPopupButtons["BOT_SHAMAN_FIRE_TOTEM_MAGMA"] = { text = "Magma", dist = 0 }
 UnitPopupButtons["BOT_SHAMAN_FIRE_TOTEM_FLAMETONGUE"] = { text = "Flametongue", dist = 0 }
 
 -- SHAMAN: Choose water totem
-UnitPopupButtons["BOT_SHAMAN_WATER_TOTEM"] = { text = "|cFF0070DESet|r |cFF7FFFD4Water|r |cFF0070DETotem|r", dist = 0, nested = 1 }
+UnitPopupButtons["BOT_SHAMAN_WATER_TOTEM"] = { text = "|cFF0070DESet|r |cFF34EBD2Water|r |cFF0070DETotem|r", dist = 0, nested = 1 }
 UnitPopupButtons["BOT_SHAMAN_WATER_TOTEM_HEALING"] = { text = "Healing Stream", dist = 0 }
 UnitPopupButtons["BOT_SHAMAN_WATER_TOTEM_MANA_SPRING"] = { text = "Mana Spring", dist = 0 }
 UnitPopupButtons["BOT_SHAMAN_WATER_TOTEM_FIRE_RESISTANCE"] = { text = "Fire Resistance", dist = 0 }
 UnitPopupButtons["BOT_SHAMAN_WATER_TOTEM_DISEASE_CLEANSING"] = { text = "Disease Cleansing", dist = 0 }
 UnitPopupButtons["BOT_SHAMAN_WATER_TOTEM_POISON_CLEANSING"] = { text = "Poison Cleansing", dist = 0 }
 
--- SHAMAN: Clear set totems
-UnitPopupButtons["BOT_SHAMAN_CLEAR_TOTEMS"] = { text = "Clear |cFF0070DEAll Totems|r", dist = 0 }
+-- SHAMAN: Clear set totems or toggle off
+UnitPopupButtons["BOT_SHAMAN_CLEAR_TOTEMS"] = { text = "|cFF0070DEClear Totem Settings|r", dist = 0 }
+UnitPopupButtons["BOT_SHAMAN_TOGGLE_TOTEMS"] = { text = "|cFF0070DEToggle Totems|r", dist = 0 }
 
 -- Hook the UnitPopup_ShowMenu function to establish the variables of which party member is being clicked
 local originalUnitPopupShowMenu = UnitPopup_ShowMenu
@@ -425,7 +426,7 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
             {level = 16, id = "BOT_PALADIN_AURA_RETRIBUTION"},
             {level = 22, id = "BOT_PALADIN_AURA_CONCENTRATION"},
             {level = 28, id = "BOT_PALADIN_AURA_SHADOW_RESISTANCE"},
-            {level = 30, id = "BOT_PALADIN_AURA_SANCTITY"}
+            {level = 30, id = "BOT_PALADIN_AURA_SANCTITY"},
             {level = 32, id = "BOT_PALADIN_AURA_FROST_RESISTANCE"},
             {level = 36, id = "BOT_PALADIN_AURA_FIRE_RESISTANCE"}
         }
@@ -489,6 +490,9 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
             }
         }
 
+        if NYCTER_SELECTED_UNIT_LEVEL >= 10 then -- First totem is available at level 10
+            table.insert(dynamicMenus, "BOT_SHAMAN_TOGGLE_TOTEMS")
+        end
         local elementOrder = {"earth", "fire", "water", "air"}
         for _, element in ipairs(elementOrder) do
             local menuItems = {}
@@ -813,10 +817,12 @@ function UnitPopup_OnClick()
     elseif button == "BOT_SHAMAN_WATER_TOTEM_POISON_CLEANSING" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Poison Cleansing Totem")
     --[[------------------------------------
-    Clear all totems
+    Clear & Toggle totems
     --------------------------------------]]
     elseif button == "BOT_SHAMAN_CLEAR_TOTEMS" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem cancel")
+    elseif button == "BOT_SHAMAN_TOGGLE_TOTEMS" then
+        SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "toggle totems")
     --[[------------------------------------
     Deny danger spells
     --------------------------------------]]
