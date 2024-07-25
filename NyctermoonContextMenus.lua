@@ -305,6 +305,20 @@ UnitPopupButtons["BOT_SHAMAN_TOGGLE_TOTEMS"] = { text = "|cFF0070DEToggle Totems
 -- Hook the UnitPopup_ShowMenu function to establish the variables of which party member is being clicked
 local originalUnitPopupShowMenu = UnitPopup_ShowMenu
 function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
+    --[[--------------------------
+        Initialize Unit Menu
+    ----------------------------]]
+    -- Check if the unit is valid and in party or raid
+    local isValidUnitInPartyOrRaid = false
+    if unit and UnitExists(unit) then
+        isValidUnitInPartyOrRaid = UnitInParty(unit) or UnitInRaid(unit)
+    end
+
+    -- If the unit is nil, invalid, or not in party/raid, fall back to the original menu
+    if not unit or not UnitExists(unit) or not isValidUnitInPartyOrRaid then
+        return originalUnitPopupShowMenu(dropdownMenu, which, unit, name, userData)
+    end
+
     -- Store the unit, name, class, faction, and level in global variables
     NYCTER_SELECTED_UNIT = unit
     NYCTER_SELECTED_UNIT_NAME = tostring(UnitName(unit))
@@ -332,6 +346,9 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         i = i - 1
     end
 
+    --[[--------------------------
+        Add Companion Settings
+    ----------------------------]]
     -- Add role options to BOT_CONTROL menu based on class and set color of companions menu
     if NYCTER_SELECTED_UNIT_CLASS == "Warrior" then
         UnitPopupButtons["BOT_CONTROL"].text = "|cFFC79C6ECompanion Settings|r"
@@ -373,6 +390,7 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
 
     -- Conditionally edit the tables for each class
     local dynamicMenus = {}
+    
     --[[--------------------------
         Mage
     ----------------------------]]
