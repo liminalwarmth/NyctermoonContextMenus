@@ -5,8 +5,8 @@
 
 [NEXT]
 - DONE Add Sanctity aura back to the paladin aura list
-- Add .z toggle totems for shamans
-- set follow on command
+- DONE Add .z toggle totems for shamans
+- DONE set follow on command
 - DONE change none to "Clear" for focus and CC to better explain what's happening
 - Hunters: set aspect
 - DONE Move deny spells into the companion settings
@@ -66,6 +66,21 @@ end
 local function SendTargetedBotWhisperCommand(name, command)
     SendChatMessage(command, "WHISPER", nil, name)
 end
+
+--[[------------------------------------
+    Define Class Colors for Addon
+--------------------------------------]]
+local CLASS_COLORS = {
+    ["WARRIOR"] = "cFFC79C6E",
+    ["MAGE"]    = "cFF69CCF0",
+    ["ROGUE"]   = "cFFFFF569",
+    ["DRUID"]   = "cFFFF7D0A",
+    ["HUNTER"]  = "cFFABD473",
+    ["SHAMAN"]  = "cFF0070DE",
+    ["PRIEST"]  = "cFFFFFFA0",  -- Slightly yellow-tinted
+    ["WARLOCK"] = "cFF9482C9",
+    ["PALADIN"] = "cFFF58CBA"
+}
 
 --[[---------------------------------------------------------------------------------
   PLAYER (SELF) MENU COMMANDS
@@ -165,6 +180,9 @@ UnitPopupMenus["BOT_ASSIGN_FOCUS_MARK"] = {
     "BOT_ASSIGN_FOCUS_MARK_CROSS",
     "BOT_ASSIGN_FOCUS_MARK_SKULL"
 }
+
+-- Set Follow On
+UnitPopupButtons["BOT_FOLLOW_ON"] = { text = "Set |cFFFFFFA0Follow|r On", dist = 0, nested = 1 }
 
 -- ROGUE: Stealth control on or off
 UnitPopupButtons["BOT_ROGUE_STEALTH"] = { text = "|cFFFFF569Stealth Control|r", dist = 0, nested = 1 }
@@ -543,11 +561,45 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         end
     end
 
-
+    --[[--------------------------
+        Add CC and Focus Buttons
+    ----------------------------]]
     -- Add cc and focus mark assignment to the dynamic menus in the last position
     table.insert(dynamicMenus, "BOT_ASSIGN_CC_MARK")
     table.insert(dynamicMenus, "BOT_ASSIGN_FOCUS_MARK")
 
+    --[[--------------------------
+       Add Follow On Buttons
+    ----------------------------]]
+    -- Set a function to get the unit class and return the color code string for that class
+    local function getUnitClassColor(unit)
+        local _, class = UnitClass(unit)
+        return CLASS_COLORS[string.upper(class)] or "cFFFFFFFF"  -- Default to white if class not found
+    end
+    -- Build the follow on table from the group party members and add it to the menu
+    local followOnTable = {}
+    -- Add the player as the first follow option
+    local playerName = UnitName("player")
+    local playerColorCode = getUnitClassColor("player")
+    UnitPopupButtons["BOT_FOLLOW_ON_"..playerName] = { text = "|"..playerColorCode..playerName.."|r (Me)", dist = 0 }
+    -- Then the party members who are not the currently selected unit
+    table.insert(followOnTable, "BOT_FOLLOW_ON_"..playerName)
+    for i = 1, GetNumPartyMembers() do
+        local unit = "party"..i
+        local name = GetUnitName(unit)
+        -- Make a new button for each party member, excluding the clicked unit
+        if name ~= NYCTER_SELECTED_UNIT_NAME then
+            local colorCode = getUnitClassColor(unit)
+            UnitPopupButtons["BOT_FOLLOW_ON_"..name] = { text = "|"..colorCode..name.."|r", dist = 0 }
+            table.insert(followOnTable, "BOT_FOLLOW_ON_"..name)
+        end
+    end
+    UnitPopupMenus["BOT_FOLLOW_ON"] = followOnTable
+    table.insert(dynamicMenus, "BOT_FOLLOW_ON")
+
+    --[[--------------------------
+        Finish and Clean Up
+    ----------------------------]]
     -- Insert dynamic menus at the top of the party menu, under BOT_CONTROL
     for i = table.getn(dynamicMenus), 1, -1 do
         table.insert(UnitPopupMenus["PARTY"], 2, dynamicMenus[i])
@@ -600,6 +652,13 @@ function UnitPopup_OnClick()
         SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "set mdps")
     elseif button == "BOT_ROLE_RDPS" then
         SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "set rdps")
+    elseif string.find(button, "^BOT_FOLLOW_ON_") then
+        local _, _, playerName = string.find(button, "_([^_]+)$")
+        if playerName == UnitName("player") then
+            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set follow off")
+        else
+            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set follow on " .. playerName)
+        end
     --[[------------------------------------
     CC and Focus Mark Controls
     --------------------------------------]]
