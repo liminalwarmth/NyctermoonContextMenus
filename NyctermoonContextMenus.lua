@@ -2,27 +2,42 @@
 -- Coded for Vanilla WoW 1.12.1, using LUA version 5.1
 
 --[[ TODO:
-- Prompt on portals
-- Add tooltips to menu commands
+
+[NEXT]
+- Add Sanctity aura back to the paladin aura list
 - Add .z toggle totems for shamans
-- slash commands and options menu
 - set follow on command
-- Right click name from chat causes error in line 268 (can't invite from right click)
 - change none to "Clear" for focus and CC to better explain what's happening
 - Hunters: set aspect
+- Add Ace's changes:
+    .settings notifications commands [on/off]
+    .settings notifications emotes [on/off]
+    .settings notifications [on/off] -- for both
+
+[NICE TO HAVE]
+- slash commands and options menu
+- Prompt on portals
+- Add tooltips to menu commands
+
+[RAID MENU?]
+- Set resist gear
+- Set distancing (Rag, some BWL)
+
+[BUGS]
+- Right click name from chat causes error in line 268 (can't invite from right click)
 - Portal Issue: When ordering a mage to cast a portal, as an ally controller with both ally and horde comps transferred to me, 
-I am given the ally options only (SW/IF/D) regardless of the race of the companion mage. IE, all the horde + ally mages in my raid, have the same 3 city options.
+    I am given the ally options only (SW/IF/D) regardless of the race of the companion mage. IE, all the horde + ally mages in my raid,
+    have the same 3 city options.
 - Look into Luna frames ResetInstances button infinite loop:
+    LunaUnitFrames/modules/units.lua
 
-LunaUnitFrames/modules/units.lua
-
-local function initPlayerDrop()
-    UnitPopup_ShowMenu(PlayerFrameDropDown, "SELF", "player")
-    if not (UnitInRaid("player") or GetNumPartyMembers() > 0) or UnitIsPartyLeader("player") and PlayerFrameDropDown.init and not CanShowResetInstances() then
-        UIDropDownMenu_AddButton({text = RESET_INSTANCES, func = ResetInstances, notCheckable = 1}, 1)
-        PlayerFrameDropDown.init = nil
+    local function initPlayerDrop()
+        UnitPopup_ShowMenu(PlayerFrameDropDown, "SELF", "player")
+        if not (UnitInRaid("player") or GetNumPartyMembers() > 0) or UnitIsPartyLeader("player") and PlayerFrameDropDown.init and not CanShowResetInstances() then
+            UIDropDownMenu_AddButton({text = RESET_INSTANCES, func = ResetInstances, notCheckable = 1}, 1)
+            PlayerFrameDropDown.init = nil
+        end
     end
-end
 
 --]]
 
@@ -109,7 +124,7 @@ UnitPopupButtons["BOT_ASSIGN_CC_MARK_MOON"] = { text = "|cff6699CCMoon|r", dist 
 UnitPopupButtons["BOT_ASSIGN_CC_MARK_SQUARE"] = { text = "|cff00ffffSquare|r", dist = 0 }
 UnitPopupButtons["BOT_ASSIGN_CC_MARK_CROSS"] = { text = "|cffFF0000Cross|r", dist = 0 }
 UnitPopupButtons["BOT_ASSIGN_CC_MARK_SKULL"] = { text = "|cFFFFFFA0Skull|r", dist = 0 }
-UnitPopupButtons["BOT_ASSIGN_CC_MARK_CLEAR"] = { text = "None (Default |cff6699CCMoon|r)", dist = 0 }
+UnitPopupButtons["BOT_ASSIGN_CC_MARK_CLEAR"] = { text = "Clear (Defaults to |cff6699CCMoon|r)", dist = 0 }
 
 UnitPopupMenus["BOT_ASSIGN_CC_MARK"] = {
     "BOT_ASSIGN_CC_MARK_CLEAR",
@@ -133,7 +148,7 @@ UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_MOON"] = { text = "|cff6699CCMoon|r", di
 UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_SQUARE"] = { text = "|cff00ffffSquare|r", dist = 0 }
 UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_CROSS"] = { text = "|cffFF0000Cross|r", dist = 0 }
 UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_SKULL"] = { text = "|cFFFFFFA0Skull|r", dist = 0 }
-UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_CLEAR"] = { text = "None (Default |cFFFFFFA0Skull|r)", dist = 0 }
+UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_CLEAR"] = { text = "Clear (Defaults to |cFFFFFFA0Skull|r)", dist = 0 }
 
 UnitPopupMenus["BOT_ASSIGN_FOCUS_MARK"] = {
     "BOT_ASSIGN_FOCUS_MARK_CLEAR",
