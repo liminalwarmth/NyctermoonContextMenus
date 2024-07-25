@@ -10,16 +10,17 @@
 - DONE change none to "Clear" for focus and CC to better explain what's happening
 - DONE Hunters: set aspect
 - DONE Move deny spells into the companion settings
-- Add Ace's changes:
-    .settings notifications commands [on/off]
-    .settings notifications emotes [on/off]
-    .settings notifications [on/off] -- for both
+
 
 [NICE TO HAVE]
 - slash commands and options menu
 - Prompt on portals
 - Add tooltips to menu commands
 - DONE Stealth and dismiss toggle colors
+- Add Ace's changes:
+    .settings notifications commands [on/off]
+    .settings notifications emotes [on/off]
+    .settings notifications [on/off] -- for both
 
 [RAID MENU?]
 - Set resist gear
@@ -112,7 +113,6 @@ UnitPopupButtons["SELF_XP_BONUS"] = { text = "|cFFFFFFA0Current XP Bonus|r", dis
 UnitPopupButtons["SELF_COMPANION_INFO"] = { text = "Companion Info", dist = 0 }
 UnitPopupMenus["SELF_NYCTERMOON_STATS"] = { "SELF_LEGACY_BONUS", "SELF_XP_BONUS", "SELF_COMPANION_INFO" }
 table.insert(UnitPopupMenus["SELF"], 1, "SELF_NYCTERMOON_STATS")
-
 
 --[[---------------------------------------------------------------------------------
   COMPANION MENU COMMANDS
@@ -755,18 +755,25 @@ function UnitPopup_OnClick()
     --[[------------------------------------
     Mage portals
     --------------------------------------]]
-    elseif button == "BOT_PORTAL_STORMWIND" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "cast Portal: Stormwind")
-    elseif button == "BOT_PORTAL_IRONFORGE" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "cast Portal: Ironforge")
-    elseif button == "BOT_PORTAL_DARNASSUS" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "cast Portal: Darnassus")
-    elseif button == "BOT_PORTAL_UNDERCITY" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "cast Portal: Undercity")
-    elseif button == "BOT_PORTAL_ORGRIMMAR" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "cast Portal: Orgrimmar")
-    elseif button == "BOT_PORTAL_THUNDER_BLUFF" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "cast Portal: Thunder Bluff")
+    elseif string.find(button, "^BOT_PORTAL_") then
+        local _, _, city = string.find(button, "^BOT_PORTAL_(.+)$")
+        if city then
+            local portalCity = string.gsub(city, "_", " ")
+            portalCity = string.gsub(portalCity, "(%a)([%w_']*)", function(first, rest)
+                return string.upper(first)..string.lower(rest)
+            end)
+            StaticPopupDialogs["PORTAL_CONFIRM"] = {
+                text = "Are you sure you want " .. NYCTER_SELECTED_UNIT_NAME .. " to open a mage portal to " .. portalCity .. "? You have a limited number of portals per hire.",
+                button1 = OKAY,
+                button2 = CANCEL,
+                OnAccept = function()
+                    SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "cast Portal: " .. portalCity)
+                end,
+                timeout = 0,
+                hideOnEscape = 1,
+            }
+            StaticPopup_Show("PORTAL_CONFIRM")
+        end
     --[[------------------------------------
     Warlock summon player ritual
     --------------------------------------]]
