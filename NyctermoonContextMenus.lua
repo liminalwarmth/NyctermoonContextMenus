@@ -25,7 +25,7 @@
 - Set distancing (Rag, some BWL)
 
 [BUGS]
-- Right click name from chat causes error in line 268 (can't invite from right click)
+- DONE Right click name from chat causes error in line 268 (can't invite from right click)
 - Portal Issue: When ordering a mage to cast a portal, as an ally controller with both ally and horde comps transferred to me, 
     I am given the ally options only (SW/IF/D) regardless of the race of the companion mage. IE, all the horde + ally mages in my raid,
     have the same 3 city options.
@@ -228,6 +228,15 @@ UnitPopupButtons["BOT_HUNTER_PET_STRIDER"] = { text = "Strider", dist = 0 }
 UnitPopupButtons["BOT_HUNTER_PET_TURTLE"] = { text = "Turtle", dist = 0 }
 UnitPopupButtons["BOT_HUNTER_PET_WOLF"] = { text = "Wolf", dist = 0 }
 
+-- HUNTER: Choose aspect
+UnitPopupButtons["BOT_HUNTER_ASPECT_DEFAULT"] = { text = "AI Default (Clear Setting)", dist = 0 }
+-- UnitPopupButtons["BOT_HUNTER_ASPECT_MONKEY"] = { text = "Aspect of the Monkey", dist = 0 }
+UnitPopupButtons["BOT_HUNTER_ASPECT_HAWK"] = { text = "Aspect of the Hawk", dist = 0 }
+UnitPopupButtons["BOT_HUNTER_ASPECT_CHEETAH"] = { text = "Aspect of the Cheetah", dist = 0 }
+-- UnitPopupButtons["BOT_HUNTER_ASPECT_BEAST"] = { text = "Aspect of the Beast", dist = 0 }
+UnitPopupButtons["BOT_HUNTER_ASPECT_PACK"] = { text = "Aspect of the Pack", dist = 0 }
+UnitPopupButtons["BOT_HUNTER_ASPECT_WILD"] = { text = "Aspect of the Wild", dist = 0 }
+
 -- WARLOCK: Choose pet type
 UnitPopupButtons["BOT_WARLOCK_PET"] = { text = "|cFF9482C9Choose Demon|r", dist = 0, nested = 1 }
 UnitPopupButtons["BOT_WARLOCK_PET_IMP"] = { text = "Imp", dist = 0 }
@@ -390,7 +399,7 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
 
     -- Conditionally edit the tables for each class
     local dynamicMenus = {}
-    
+
     --[[--------------------------
         Mage
     ----------------------------]]
@@ -430,6 +439,31 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
             table.insert(dynamicMenus, "BOT_PET_TOGGLE")
             table.insert(dynamicMenus, "BOT_HUNTER_PET")
         end
+        -- Hunter Aspects
+        local aspects = {
+            -- Monkey omitted intentionally (cannot be set)
+            {level = 10,  id = "BOT_HUNTER_ASPECT_HAWK"},
+            {level = 20, id = "BOT_HUNTER_ASPECT_CHEETAH"},
+            -- Beast omitted intentionally (cannot be set)
+            {level = 40, id = "BOT_HUNTER_ASPECT_PACK"},
+            {level = 46, id = "BOT_HUNTER_ASPECT_WILD"}
+        }
+
+        local aspectItems = {}
+
+        for i = 1, table.getn(aspects) do
+            if NYCTER_SELECTED_UNIT_LEVEL >= aspects[i].level then
+                table.insert(aspectItems, aspects[i].id)
+            end
+        end
+
+        if table.getn(aspectItems) > 0 then
+            table.insert(aspectItems, 1, "BOT_HUNTER_ASPECT_DEFAULT")
+            UnitPopupMenus["BOT_HUNTER_ASPECT"] = aspectItems
+            UnitPopupButtons["BOT_HUNTER_ASPECT"] = { text = "|cFFABD473Set Aspect|r", dist = 0, nested = 1 }
+            table.insert(dynamicMenus, "BOT_HUNTER_ASPECT")
+        end
+
     --[[--------------------------
         Warlock
     ----------------------------]]
@@ -780,6 +814,23 @@ function UnitPopup_OnClick()
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet turtle")
     elseif button == "BOT_HUNTER_PET_WOLF" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet wolf")
+    --[[------------------------------------
+    Hunter aspects
+    --------------------------------------]]
+    elseif button == "BOT_HUNTER_ASPECT_DEFAULT" then
+        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aspect cancel")
+    -- elseif button == "BOT_HUNTER_ASPECT_MONKEY" then
+    --     SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aspect Aspect of the Monkey")
+    elseif button == "BOT_HUNTER_ASPECT_HAWK" then
+        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aspect Aspect of the Hawk")
+    elseif button == "BOT_HUNTER_ASPECT_CHEETAH" then
+        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aspect Aspect of the Cheetah")
+    -- elseif button == "BOT_HUNTER_ASPECT_BEAST" then
+    --     SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aspect Aspect of the Beast")
+    elseif button == "BOT_HUNTER_ASPECT_PACK" then
+        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aspect Aspect of the Pack")
+    elseif button == "BOT_HUNTER_ASPECT_WILD" then
+        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aspect Aspect of the Wild")
     --[[------------------------------------
     Warlock pets
     --------------------------------------]]
