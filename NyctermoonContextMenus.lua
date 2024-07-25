@@ -19,6 +19,7 @@
 - slash commands and options menu
 - Prompt on portals
 - Add tooltips to menu commands
+- DONE Stealth and dismiss toggle colors
 
 [RAID MENU?]
 - Set resist gear
@@ -26,7 +27,7 @@
 
 [BUGS]
 - DONE Right click name from chat causes error in line 268 (can't invite from right click)
-- Portal Issue: When ordering a mage to cast a portal, as an ally controller with both ally and horde comps transferred to me, 
+- DONE Portal Issue: When ordering a mage to cast a portal, as an ally controller with both ally and horde comps transferred to me, 
     I am given the ally options only (SW/IF/D) regardless of the race of the companion mage. IE, all the horde + ally mages in my raid,
     have the same 3 city options.
 - Look into Luna frames ResetInstances button infinite loop:
@@ -186,13 +187,13 @@ UnitPopupButtons["BOT_FOLLOW_ON"] = { text = "Set |cFFFFFFA0Follow|r On", dist =
 
 -- ROGUE: Stealth control on or off
 UnitPopupButtons["BOT_ROGUE_STEALTH"] = { text = "|cFFFFF569Stealth Control|r", dist = 0, nested = 1 }
-UnitPopupButtons["BOT_ROGUE_STEALTH_ON"] = { text = "Allow Stealth", dist = 0 }
-UnitPopupButtons["BOT_ROGUE_STEALTH_OFF"] = { text = "Prevent Stealth", dist = 0 }
+UnitPopupButtons["BOT_ROGUE_STEALTH_ON"] = { text = "|cFF4dd943Allow Stealth|r", dist = 0 }
+UnitPopupButtons["BOT_ROGUE_STEALTH_OFF"] = { text = "|cFFFF4500Prevent Stealth|r", dist = 0 }
 
 -- DRUID: Stealth control on or off
 UnitPopupButtons["BOT_DRUID_STEALTH"] = { text = "|cFFFF7D0AStealth Control|r", dist = 0, nested = 1 }
-UnitPopupButtons["BOT_DRUID_STEALTH_ON"] = { text = "Allow Stealth", dist = 0 }
-UnitPopupButtons["BOT_DRUID_STEALTH_OFF"] = { text = "Prevent Stealth", dist = 0 }
+UnitPopupButtons["BOT_DRUID_STEALTH_ON"] = { text = "|cFF4dd943Allow Stealth|r", dist = 0 }
+UnitPopupButtons["BOT_DRUID_STEALTH_OFF"] = { text = "|cFFFF4500Prevent Stealth|r", dist = 0 }
 
 -- MAGE: Specific portal commands for both Alliance and Horde portals
 UnitPopupButtons["BOT_OPEN_PORTAL"] = { text = "|cFF69CCF0Open Portal|r", dist = 0, nested = 1 }
@@ -205,8 +206,8 @@ UnitPopupButtons["BOT_PORTAL_THUNDER_BLUFF"] = { text = "Thunder Bluff", dist = 
 
 -- HUNTER & WARLOCK: Pet toggle
 UnitPopupButtons["BOT_PET_TOGGLE"] = { text = "Pet Control", dist = 0, nested = 1 }
-UnitPopupButtons["BOT_PET_ON"] = { text = "Summon Pet", dist = 0 }
-UnitPopupButtons["BOT_PET_OFF"] = { text = "Dismiss Pet", dist = 0 }
+UnitPopupButtons["BOT_PET_ON"] = { text = "|cFF4dd943Summon Pet|r", dist = 0 }
+UnitPopupButtons["BOT_PET_OFF"] = { text = "|cFFFF4500Dismiss Pet|r", dist = 0 }
 
 -- HUNTER: Choose pet type
 UnitPopupButtons["BOT_HUNTER_PET"] = { text = "|cFFABD473Choose Beast|r", dist = 0, nested = 1 }
