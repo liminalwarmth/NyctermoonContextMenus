@@ -14,7 +14,10 @@
 
 [NICE TO HAVE]
 - slash commands and options menu
-- Prompt on portals
+- Make portal and summoning confirmations optional
+- Custom stats display frame on your character
+- DONE Prompt on portals
+- DONE improve ritual of summoning dialog
 - Add tooltips to menu commands
 - DONE Stealth and dismiss toggle colors
 - Add Ace's changes:
@@ -24,6 +27,8 @@
 
 [RAID MENU?]
 - Set resist gear
+    syntax is whisper "set gear fire" etc
+    [Parts]: Just double-checked: T1R fire, T2R fire/shadow, T3R fire/shadow/nature/viscidus, T4R and T5R fire/shadoow/nature/viscidus/frost
 - Set distancing (Rag, some BWL)
 
 [BUGS]
