@@ -9,7 +9,7 @@
 - set follow on command
 - DONE change none to "Clear" for focus and CC to better explain what's happening
 - Hunters: set aspect
-- Move dny spells into the companion settings
+- DONE Move deny spells into the companion settings
 - Add Ace's changes:
     .settings notifications commands [on/off]
     .settings notifications emotes [on/off]
@@ -245,6 +245,7 @@ UnitPopupButtons["BOT_PALADIN_AURAS_DEFAULT"] = { text = "AI Default (Clear Sett
 UnitPopupButtons["BOT_PALADIN_AURA_DEVOTION"] = { text = "Devotion Aura", dist = 0 }
 UnitPopupButtons["BOT_PALADIN_AURA_RETRIBUTION"] = { text = "Retribution Aura", dist = 0 }
 UnitPopupButtons["BOT_PALADIN_AURA_CONCENTRATION"] = { text = "Concentration Aura", dist = 0 }
+UnitPopupButtons["BOT_PALADIN_AURA_SANCTITY"] = { text = "Sanctity Aura", dist = 0 }
 UnitPopupButtons["BOT_PALADIN_AURA_SHADOW_RESISTANCE"] = { text = "Shadow Resistance Aura", dist = 0 }
 UnitPopupButtons["BOT_PALADIN_AURA_FROST_RESISTANCE"] = { text = "Frost Resistance Aura", dist = 0 }
 UnitPopupButtons["BOT_PALADIN_AURA_FIRE_RESISTANCE"] = { text = "Fire Resistance Aura", dist = 0 }
@@ -424,6 +425,7 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
             {level = 16, id = "BOT_PALADIN_AURA_RETRIBUTION"},
             {level = 22, id = "BOT_PALADIN_AURA_CONCENTRATION"},
             {level = 28, id = "BOT_PALADIN_AURA_SHADOW_RESISTANCE"},
+            {level = 30, id = "BOT_PALADIN_AURA_SANCTITY"}
             {level = 32, id = "BOT_PALADIN_AURA_FROST_RESISTANCE"},
             {level = 36, id = "BOT_PALADIN_AURA_FIRE_RESISTANCE"}
         }
@@ -752,6 +754,8 @@ function UnitPopup_OnClick()
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aura Devotion Aura")
     elseif button == "BOT_PALADIN_AURA_RETRIBUTION" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aura Retribution Aura")
+    elseif button == "BOT_PALADIN_AURA_SANCTITY" then
+        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aura Sanctity Aura")
     elseif button == "BOT_PALADIN_AURA_CONCENTRATION" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aura Concentration Aura")
     elseif button == "BOT_PALADIN_AURA_SHADOW_RESISTANCE" then
