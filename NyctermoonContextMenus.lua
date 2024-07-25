@@ -247,16 +247,6 @@ UnitPopupButtons["BOT_WARLOCK_PET_FELHUNTER"] = { text = "Felhunter", dist = 0 }
 
 -- WARLOCK: Summon player ritual
 UnitPopupButtons["BOT_WARLOCK_SUMMON_PLAYER_RITUAL"] = { text = "|cFF9482C9Summon Player|r", dist = 0 }
-StaticPopupDialogs["SUMMON_CONFIRM"] = {
-    text = "Are you sure you want to cast Ritual of Summoning on your current target? You have a limited number of uses.",
-    button1 = OKAY,
-    button2 = CANCEL,
-    OnAccept = function()
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "cast Ritual of Summoning")
-    end,
-    timeout = 0,
-    hideOnEscape = 1,
-}
 
 -- PALADIN: Choose blessing
 UnitPopupButtons["BOT_PALADIN_BLESSING"] = { text = "|cFFF58CBASet Blessing|r", dist = 0, nested = 1 }
@@ -778,7 +768,29 @@ function UnitPopup_OnClick()
     Warlock summon player ritual
     --------------------------------------]]
     elseif button == "BOT_WARLOCK_SUMMON_PLAYER_RITUAL" then
-        StaticPopup_Show("SUMMON_CONFIRM")
+        local targetName = UnitName("target")
+        local warlockName = NYCTER_SELECTED_UNIT_NAME
+        if not UnitInParty("target") and not UnitInRaid("target") then
+            StaticPopupDialogs["SUMMON_INVALID_TARGET"] = {
+                text = "You don't have a valid player targeted for Ritual of Summoning. Please target a player in your party or raid group.",
+                button1 = OKAY,
+                timeout = 0,
+                hideOnEscape = 1,
+            }
+            StaticPopup_Show("SUMMON_INVALID_TARGET")
+        else
+            StaticPopupDialogs["SUMMON_CONFIRM"] = {
+                text = "Are you sure you want " .. warlockName .. " to cast Ritual of Summoning on " .. targetName .. "? You have a limited number of uses.",
+                button1 = OKAY,
+                button2 = CANCEL,
+                OnAccept = function()
+                    SendTargetedBotWhisperCommand(warlockName, "cast Ritual of Summoning")
+                end,
+                timeout = 0,
+                hideOnEscape = 1,
+            }
+            StaticPopup_Show("SUMMON_CONFIRM")
+        end
     --[[------------------------------------
     Pet toggle
     --------------------------------------]]
