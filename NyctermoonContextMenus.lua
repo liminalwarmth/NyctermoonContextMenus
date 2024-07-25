@@ -8,7 +8,7 @@
 - DONE Add .z toggle totems for shamans
 - DONE set follow on command
 - DONE change none to "Clear" for focus and CC to better explain what's happening
-- Hunters: set aspect
+- DONE Hunters: set aspect
 - DONE Move deny spells into the companion settings
 - Add Ace's changes:
     .settings notifications commands [on/off]
@@ -333,6 +333,7 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     NYCTER_SELECTED_UNIT_NAME = tostring(UnitName(unit))
     NYCTER_SELECTED_UNIT_CLASS = tostring(UnitClass(unit))
     NYCTER_SELECTED_UNIT_FACTION = UnitFactionGroup(unit)
+    NYCTER_SELECTED_UNIT_RACE = UnitRace(unit)
     NYCTER_SELECTED_UNIT_LEVEL = UnitLevel(unit)
 
     -- Remove any existing class-specific menus
@@ -406,13 +407,13 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     if NYCTER_SELECTED_UNIT_CLASS == "Mage" then
         local portals = {}
         if NYCTER_SELECTED_UNIT_LEVEL >= 40 then
-            if NYCTER_SELECTED_UNIT_FACTION == "Alliance" then
+            if NYCTER_SELECTED_UNIT_RACE == "Human" or NYCTER_SELECTED_UNIT_RACE == "Dwarf" or NYCTER_SELECTED_UNIT_RACE == "Gnome" or NYCTER_SELECTED_UNIT_RACE == "NightElf" then
                 table.insert(portals, "BOT_PORTAL_STORMWIND")
                 table.insert(portals, "BOT_PORTAL_IRONFORGE")
                 if NYCTER_SELECTED_UNIT_LEVEL >= 50 then
                     table.insert(portals, "BOT_PORTAL_DARNASSUS")
                 end
-            elseif NYCTER_SELECTED_UNIT_FACTION == "Horde" then
+            elseif NYCTER_SELECTED_UNIT_RACE == "Orc" or NYCTER_SELECTED_UNIT_RACE == "Troll" or NYCTER_SELECTED_UNIT_RACE == "Tauren" or NYCTER_SELECTED_UNIT_RACE == "Undead" then
                 table.insert(portals, "BOT_PORTAL_ORGRIMMAR")
                 table.insert(portals, "BOT_PORTAL_UNDERCITY")
                 if NYCTER_SELECTED_UNIT_LEVEL >= 50 then
