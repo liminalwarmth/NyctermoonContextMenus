@@ -2,25 +2,11 @@
 -- Coded for Vanilla WoW 1.12.1, using LUA version 5.1
 
 --[[ TODO:
-
-[NEXT]
-- DONE Add Sanctity aura back to the paladin aura list
-- DONE Add .z toggle totems for shamans
-- DONE set follow on command
-- DONE change none to "Clear" for focus and CC to better explain what's happening
-- DONE Hunters: set aspect
-- DONE Move deny spells into the companion settings
-
-
-[NICE TO HAVE]
-- slash commands and options menu
+- Slash commands and options menu
 - Make portal and summoning confirmations optional
 - Custom stats display frame on your character
-- DONE Prompt on portals
-- DONE improve ritual of summoning dialog
 - Add tooltips to menu commands
-- DONE Stealth and dismiss toggle colors
-- Add Ace's changes:
+- Add new changes:
     .settings notifications commands [on/off]
     .settings notifications emotes [on/off]
     .settings notifications [on/off] -- for both
@@ -32,13 +18,8 @@
 - Set distancing (Rag, some BWL)
 
 [BUGS]
-- DONE Right click name from chat causes error in line 268 (can't invite from right click)
-- DONE Portal Issue: When ordering a mage to cast a portal, as an ally controller with both ally and horde comps transferred to me, 
-    I am given the ally options only (SW/IF/D) regardless of the race of the companion mage. IE, all the horde + ally mages in my raid,
-    have the same 3 city options.
 - Look into Luna frames ResetInstances button infinite loop:
-    LunaUnitFrames/modules/units.lua
-
+    >> LunaUnitFrames/modules/units.lua
     local function initPlayerDrop()
         UnitPopup_ShowMenu(PlayerFrameDropDown, "SELF", "player")
         if not (UnitInRaid("player") or GetNumPartyMembers() > 0) or UnitIsPartyLeader("player") and PlayerFrameDropDown.init and not CanShowResetInstances() then
