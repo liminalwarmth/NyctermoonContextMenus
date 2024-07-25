@@ -7,8 +7,9 @@
 - Add Sanctity aura back to the paladin aura list
 - Add .z toggle totems for shamans
 - set follow on command
-- change none to "Clear" for focus and CC to better explain what's happening
+- DONE change none to "Clear" for focus and CC to better explain what's happening
 - Hunters: set aspect
+- Move dny spells into the companion settings
 - Add Ace's changes:
     .settings notifications commands [on/off]
     .settings notifications emotes [on/off]
@@ -114,6 +115,9 @@ UnitPopupButtons["BOT_ROLE_DPS"] = { text = "|cFFFFAA00Set Role:|r |cFF69CCF0DPS
 UnitPopupButtons["BOT_ROLE_MDPS"] = { text = "|cFFFFAA00Set Role:|r |cFFFFF569Melee DPS|r", dist = 0 }
 UnitPopupButtons["BOT_ROLE_RDPS"] = { text = "|cFFFFAA00Set Role:|r |cFFABD473Ranged DPS|r", dist = 0 }
 
+-- Deny danger spells (added after roles)
+UnitPopupButtons["BOT_DENY_DANGER_SPELLS"] = { text = "Deny Danger Spells", dist = 0 }
+
 -- Assign CC mark
 UnitPopupButtons["BOT_ASSIGN_CC_MARK"] = { text = "Set |cff00ffffCC|r Mark", dist = 0, nested = 1 }
 UnitPopupButtons["BOT_ASSIGN_CC_MARK_STAR"] = { text = "|cffFFD100Star|r", dist = 0 }
@@ -124,7 +128,7 @@ UnitPopupButtons["BOT_ASSIGN_CC_MARK_MOON"] = { text = "|cff6699CCMoon|r", dist 
 UnitPopupButtons["BOT_ASSIGN_CC_MARK_SQUARE"] = { text = "|cff00ffffSquare|r", dist = 0 }
 UnitPopupButtons["BOT_ASSIGN_CC_MARK_CROSS"] = { text = "|cffFF0000Cross|r", dist = 0 }
 UnitPopupButtons["BOT_ASSIGN_CC_MARK_SKULL"] = { text = "|cFFFFFFA0Skull|r", dist = 0 }
-UnitPopupButtons["BOT_ASSIGN_CC_MARK_CLEAR"] = { text = "Clear (Defaults to |cff6699CCMoon|r)", dist = 0 }
+UnitPopupButtons["BOT_ASSIGN_CC_MARK_CLEAR"] = { text = "Clear CC (Defaults to |cff6699CCMoon|r)", dist = 0 }
 
 UnitPopupMenus["BOT_ASSIGN_CC_MARK"] = {
     "BOT_ASSIGN_CC_MARK_CLEAR",
@@ -148,7 +152,7 @@ UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_MOON"] = { text = "|cff6699CCMoon|r", di
 UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_SQUARE"] = { text = "|cff00ffffSquare|r", dist = 0 }
 UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_CROSS"] = { text = "|cffFF0000Cross|r", dist = 0 }
 UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_SKULL"] = { text = "|cFFFFFFA0Skull|r", dist = 0 }
-UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_CLEAR"] = { text = "Clear (Defaults to |cFFFFFFA0Skull|r)", dist = 0 }
+UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_CLEAR"] = { text = "Clear Focus (Defaults to |cFFFFFFA0Skull|r)", dist = 0 }
 
 UnitPopupMenus["BOT_ASSIGN_FOCUS_MARK"] = {
     "BOT_ASSIGN_FOCUS_MARK_CLEAR",
@@ -161,9 +165,6 @@ UnitPopupMenus["BOT_ASSIGN_FOCUS_MARK"] = {
     "BOT_ASSIGN_FOCUS_MARK_CROSS",
     "BOT_ASSIGN_FOCUS_MARK_SKULL"
 }
-
--- Deny dangerous spells
-UnitPopupButtons["BOT_DENY_DANGER_SPELLS"] = { text = "Deny Danger Spells", dist = 0 }
 
 -- ROGUE: Stealth control on or off
 UnitPopupButtons["BOT_ROGUE_STEALTH"] = { text = "|cFFFFF569Stealth Control|r", dist = 0, nested = 1 }
@@ -301,11 +302,11 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         i = i - 1
     end
 
-    -- Remove any existing role options from BOT_CONTROL menu
+    -- Remove any existing custom options from BOT_CONTROL menu
     i = table.getn(UnitPopupMenus["BOT_CONTROL"])
     while i > 0 do
         local option = UnitPopupMenus["BOT_CONTROL"][i]
-        if string.find(option, "^BOT_ROLE_") then
+        if string.find(option, "^BOT_ROLE_") or string.find(option, "^BOT_DENY") then
             table.remove(UnitPopupMenus["BOT_CONTROL"], i)
         end
         i = i - 1
@@ -378,7 +379,7 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         end
         if NYCTER_SELECTED_UNIT_LEVEL >= 22 then -- Blink is learned at level 22
             UnitPopupButtons["BOT_DENY_DANGER_SPELLS"] = { text = "Deny |cFF69CCF0Danger Spells|r", dist = 0 }
-            table.insert(dynamicMenus, "BOT_DENY_DANGER_SPELLS")
+            table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_DENY_DANGER_SPELLS")
         end
     --[[--------------------------
         Hunter
@@ -405,7 +406,7 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         end
         if NYCTER_SELECTED_UNIT_LEVEL >= 8 then -- Fear is learned at level 8
             UnitPopupButtons["BOT_DENY_DANGER_SPELLS"] = { text = "Deny |cFF9482C9Danger Spells|r", dist = 0 }
-            table.insert(dynamicMenus, "BOT_DENY_DANGER_SPELLS")
+            table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_DENY_DANGER_SPELLS")
         end
     --[[--------------------------
         Paladin
@@ -508,7 +509,7 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     elseif NYCTER_SELECTED_UNIT_CLASS == "Priest" then
         if NYCTER_SELECTED_UNIT_LEVEL >= 14 then -- Psychic Scream is learned at level 14
             UnitPopupButtons["BOT_DENY_DANGER_SPELLS"] = { text = "Deny |cFFFFFFA0Danger Spells|r", dist = 0 }
-            table.insert(dynamicMenus, "BOT_DENY_DANGER_SPELLS")
+            table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_DENY_DANGER_SPELLS")
         end
     --[[--------------------------
         Warrior
@@ -516,7 +517,7 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     elseif NYCTER_SELECTED_UNIT_CLASS == "Warrior" then
         if NYCTER_SELECTED_UNIT_LEVEL >= 22 then -- Intimidating Shout is learned at level 22
             UnitPopupButtons["BOT_DENY_DANGER_SPELLS"] = { text = "Deny |cFFC79C6EDanger Spells|r", dist = 0 }
-            table.insert(dynamicMenus, "BOT_DENY_DANGER_SPELLS")
+            table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_DENY_DANGER_SPELLS")
         end
     --[[--------------------------
         Rogue
