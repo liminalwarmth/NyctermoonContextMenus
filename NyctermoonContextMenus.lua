@@ -3,6 +3,8 @@
 
 --[[ TODO:
 - Slash commands and options menu
+- Green/red colors for summon pets and stealth should be greener and redder respectively
+- Color hunter pets by type
 - Make portal and summoning confirmations optional
 - Custom stats display frame on your character
 - Add tooltips to menu commands
@@ -10,14 +12,21 @@
     .settings notifications commands [on/off]
     .settings notifications emotes [on/off]
     .settings notifications [on/off] -- for both
+- Set resist gear (for 1, for all)
+    syntax is whisper "set gear fire" etc
+    "set gear all fire" whispered to any comp will set for all comps. Provided they are out of combat and your res >= 255
+    [Parts]: Just double-checked: T1R fire, T2R fire/shadow, T3R fire/shadow/nature/viscidus, T4R and T5R fire/shadoow/nature/viscidus/frost
+- Toggle shaman ankh use
 
 [RAID MENU?]
-- Set resist gear
-    syntax is whisper "set gear fire" etc
-    [Parts]: Just double-checked: T1R fire, T2R fire/shadow, T3R fire/shadow/nature/viscidus, T4R and T5R fire/shadoow/nature/viscidus/frost
-- Set distancing (Rag, some BWL)
+    - Set distancing (Rag, some BWL)
 
 [BUGS]
+- Bug: Target unit commands don't work if they're in your raid, only group.
+- FIXED Bug: Summon is set for warlocks level 50 and up. Ritual of summoning is learned at level 20 in 1.12.
+- FIXED Bug: Warlock pet levels (10/20/30 for void/fel/succ)
+- FIXED Bug: Stealth can also be learned at trainers at level 1, not level 10
+- FIXED Bug: Blink is set to level 22, while it's learned at 20. There's a "Tome of Blink" which requires 22, but that's not a real item afaik.
 - Look into Luna frames ResetInstances button infinite loop:
     >> LunaUnitFrames/modules/units.lua
     local function initPlayerDrop()
@@ -402,7 +411,7 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
                 table.insert(dynamicMenus, "BOT_OPEN_PORTAL")
             end
         end
-        if NYCTER_SELECTED_UNIT_LEVEL >= 22 then -- Blink is learned at level 22
+        if NYCTER_SELECTED_UNIT_LEVEL >= 20 then -- Blink is learned at level 20
             UnitPopupButtons["BOT_DENY_DANGER_SPELLS"] = { text = "Deny |cFF69CCF0Danger Spells|r", dist = 0 }
             table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_DENY_DANGER_SPELLS")
         end
@@ -447,17 +456,24 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     ----------------------------]]
     elseif NYCTER_SELECTED_UNIT_CLASS == "Warlock" then
         UnitPopupMenus["BOT_PET_TOGGLE"] = { "BOT_PET_ON", "BOT_PET_OFF" }
-        UnitPopupMenus["BOT_WARLOCK_PET"] = { "BOT_WARLOCK_PET_IMP", "BOT_WARLOCK_PET_VOIDWALKER", "BOT_WARLOCK_PET_SUCCUBUS", "BOT_WARLOCK_PET_FELHUNTER" }
+        UnitPopupMenus["BOT_WARLOCK_PET"] = { "BOT_WARLOCK_PET_IMP" }
         UnitPopupButtons["BOT_PET_TOGGLE"] = { text = "|cFF9482C9Pet Control|r", dist = 0, nested = 1 }
-        table.insert(dynamicMenus, "BOT_PET_TOGGLE")
-        table.insert(dynamicMenus, "BOT_WARLOCK_PET")
-        if NYCTER_SELECTED_UNIT_LEVEL >= 50 then -- Ritual of Summoning is learned at level 50 in vanilla WoW 1.12.1
+        if NYCTER_SELECTED_UNIT_LEVEL >= 10 then
+            table.insert(UnitPopupMenus["BOT_WARLOCK_PET"], "BOT_WARLOCK_PET_VOIDWALKER")
+        end
+        if NYCTER_SELECTED_UNIT_LEVEL >= 20 then
+            table.insert(UnitPopupMenus["BOT_WARLOCK_PET"], "BOT_WARLOCK_PET_SUCCUBUS")
             table.insert(dynamicMenus, "BOT_WARLOCK_SUMMON_PLAYER_RITUAL")
+        end
+        if NYCTER_SELECTED_UNIT_LEVEL >= 30 then
+            table.insert(UnitPopupMenus["BOT_WARLOCK_PET"], "BOT_WARLOCK_PET_FELHUNTER")
         end
         if NYCTER_SELECTED_UNIT_LEVEL >= 8 then -- Fear is learned at level 8
             UnitPopupButtons["BOT_DENY_DANGER_SPELLS"] = { text = "Deny |cFF9482C9Danger Spells|r", dist = 0 }
             table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_DENY_DANGER_SPELLS")
         end
+        table.insert(dynamicMenus, "BOT_PET_TOGGLE")
+        table.insert(dynamicMenus, "BOT_WARLOCK_PET")
     --[[--------------------------
         Paladin
     ----------------------------]]
@@ -576,11 +592,9 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     --[[--------------------------
         Rogue
     ----------------------------]]
-    elseif NYCTER_SELECTED_UNIT_CLASS == "Rogue" then
-        if NYCTER_SELECTED_UNIT_LEVEL >= 10 then -- Stealth is learned at level 10
-            UnitPopupMenus["BOT_ROGUE_STEALTH"] = { "BOT_ROGUE_STEALTH_ON", "BOT_ROGUE_STEALTH_OFF" }
-            table.insert(dynamicMenus, "BOT_ROGUE_STEALTH")
-        end
+    elseif NYCTER_SELECTED_UNIT_CLASS == "Rogue" then -- Stealth at level 1
+        UnitPopupMenus["BOT_ROGUE_STEALTH"] = { "BOT_ROGUE_STEALTH_ON", "BOT_ROGUE_STEALTH_OFF" }
+        table.insert(dynamicMenus, "BOT_ROGUE_STEALTH")
     --[[--------------------------
         Druid
     ----------------------------]]
