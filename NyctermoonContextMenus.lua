@@ -3,8 +3,6 @@
 
 --[[ TODO:
 - Slash commands and options menu
-- DONE Green/red colors for summon pets and stealth should be greener and redder respectively
-- DONE Color hunter pets by type and add special family abilities
 - Make portal and summoning confirmations optional
 
 [MAYBE?]
@@ -25,12 +23,6 @@
     - Set distancing (Rag, some BWL)
 
 [BUGS]
-- FIXED Bug: Target unit commands don't work if they're in your raid, only group.
-    Complex: Need to isolate frames (PLAYER works but not in raid frame) and then /p doesnt work if not in party, so need to adjust for raid
-- FIXED Bug: Summon is set for warlocks level 50 and up. Ritual of summoning is learned at level 20 in 1.12.
-- FIXED Bug: Warlock pet levels (10/20/30 for void/fel/succ)
-- FIXED Bug: Stealth can also be learned at trainers at level 1, not level 10
-- FIXED Bug: Blink is set to level 22, while it's learned at 20. There's a "Tome of Blink" which requires 22, but that's not a real item afaik.
 - Look into Luna frames ResetInstances button infinite loop:
     >> LunaUnitFrames/modules/units.lua
     local function initPlayerDrop()
