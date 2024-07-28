@@ -23,6 +23,7 @@
 
 [BUGS]
 - Bug: Target unit commands don't work if they're in your raid, only group.
+    Complex: Need to isolate frames (PLAYER works but not in raid frame) and then /p doesnt work if not in party, so need to adjust for raid
 - FIXED Bug: Summon is set for warlocks level 50 and up. Ritual of summoning is learned at level 20 in 1.12.
 - FIXED Bug: Warlock pet levels (10/20/30 for void/fel/succ)
 - FIXED Bug: Stealth can also be learned at trainers at level 1, not level 10
@@ -322,12 +323,28 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     NYCTER_SELECTED_UNIT_RACE = UnitRace(unit)
     NYCTER_SELECTED_UNIT_LEVEL = UnitLevel(unit)
 
-    -- Remove any existing class-specific menus
+    -- -- Either the PARTY or RAIDPLAYER frame should be used and either way both should have custom items cleared from prior
+    local menuFrame = "PARTY"
+    if UnitInRaid(unit) and not UnitInParty(unit) then
+        menuFrame = "PLAYER"
+    end
+
+    -- Remove any existing class-specific menus (PARTY)
     local i = table.getn(UnitPopupMenus["PARTY"])
     while i > 0 do
         local menu = UnitPopupMenus["PARTY"][i]
         if string.find(menu, "^BOT_") then
             table.remove(UnitPopupMenus["PARTY"], i)
+        end
+        i = i - 1
+    end
+
+    -- Remove any existing class-specific menus (RAID)
+    local i = table.getn(UnitPopupMenus["PLAYER"])
+    while i > 0 do
+        local menu = UnitPopupMenus["PLAYER"][i]
+        if string.find(menu, "^BOT_") then
+            table.remove(UnitPopupMenus["PLAYER"], i)
         end
         i = i - 1
     end
@@ -382,7 +399,7 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     end
 
     -- Insert custom buttons into the PARTY pc menu
-    table.insert(UnitPopupMenus["PARTY"], 1, "BOT_CONTROL")
+    table.insert(UnitPopupMenus[menuFrame], 1, "BOT_CONTROL")
 
     -- Conditionally edit the tables for each class
     local dynamicMenus = {}
@@ -646,7 +663,7 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     ----------------------------]]
     -- Insert dynamic menus at the top of the party menu, under BOT_CONTROL
     for i = table.getn(dynamicMenus), 1, -1 do
-        table.insert(UnitPopupMenus["PARTY"], 2, dynamicMenus[i])
+        table.insert(UnitPopupMenus[menuFrame], 2, dynamicMenus[i])
     end
 
     -- Call the original function
