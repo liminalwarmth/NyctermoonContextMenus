@@ -4,8 +4,10 @@
 --[[ TODO:
 - Slash commands and options menu
 - DONE Green/red colors for summon pets and stealth should be greener and redder respectively
-- Color hunter pets by type
+- DONE Color hunter pets by type and add special family abilities
 - Make portal and summoning confirmations optional
+
+[MAYBE?]
 - Custom stats display frame on your character
 - Add tooltips to menu commands
 - Add new changes:
@@ -17,6 +19,7 @@
     "set gear all fire" whispered to any comp will set for all comps. Provided they are out of combat and your res >= 255
     [Parts]: Just double-checked: T1R fire, T2R fire/shadow, T3R fire/shadow/nature/viscidus, T4R and T5R fire/shadoow/nature/viscidus/frost
 - Toggle shaman ankh use
+- Change Follow On for raid targets to be people in THEIR party
 
 [RAID MENU?]
     - Set distancing (Rag, some BWL)
@@ -213,23 +216,23 @@ UnitPopupButtons["BOT_PET_OFF"] = { text = "|cffFF0000Dismiss Pet|r", dist = 0 }
 
 -- HUNTER: Choose pet type
 UnitPopupButtons["BOT_HUNTER_PET"] = { text = "|cFFABD473Choose Beast|r", dist = 0, nested = 1 }
-UnitPopupButtons["BOT_HUNTER_PET_BAT"] = { text = "Bat", dist = 0 }
-UnitPopupButtons["BOT_HUNTER_PET_BEAR"] = { text = "Bear", dist = 0 }
-UnitPopupButtons["BOT_HUNTER_PET_BIRD"] = { text = "Bird", dist = 0 }
-UnitPopupButtons["BOT_HUNTER_PET_BOAR"] = { text = "Boar", dist = 0 }
-UnitPopupButtons["BOT_HUNTER_PET_CAT"] = { text = "Cat", dist = 0 }
-UnitPopupButtons["BOT_HUNTER_PET_CRAB"] = { text = "Crab", dist = 0 }
-UnitPopupButtons["BOT_HUNTER_PET_CROC"] = { text = "Crocolisk", dist = 0 }
-UnitPopupButtons["BOT_HUNTER_PET_GORILLA"] = { text = "Gorilla", dist = 0 }
-UnitPopupButtons["BOT_HUNTER_PET_HYENA"] = { text = "Hyena", dist = 0 }
-UnitPopupButtons["BOT_HUNTER_PET_OWL"] = { text = "Owl", dist = 0 }
-UnitPopupButtons["BOT_HUNTER_PET_RAPTOR"] = { text = "Raptor", dist = 0 }
-UnitPopupButtons["BOT_HUNTER_PET_SCORPID"] = { text = "Scorpid", dist = 0 }
-UnitPopupButtons["BOT_HUNTER_PET_SERPENT"] = { text = "Wind Serpent", dist = 0 }
-UnitPopupButtons["BOT_HUNTER_PET_SPIDER"] = { text = "Spider", dist = 0 }
-UnitPopupButtons["BOT_HUNTER_PET_STRIDER"] = { text = "Strider", dist = 0 }
-UnitPopupButtons["BOT_HUNTER_PET_TURTLE"] = { text = "Turtle", dist = 0 }
-UnitPopupButtons["BOT_HUNTER_PET_WOLF"] = { text = "Wolf", dist = 0 }
+UnitPopupButtons["BOT_HUNTER_PET_BAT"] = { text = "|cFFFF7D0ABat|r", dist = 0 }
+UnitPopupButtons["BOT_HUNTER_PET_BEAR"] = { text = "|cFF0070DEBear|r", dist = 0 }
+UnitPopupButtons["BOT_HUNTER_PET_BOAR"] = { text = "|cFF0070DEBoar|r |cFFFFFFFF(Charge)|r", dist = 0 }
+UnitPopupButtons["BOT_HUNTER_PET_BIRD"] = { text = "|cFFFFF569Carrion Bird|r", dist = 0 }
+UnitPopupButtons["BOT_HUNTER_PET_CAT"] = { text = "|cFFFF7D0ACat|r |cFFFFFFFF(Prowl)|r", dist = 0 }
+UnitPopupButtons["BOT_HUNTER_PET_CRAB"] = { text = "|cFF0070DECrab|r", dist = 0 }
+UnitPopupButtons["BOT_HUNTER_PET_CROC"] = { text = "|cFF0070DECrocolisk|r", dist = 0 }
+UnitPopupButtons["BOT_HUNTER_PET_GORILLA"] = { text = "|cFF0070DEGorilla|r |cFFFFFFFF(Thunderstomp)|r", dist = 0 }
+UnitPopupButtons["BOT_HUNTER_PET_HYENA"] = { text = "|cFFFFF569Hyena|r", dist = 0 }
+UnitPopupButtons["BOT_HUNTER_PET_OWL"] = { text = "|cFFFF7D0AOwl|r", dist = 0 }
+UnitPopupButtons["BOT_HUNTER_PET_RAPTOR"] = { text = "|cFFFF7D0ARaptor|r", dist = 0 }
+UnitPopupButtons["BOT_HUNTER_PET_SCORPID"] = { text = "|cFF0070DEScorpid|r |cFFFFFFFF(Scorpid Poison)|r", dist = 0 }
+UnitPopupButtons["BOT_HUNTER_PET_SPIDER"] = { text = "|cFFFF7D0ASpider|r", dist = 0 }
+UnitPopupButtons["BOT_HUNTER_PET_STRIDER"] = { text = "|cFF0070DETallstrider|r", dist = 0 }
+UnitPopupButtons["BOT_HUNTER_PET_TURTLE"] = { text = "|cFF0070DETurtle|r |cFFFFFFFF(Shell Shield)|r", dist = 0 }
+UnitPopupButtons["BOT_HUNTER_PET_SERPENT"] = { text = "|cFFFF7D0AWind Serpent|r |cFFFFFFFF(Lightning Breath)|r", dist = 0 }
+UnitPopupButtons["BOT_HUNTER_PET_WOLF"] = { text = "|cFFFFF569Wolf|r |cFFFFFFFF(Furious Howl)|r", dist = 0 }
 
 -- HUNTER: Choose aspect
 UnitPopupButtons["BOT_HUNTER_ASPECT_DEFAULT"] = { text = "AI Default (Clear Setting)", dist = 0 }
@@ -443,7 +446,25 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     ----------------------------]]
     elseif NYCTER_SELECTED_UNIT_CLASS == "Hunter" then
         UnitPopupMenus["BOT_PET_TOGGLE"] = { "BOT_PET_ON", "BOT_PET_OFF" }
-        UnitPopupMenus["BOT_HUNTER_PET"] = { "BOT_HUNTER_PET_BAT", "BOT_HUNTER_PET_BEAR", "BOT_HUNTER_PET_BIRD", "BOT_HUNTER_PET_BOAR", "BOT_HUNTER_PET_CAT", "BOT_HUNTER_PET_CRAB", "BOT_HUNTER_PET_CROC", "BOT_HUNTER_PET_GORILLA", "BOT_HUNTER_PET_HYENA", "BOT_HUNTER_PET_OWL", "BOT_HUNTER_PET_RAPTOR", "BOT_HUNTER_PET_SCORPID", "BOT_HUNTER_PET_SERPENT", "BOT_HUNTER_PET_SPIDER", "BOT_HUNTER_PET_STRIDER", "BOT_HUNTER_PET_TURTLE", "BOT_HUNTER_PET_WOLF" }
+        UnitPopupMenus["BOT_HUNTER_PET"] = {
+            "BOT_HUNTER_PET_BAT",
+            "BOT_HUNTER_PET_BEAR",
+            "BOT_HUNTER_PET_BOAR",
+            "BOT_HUNTER_PET_BIRD",
+            "BOT_HUNTER_PET_CAT",
+            "BOT_HUNTER_PET_CRAB",
+            "BOT_HUNTER_PET_CROC",
+            "BOT_HUNTER_PET_GORILLA",
+            "BOT_HUNTER_PET_HYENA",
+            "BOT_HUNTER_PET_OWL",
+            "BOT_HUNTER_PET_RAPTOR",
+            "BOT_HUNTER_PET_SCORPID", 
+            "BOT_HUNTER_PET_SPIDER",
+            "BOT_HUNTER_PET_STRIDER",
+            "BOT_HUNTER_PET_TURTLE",
+            "BOT_HUNTER_PET_SERPENT",
+            "BOT_HUNTER_PET_WOLF"
+        }
         if NYCTER_SELECTED_UNIT_LEVEL >= 10 then -- Hunters get pets at level 10
             UnitPopupButtons["BOT_PET_TOGGLE"] = { text = "|cFFABD473Pet Control|r", dist = 0, nested = 1 }
             table.insert(dynamicMenus, "BOT_PET_TOGGLE")
