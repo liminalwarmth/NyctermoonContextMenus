@@ -52,7 +52,13 @@ local function SendTargetedBotZCommand(unit, command)
     frame:SetScript("OnUpdate", function()
         delayTime = delayTime - arg1
         if delayTime <= 0 then
-            SendChatMessage(".z " .. command, "PARTY")
+            local chatType = "SAY"
+            if UnitInRaid("player") then
+                chatType = "RAID"
+            elseif GetNumPartyMembers() > 0 then
+                chatType = "PARTY"
+            end
+            SendChatMessage(".z " .. command, chatType)
             frame:SetScript("OnUpdate", nil)
         end
     end)
