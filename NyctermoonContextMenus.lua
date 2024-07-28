@@ -3,7 +3,7 @@
 
 --[[ TODO:
 - Slash commands and options menu
-- Green/red colors for summon pets and stealth should be greener and redder respectively
+- DONE Green/red colors for summon pets and stealth should be greener and redder respectively
 - Color hunter pets by type
 - Make portal and summoning confirmations optional
 - Custom stats display frame on your character
@@ -22,7 +22,7 @@
     - Set distancing (Rag, some BWL)
 
 [BUGS]
-- Bug: Target unit commands don't work if they're in your raid, only group.
+- FIXED Bug: Target unit commands don't work if they're in your raid, only group.
     Complex: Need to isolate frames (PLAYER works but not in raid frame) and then /p doesnt work if not in party, so need to adjust for raid
 - FIXED Bug: Summon is set for warlocks level 50 and up. Ritual of summoning is learned at level 20 in 1.12.
 - FIXED Bug: Warlock pet levels (10/20/30 for void/fel/succ)
@@ -189,13 +189,13 @@ UnitPopupButtons["BOT_FOLLOW_ON"] = { text = "Set |cFFFFFFA0Follow|r On", dist =
 
 -- ROGUE: Stealth control on or off
 UnitPopupButtons["BOT_ROGUE_STEALTH"] = { text = "|cFFFFF569Stealth Control|r", dist = 0, nested = 1 }
-UnitPopupButtons["BOT_ROGUE_STEALTH_ON"] = { text = "|cFF4dd943Allow Stealth|r", dist = 0 }
-UnitPopupButtons["BOT_ROGUE_STEALTH_OFF"] = { text = "|cFFFF4500Prevent Stealth|r", dist = 0 }
+UnitPopupButtons["BOT_ROGUE_STEALTH_ON"] = { text = "|cff1EFF00Allow Stealth|r", dist = 0 }
+UnitPopupButtons["BOT_ROGUE_STEALTH_OFF"] = { text = "|cffFF0000Prevent Stealth|r", dist = 0 }
 
 -- DRUID: Stealth control on or off
 UnitPopupButtons["BOT_DRUID_STEALTH"] = { text = "|cFFFF7D0AStealth Control|r", dist = 0, nested = 1 }
-UnitPopupButtons["BOT_DRUID_STEALTH_ON"] = { text = "|cFF4dd943Allow Stealth|r", dist = 0 }
-UnitPopupButtons["BOT_DRUID_STEALTH_OFF"] = { text = "|cFFFF4500Prevent Stealth|r", dist = 0 }
+UnitPopupButtons["BOT_DRUID_STEALTH_ON"] = { text = "|cff1EFF00Allow Stealth|r", dist = 0 }
+UnitPopupButtons["BOT_DRUID_STEALTH_OFF"] = { text = "|cffFF0000Prevent Stealth|r", dist = 0 }
 
 -- MAGE: Specific portal commands for both Alliance and Horde portals
 UnitPopupButtons["BOT_OPEN_PORTAL"] = { text = "|cFF69CCF0Open Portal|r", dist = 0, nested = 1 }
@@ -208,8 +208,8 @@ UnitPopupButtons["BOT_PORTAL_THUNDER_BLUFF"] = { text = "Thunder Bluff", dist = 
 
 -- HUNTER & WARLOCK: Pet toggle
 UnitPopupButtons["BOT_PET_TOGGLE"] = { text = "Pet Control", dist = 0, nested = 1 }
-UnitPopupButtons["BOT_PET_ON"] = { text = "|cFF4dd943Summon Pet|r", dist = 0 }
-UnitPopupButtons["BOT_PET_OFF"] = { text = "|cFFFF4500Dismiss Pet|r", dist = 0 }
+UnitPopupButtons["BOT_PET_ON"] = { text = "|cff1EFF00Summon Pet|r", dist = 0 }
+UnitPopupButtons["BOT_PET_OFF"] = { text = "|cffFF0000Dismiss Pet|r", dist = 0 }
 
 -- HUNTER: Choose pet type
 UnitPopupButtons["BOT_HUNTER_PET"] = { text = "|cFFABD473Choose Beast|r", dist = 0, nested = 1 }
