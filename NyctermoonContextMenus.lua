@@ -4,6 +4,10 @@
 --[[ TODO:
 - Slash commands and options menu
 - Make portal and summoning confirmations optional
+- Add whispers to mages for amplify behavior:
+    set magic amplify -> all dampen magic will be dispelled from your group and all your mages will buff this
+    set magic dampen ->  all amplify magic will be dispelled from your group and all your mages will buff this
+    set magic none -> all dampen and amplify magic will be dispelled from your group and neither will be buffed
 
 [MAYBE?]
 - Custom stats display frame on your character
