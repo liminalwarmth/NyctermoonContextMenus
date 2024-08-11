@@ -647,24 +647,54 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         local _, class = UnitClass(unit)
         return CLASS_COLORS[string.upper(class)] or "cFFFFFFFF"  -- Default to white if class not found
     end
+
+    -- Function to get the raid group number of a unit
+    local function GetUnitRaidGroup(unit)
+        if UnitInRaid(unit) then
+            for i = 1, 40 do
+                local name, _, subgroup = GetRaidRosterInfo(i)
+                if name == UnitName(unit) then
+                    return subgroup
+                end
+            end
+        end
+        return nil
+    end
+
     -- Build the follow on table from the group party members and add it to the menu
     local followOnTable = {}
-    -- Add the player as the first follow option
+    local isInRaid = UnitInRaid("player")
+    local selectedUnitGroup = GetUnitRaidGroup(NYCTER_SELECTED_UNIT)
+
+    -- Always add the player (you) as the first follow option
     local playerName = UnitName("player")
     local playerColorCode = getUnitClassColor("player")
     UnitPopupButtons["BOT_FOLLOW_ON_"..playerName] = { text = "|"..playerColorCode..playerName.."|r (Me)", dist = 0 }
-    -- Then the party members who are not the currently selected unit
     table.insert(followOnTable, "BOT_FOLLOW_ON_"..playerName)
-    for i = 1, GetNumPartyMembers() do
-        local unit = "party"..i
-        local name = GetUnitName(unit)
-        -- Make a new button for each party member, excluding the clicked unit
-        if name ~= NYCTER_SELECTED_UNIT_NAME then
-            local colorCode = getUnitClassColor(unit)
-            UnitPopupButtons["BOT_FOLLOW_ON_"..name] = { text = "|"..colorCode..name.."|r", dist = 0 }
-            table.insert(followOnTable, "BOT_FOLLOW_ON_"..name)
+
+    if isInRaid then
+        -- In a raid, add members of the selected unit's group
+        for i = 1, 40 do
+            local name, _, subgroup = GetRaidRosterInfo(i)
+            if name and subgroup == selectedUnitGroup and name ~= NYCTER_SELECTED_UNIT_NAME and name ~= playerName then
+                local colorCode = getUnitClassColor("raid"..i)
+                UnitPopupButtons["BOT_FOLLOW_ON_"..name] = { text = "|"..colorCode..name.."|r", dist = 0 }
+                table.insert(followOnTable, "BOT_FOLLOW_ON_"..name)
+            end
+        end
+    else
+        -- In a party, add all party members except the selected unit and the player
+        for i = 1, GetNumPartyMembers() do
+            local unit = "party"..i
+            local name = GetUnitName(unit)
+            if name ~= NYCTER_SELECTED_UNIT_NAME and name ~= playerName then
+                local colorCode = getUnitClassColor(unit)
+                UnitPopupButtons["BOT_FOLLOW_ON_"..name] = { text = "|"..colorCode..name.."|r", dist = 0 }
+                table.insert(followOnTable, "BOT_FOLLOW_ON_"..name)
+            end
         end
     end
+
     UnitPopupMenus["BOT_FOLLOW_ON"] = followOnTable
     table.insert(dynamicMenus, "BOT_FOLLOW_ON")
 
