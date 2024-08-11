@@ -20,8 +20,6 @@
     syntax is whisper "set gear fire" etc
     "set gear all fire" whispered to any comp will set for all comps. Provided they are out of combat and your res >= 255
     [Parts]: Just double-checked: T1R fire, T2R fire/shadow, T3R fire/shadow/nature/viscidus, T4R and T5R fire/shadoow/nature/viscidus/frost
-- Toggle shaman ankh use
-- Change Follow On for raid targets to be people in THEIR party
 
 [RAID MENU?]
     - Set distancing (Rag, some BWL)
@@ -302,6 +300,11 @@ UnitPopupButtons["BOT_SHAMAN_WATER_TOTEM_POISON_CLEANSING"] = { text = "Poison C
 -- SHAMAN: Clear set totems or toggle off
 UnitPopupButtons["BOT_SHAMAN_CLEAR_TOTEMS"] = { text = "|cFF0070DEClear Totem Settings|r", dist = 0 }
 UnitPopupButtons["BOT_SHAMAN_TOGGLE_TOTEMS"] = { text = "|cFF0070DEToggle Totems|r", dist = 0 }
+
+-- SHAMAN: Reincarnation
+UnitPopupButtons["BOT_SHAMAN_REINCARNATION"] = { text = "|cFF0070DEReincarnation|r", dist = 0, nested = 1 }
+UnitPopupButtons["BOT_SHAMAN_REINCARNATION_ALLOW"] = { text = "|cff1EFF00Allow Self-Resurrection|r", dist = 0 }
+UnitPopupButtons["BOT_SHAMAN_REINCARNATION_DENY"] = { text = "|cffFF0000Deny Self-Resurrection|r", dist = 0 }
 
 -- Hook the UnitPopup_ShowMenu function to establish the variables of which party member is being clicked
 local originalUnitPopupShowMenu = UnitPopup_ShowMenu
@@ -599,6 +602,10 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         end
         if NYCTER_SELECTED_UNIT_LEVEL >= 10 then -- First totem is available at level 10
             table.insert(dynamicMenus, "BOT_SHAMAN_CLEAR_TOTEMS")
+        end
+        if NYCTER_SELECTED_UNIT_LEVEL >= 30 then -- Reincarnation is learned at level 30
+            UnitPopupMenus["BOT_SHAMAN_REINCARNATION"] = { "BOT_SHAMAN_REINCARNATION_ALLOW", "BOT_SHAMAN_REINCARNATION_DENY" }
+            table.insert(dynamicMenus, "BOT_SHAMAN_REINCARNATION")
         end
     --[[--------------------------
         Priest
@@ -1029,6 +1036,13 @@ function UnitPopup_OnClick()
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem cancel")
     elseif button == "BOT_SHAMAN_TOGGLE_TOTEMS" then
         SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "toggle totems")
+    --[[------------------------------------
+    Reincarnation
+    --------------------------------------]]
+    elseif button == "BOT_SHAMAN_REINCARNATION_ALLOW" then
+        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny remove reincarnation")
+    elseif button == "BOT_SHAMAN_REINCARNATION_DENY" then
+        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add reincarnation")
     --[[------------------------------------
     Deny danger spells
     --------------------------------------]]
