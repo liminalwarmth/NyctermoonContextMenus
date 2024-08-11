@@ -69,6 +69,69 @@ local function SendTargetedBotWhisperCommand(name, command)
 end
 
 --[[------------------------------------
+    Send Whisper Commands to Entire Party/Raid
+--------------------------------------]]
+
+local function SendCommandToAll(message)
+    local numMembers = 0
+    local getNameFunc
+    local playerName = UnitName("player")
+    
+    if UnitInRaid("player") then
+        numMembers = GetNumRaidMembers()
+        getNameFunc = function(i) 
+            local name = GetRaidRosterInfo(i)
+            return name
+        end
+    elseif GetNumPartyMembers() > 0 then
+        numMembers = GetNumPartyMembers()
+        getNameFunc = function(i) return UnitName("party"..i) end
+    else
+        DEFAULT_CHAT_FRAME:AddMessage("You are not in a party or raid.")
+        return
+    end
+
+    for i = 1, numMembers do
+        local name = getNameFunc(i)
+        if name and name ~= playerName then
+            SendChatMessage(message, "WHISPER", GetDefaultLanguage("player"), name)
+        end
+    end
+end
+
+-- Create a StaticPopupDialog for the text input
+StaticPopupDialogs["SEND_COMMAND_TO_ALL"] = {
+    text = "Enter a command to whisper to all raid/party members:",
+    button1 = "Send",
+    button2 = "Cancel",
+    OnAccept = function()
+        local editBox = getglobal(this:GetParent():GetName().."EditBox")
+        local message = editBox:GetText()
+        SendCommandToAll(message)
+        editBox:SetText("")
+    end,
+    OnShow = function()
+        local editBox = getglobal(this:GetName().."EditBox")
+        editBox:SetText("")
+        editBox:SetScript("OnEnterPressed", function()
+            local message = this:GetText()
+            SendCommandToAll(message)
+            this:SetText("")
+            StaticPopup_Hide("SEND_COMMAND_TO_ALL")
+        end)
+    end,
+    OnHide = function()
+        local editBox = getglobal(this:GetName().."EditBox")
+        editBox:SetScript("OnEnterPressed", nil)
+    end,
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = true,
+    hasEditBox = true,
+    editBoxWidth = 400,
+}
+
+--[[------------------------------------
     Define Class Colors for Addon
 --------------------------------------]]
 local CLASS_COLORS = {
@@ -86,6 +149,10 @@ local CLASS_COLORS = {
 --[[---------------------------------------------------------------------------------
   PLAYER (SELF) MENU COMMANDS
 ----------------------------------------------------------------------------------]]
+
+-- Whisper all in raid
+UnitPopupButtons["SELF_SEND_COMMAND_TO_ALL"] = { text = "|cFFFF80FFWhisper to All|r", dist = 0 }
+table.insert(UnitPopupMenus["SELF"], 1, "SELF_SEND_COMMAND_TO_ALL")
 
 -- Dungeon Settings (Difficulty, Reset option)
 UnitPopupButtons["SELF_DUNGEON_SETTINGS"] = { text = "|cFFD2B48CDungeon Settings|r", dist = 0, nested = 1 }
@@ -738,6 +805,8 @@ function UnitPopup_OnClick()
     elseif button == "SELF_XP_BONUS" then
         ClearTarget()
         SendChatMessage(".stats misc", "SAY")
+    elseif button == "SELF_SEND_COMMAND_TO_ALL" then
+        StaticPopup_Show("SEND_COMMAND_TO_ALL")
     elseif button == "SELF_COMPANION_INFO" then
         ClearTarget()
         SendChatMessage(".z who", "SAY")
