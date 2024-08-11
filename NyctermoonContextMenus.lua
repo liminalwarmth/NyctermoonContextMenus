@@ -311,12 +311,12 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     ----------------------------]]
     -- Check if the unit is valid and in party or raid
     local isValidUnitInPartyOrRaid = false
-    if unit and UnitExists(unit) then
-        isValidUnitInPartyOrRaid = UnitInParty(unit) or UnitInRaid(unit)
-    end
 
-    -- If the unit is nil, invalid, or not in party/raid, fall back to the original menu
-    if not unit or not UnitExists(unit) or not isValidUnitInPartyOrRaid then
+    isValidUnitInPartyOrRaid = UnitInParty(unit) or UnitInRaid(unit)
+
+
+    -- If the unit is not in party/raid, fall back to the original menu
+    if not isValidUnitInPartyOrRaid then
         return originalUnitPopupShowMenu(dropdownMenu, which, unit, name, userData)
     end
 
@@ -328,28 +328,15 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     NYCTER_SELECTED_UNIT_RACE = UnitRace(unit)
     NYCTER_SELECTED_UNIT_LEVEL = UnitLevel(unit)
 
-    -- -- Either the PARTY or RAIDPLAYER frame should be used and either way both should have custom items cleared from prior
+    -- Target the PARTY dropdown menu
     local menuFrame = "PARTY"
-    if UnitInRaid(unit) and not UnitInParty(unit) then
-        menuFrame = "PLAYER"
-    end
 
-    -- Remove any existing class-specific menus (PARTY)
+    -- Remove any existing class-specific menus
     local i = table.getn(UnitPopupMenus["PARTY"])
     while i > 0 do
         local menu = UnitPopupMenus["PARTY"][i]
         if string.find(menu, "^BOT_") then
             table.remove(UnitPopupMenus["PARTY"], i)
-        end
-        i = i - 1
-    end
-
-    -- Remove any existing class-specific menus (RAID)
-    local i = table.getn(UnitPopupMenus["PLAYER"])
-    while i > 0 do
-        local menu = UnitPopupMenus["PLAYER"][i]
-        if string.find(menu, "^BOT_") then
-            table.remove(UnitPopupMenus["PLAYER"], i)
         end
         i = i - 1
     end
