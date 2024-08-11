@@ -150,7 +150,7 @@ local CLASS_COLORS = {
   PLAYER (SELF) MENU COMMANDS
 ----------------------------------------------------------------------------------]]
 
--- Whisper all in raid
+-- Whisper all in raid (added or removed below)
 UnitPopupButtons["SELF_SEND_COMMAND_TO_ALL"] = { text = "|cFFFF80FFWhisper to All|r", dist = 0 }
 table.insert(UnitPopupMenus["SELF"], 1, "SELF_SEND_COMMAND_TO_ALL")
 
@@ -419,6 +419,24 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
             table.remove(UnitPopupMenus["BOT_CONTROL"], i)
         end
         i = i - 1
+    end
+
+    -- Remove the whisper all command if present
+    for i, v in ipairs(UnitPopupMenus["SELF"]) do
+        if v == "SELF_SEND_COMMAND_TO_ALL" then
+            table.remove(UnitPopupMenus["SELF"], i)
+            break
+        end
+    end
+
+    -- Add the whisper all command after dungeon settings if in party or raid
+    if GetNumPartyMembers() > 0 or GetNumRaidMembers() > 0 then
+        for i, v in ipairs(UnitPopupMenus["SELF"]) do
+            if v == "SELF_DUNGEON_SETTINGS" then
+                table.insert(UnitPopupMenus["SELF"], i + 1, "SELF_SEND_COMMAND_TO_ALL")
+                break
+            end
+        end
     end
 
     --[[--------------------------
