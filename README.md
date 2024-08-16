@@ -1,3 +1,6 @@
+![image](https://github.com/user-attachments/assets/7b35c7f4-55c4-41cf-a0c3-88193d03d849) ![image](https://github.com/user-attachments/assets/6349a470-9379-4217-9b23-b55367ebe12a)
+
+
 # Nyctermoon Context Menus - WoW Vanilla (1.12.1) AddOn
 
 Download the latest version here: https://github.com/liminalwarmth/NyctermoonContextMenus/releases/
