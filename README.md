@@ -1,13 +1,15 @@
-![image](https://github.com/user-attachments/assets/7b35c7f4-55c4-41cf-a0c3-88193d03d849) ![image](https://github.com/user-attachments/assets/6349a470-9379-4217-9b23-b55367ebe12a)
-
-
 # Nyctermoon Context Menus - WoW Vanilla (1.12.1) AddOn
 
-Download the latest version here: https://github.com/liminalwarmth/NyctermoonContextMenus/releases/
+**Download the latest version here: https://github.com/liminalwarmth/NyctermoonContextMenus/releases/**
 
 This addon adds right-click context menu items to control the utility behaviors and settings for your Companion Bot party members on the Nyctermoon private server. It is not intended to be a replacement for the Companion Control Panel that is distributed with the server files, but rather a complement to it. Common companion toggle commands, role assignment, and spell cast requests can be accessed from these context menus for quick and easy use.
 
+![image](https://github.com/user-attachments/assets/7b35c7f4-55c4-41cf-a0c3-88193d03d849) ![image](https://github.com/user-attachments/assets/6349a470-9379-4217-9b23-b55367ebe12a)
+
 It also adds some Nyctermoon-specific informational commands and settings that can be accessed by right-clicking the player frame. All features enabled by this addon can also be performed manually with the .z, .legacy, .settings, and companion whisper commands described on the [Nyctermoon Wiki](http://nyctermoon.wikidot.com/).
+
+![image](https://github.com/user-attachments/assets/8ebc3794-bc47-40df-9044-c54131dbc2fe)
+
 
 ### Features
 
