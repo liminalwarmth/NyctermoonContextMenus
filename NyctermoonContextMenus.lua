@@ -270,6 +270,12 @@ UnitPopupButtons["BOT_PORTAL_ORGRIMMAR"] = { text = "Orgrimmar", dist = 0 }
 UnitPopupButtons["BOT_PORTAL_UNDERCITY"] = { text = "Undercity", dist = 0 }
 UnitPopupButtons["BOT_PORTAL_THUNDER_BLUFF"] = { text = "Thunder Bluff", dist = 0 }
 
+-- MAGE: Amplify Magic options
+UnitPopupButtons["BOT_MAGE_AMPLIFY_MAGIC"] = { text = "|cFF69CCF0Set Amplify Magic|r", dist = 0, nested = 1 }
+UnitPopupButtons["BOT_MAGE_AMPLIFY_USE"] = { text = "Use Amplify Magic", dist = 0 }
+UnitPopupButtons["BOT_MAGE_DAMPEN_USE"] = { text = "Use Dampen Magic", dist = 0 }
+UnitPopupButtons["BOT_MAGE_AMPLIFY_NEITHER"] = { text = "None", dist = 0 }
+
 -- HUNTER & WARLOCK: Pet toggle
 UnitPopupButtons["BOT_PET_TOGGLE"] = { text = "Pet Control", dist = 0, nested = 1 }
 UnitPopupButtons["BOT_PET_ON"] = { text = "|cff1EFF00Summon Pet|r", dist = 0 }
@@ -483,11 +489,11 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
 
     -- Conditionally edit the tables for each class
     local dynamicMenus = {}
-
     --[[--------------------------
         Mage
     ----------------------------]]
     if NYCTER_SELECTED_UNIT_CLASS == "Mage" then
+        -- Portals
         local portals = {}
         if NYCTER_SELECTED_UNIT_LEVEL >= 40 then
             if NYCTER_SELECTED_UNIT_RACE == "Human" or NYCTER_SELECTED_UNIT_RACE == "Dwarf" or NYCTER_SELECTED_UNIT_RACE == "Gnome" or NYCTER_SELECTED_UNIT_RACE == "NightElf" then
@@ -508,10 +514,21 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
                 table.insert(dynamicMenus, "BOT_OPEN_PORTAL")
             end
         end
+        -- Amplify Magic Settings
+        if NYCTER_SELECTED_UNIT_LEVEL >= 12 then -- Dampen Magic is learned at level 12
+            local amplifyMagicOptions = {"BOT_MAGE_DAMPEN_USE","BOT_MAGE_AMPLIFY_NEITHER"}
+            if NYCTER_SELECTED_UNIT_LEVEL >= 18 then -- Amplify Magic is learned at level 18
+                table.insert(amplifyMagicOptions, 1, "BOT_MAGE_AMPLIFY_USE")
+            end
+            UnitPopupMenus["BOT_MAGE_AMPLIFY_MAGIC"] = amplifyMagicOptions
+            table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_MAGE_AMPLIFY_MAGIC")
+        end
+        -- Deny Danger Spells
         if NYCTER_SELECTED_UNIT_LEVEL >= 20 then -- Blink is learned at level 20
             UnitPopupButtons["BOT_DENY_DANGER_SPELLS"] = { text = "Deny |cFF69CCF0Danger Spells|r", dist = 0 }
             table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_DENY_DANGER_SPELLS")
         end
+
     --[[--------------------------
         Hunter
     ----------------------------]]
@@ -916,6 +933,15 @@ function UnitPopup_OnClick()
             }
             StaticPopup_Show("PORTAL_CONFIRM")
         end
+    --[[------------------------------------
+    Mage Amplify Magic options
+    --------------------------------------]]
+    elseif button == "BOT_MAGE_AMPLIFY_USE" then
+        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set magic amplify")
+    elseif button == "BOT_MAGE_DAMPEN_USE" then
+        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set magic dampen")
+    elseif button == "BOT_MAGE_AMPLIFY_NEITHER" then
+        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set magic none")
     --[[------------------------------------
     Warlock summon player ritual
     --------------------------------------]]
