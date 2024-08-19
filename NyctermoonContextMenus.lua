@@ -4,10 +4,6 @@
 --[[ TODO:
 - Slash commands and options menu
 - Make portal and summoning confirmations optional
-- Add whispers to mages for amplify behavior:
-    set magic amplify -> all dampen magic will be dispelled from your group and all your mages will buff this
-    set magic dampen ->  all amplify magic will be dispelled from your group and all your mages will buff this
-    set magic none -> all dampen and amplify magic will be dispelled from your group and neither will be buffed
 
 [MAYBE?]
 - Custom stats display frame on your character
@@ -23,17 +19,6 @@
 
 [RAID MENU?]
     - Set distancing (Rag, some BWL)
-
-[BUGS]
-- Look into Luna frames ResetInstances button infinite loop:
-    >> LunaUnitFrames/modules/units.lua
-    local function initPlayerDrop()
-        UnitPopup_ShowMenu(PlayerFrameDropDown, "SELF", "player")
-        if not (UnitInRaid("player") or GetNumPartyMembers() > 0) or UnitIsPartyLeader("player") and PlayerFrameDropDown.init and not CanShowResetInstances() then
-            UIDropDownMenu_AddButton({text = RESET_INSTANCES, func = ResetInstances, notCheckable = 1}, 1)
-            PlayerFrameDropDown.init = nil
-        end
-    end
 
 --]]
 
@@ -183,79 +168,6 @@ table.insert(UnitPopupMenus["SELF"], 1, "SELF_NYCTERMOON_STATS")
 --[[---------------------------------------------------------------------------------
   COMPANION MENU COMMANDS
 ----------------------------------------------------------------------------------]]
--- Define custom popup buttons and menus
-UnitPopupButtons["BOT_CONTROL"] = { text = "|cFFFFAA00Companion Settings|r", dist = 0, nested = 1 }
-UnitPopupButtons["BOT_TOGGLE_HELM"] = {text = "Toggle Helm", dist = 0}
-UnitPopupButtons["BOT_TOGGLE_CLOAK"] = { text = "Toggle Cloak", dist = 0 }
-UnitPopupButtons["BOT_TOGGLE_AOE"] = { text = "Toggle AoE", dist = 0 }
-UnitPopupMenus["BOT_CONTROL"] = { "BOT_TOGGLE_AOE","BOT_TOGGLE_HELM", "BOT_TOGGLE_CLOAK"}
-
--- Define role settings
-UnitPopupButtons["BOT_ROLE_TANK"] = { text = "|cFFFFAA00Set Role:|r |cFFC79C6ETank|r", dist = 0 }
-UnitPopupButtons["BOT_ROLE_HEALER"] = { text = "|cFFFFAA00Set Role:|r |cFFF58CBAHealer|r", dist = 0 }
-UnitPopupButtons["BOT_ROLE_DPS"] = { text = "|cFFFFAA00Set Role:|r |cFF69CCF0DPS|r", dist = 0 }
-UnitPopupButtons["BOT_ROLE_MDPS"] = { text = "|cFFFFAA00Set Role:|r |cFFFFF569Melee DPS|r", dist = 0 }
-UnitPopupButtons["BOT_ROLE_RDPS"] = { text = "|cFFFFAA00Set Role:|r |cFFABD473Ranged DPS|r", dist = 0 }
-
--- Deny danger spells (added after roles)
-UnitPopupButtons["BOT_DENY_DANGER_SPELLS"] = { text = "Deny Danger Spells", dist = 0 }
-
--- Assign CC mark
-UnitPopupButtons["BOT_ASSIGN_CC_MARK"] = { text = "Set |cff00ffffCC|r Mark", dist = 0, nested = 1 }
-UnitPopupButtons["BOT_ASSIGN_CC_MARK_STAR"] = { text = "|cffFFD100Star|r", dist = 0 }
-UnitPopupButtons["BOT_ASSIGN_CC_MARK_CIRCLE"] = { text = "|cffFF7F00Circle|r", dist = 0 }
-UnitPopupButtons["BOT_ASSIGN_CC_MARK_DIAMOND"] = { text = "|cffFF00FFDiamond|r", dist = 0 }
-UnitPopupButtons["BOT_ASSIGN_CC_MARK_TRIANGLE"] = { text = "|cff1EFF00Triangle|r", dist = 0 }
-UnitPopupButtons["BOT_ASSIGN_CC_MARK_MOON"] = { text = "|cff6699CCMoon|r", dist = 0 }
-UnitPopupButtons["BOT_ASSIGN_CC_MARK_SQUARE"] = { text = "|cff00ffffSquare|r", dist = 0 }
-UnitPopupButtons["BOT_ASSIGN_CC_MARK_CROSS"] = { text = "|cffFF0000Cross|r", dist = 0 }
-UnitPopupButtons["BOT_ASSIGN_CC_MARK_SKULL"] = { text = "|cFFFFFFA0Skull|r", dist = 0 }
-UnitPopupButtons["BOT_ASSIGN_CC_MARK_CLEAR"] = { text = "Clear CC (Defaults to |cff6699CCMoon|r)", dist = 0 }
-
-UnitPopupMenus["BOT_ASSIGN_CC_MARK"] = {
-    "BOT_ASSIGN_CC_MARK_CLEAR",
-    "BOT_ASSIGN_CC_MARK_STAR",
-    "BOT_ASSIGN_CC_MARK_CIRCLE",
-    "BOT_ASSIGN_CC_MARK_DIAMOND",
-    "BOT_ASSIGN_CC_MARK_TRIANGLE",
-    "BOT_ASSIGN_CC_MARK_MOON",
-    "BOT_ASSIGN_CC_MARK_SQUARE",
-    "BOT_ASSIGN_CC_MARK_CROSS",
-    "BOT_ASSIGN_CC_MARK_SKULL"
-}
-
--- Assign focus mark
-UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK"] = { text = "Set |cffFF0000Focus|r Mark", dist = 0, nested = 1 }
-UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_STAR"] = { text = "|cffFFD100Star|r", dist = 0 }
-UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_CIRCLE"] = { text = "|cffFF7F00Circle|r", dist = 0 }
-UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_DIAMOND"] = { text = "|cffFF00FFDiamond|r", dist = 0 }
-UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_TRIANGLE"] = { text = "|cff1EFF00Triangle|r", dist = 0 }
-UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_MOON"] = { text = "|cff6699CCMoon|r", dist = 0 }
-UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_SQUARE"] = { text = "|cff00ffffSquare|r", dist = 0 }
-UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_CROSS"] = { text = "|cffFF0000Cross|r", dist = 0 }
-UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_SKULL"] = { text = "|cFFFFFFA0Skull|r", dist = 0 }
-UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_CLEAR"] = { text = "Clear Focus (Defaults to |cFFFFFFA0Skull|r)", dist = 0 }
-
-UnitPopupMenus["BOT_ASSIGN_FOCUS_MARK"] = {
-    "BOT_ASSIGN_FOCUS_MARK_CLEAR",
-    "BOT_ASSIGN_FOCUS_MARK_STAR",
-    "BOT_ASSIGN_FOCUS_MARK_CIRCLE",
-    "BOT_ASSIGN_FOCUS_MARK_DIAMOND",
-    "BOT_ASSIGN_FOCUS_MARK_TRIANGLE",
-    "BOT_ASSIGN_FOCUS_MARK_MOON",
-    "BOT_ASSIGN_FOCUS_MARK_SQUARE",
-    "BOT_ASSIGN_FOCUS_MARK_CROSS",
-    "BOT_ASSIGN_FOCUS_MARK_SKULL"
-}
-
--- Set Follow On
-UnitPopupButtons["BOT_FOLLOW_ON"] = { text = "Set |cFFFFFFA0Follow|r On", dist = 0, nested = 1 }
-
--- HUNTER & WARLOCK: Pet toggle
-UnitPopupButtons["BOT_PET_TOGGLE"] = { text = "Pet Control", dist = 0, nested = 1 }
-UnitPopupButtons["BOT_PET_ON"] = { text = "|cff1EFF00Summon Pet|r", dist = 0 }
-UnitPopupButtons["BOT_PET_OFF"] = { text = "|cffFF0000Dismiss Pet|r", dist = 0 }
-
 -- Hook the UnitPopup_ShowMenu function to establish the variables of which party member is being clicked
 local originalUnitPopupShowMenu = UnitPopup_ShowMenu
 function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
@@ -264,9 +176,7 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     ----------------------------]]
     -- Check if the unit is valid and in party or raid
     local isValidUnitInPartyOrRaid = false
-
     isValidUnitInPartyOrRaid = UnitInParty(unit) or UnitInRaid(unit)
-
 
     -- If the unit is not in party/raid, fall back to the original menu
     if not isValidUnitInPartyOrRaid then
@@ -284,6 +194,14 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     -- Target the PARTY dropdown menu
     local menuFrame = "PARTY"
 
+    -- BOT CONTROL MENU: Declare top level defaults
+    UnitPopupButtons["BOT_CONTROL"] = { text = "|cFFFFAA00Companion Settings|r", dist = 0, nested = 1 }
+    UnitPopupButtons["BOT_TOGGLE_HELM"] = {text = "Toggle Helm", dist = 0}
+    UnitPopupButtons["BOT_TOGGLE_CLOAK"] = { text = "Toggle Cloak", dist = 0 }
+    UnitPopupButtons["BOT_TOGGLE_AOE"] = { text = "Toggle AoE", dist = 0 }
+    UnitPopupMenus["BOT_CONTROL"] = { "BOT_TOGGLE_AOE","BOT_TOGGLE_HELM", "BOT_TOGGLE_CLOAK"}
+
+    -- BOT CONTROL MENU: Clear prior settings
     -- Remove any existing class-specific menus
     local i = table.getn(UnitPopupMenus["PARTY"])
     while i > 0 do
@@ -325,6 +243,12 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     --[[--------------------------
         Add Companion Settings
     ----------------------------]]
+    -- COMPANION ROLES: Define & insert role button settings into bot control menu
+    UnitPopupButtons["BOT_ROLE_TANK"] = { text = "|cFFFFAA00Set Role:|r |cFFC79C6ETank|r", dist = 0 }
+    UnitPopupButtons["BOT_ROLE_HEALER"] = { text = "|cFFFFAA00Set Role:|r |cFFF58CBAHealer|r", dist = 0 }
+    UnitPopupButtons["BOT_ROLE_DPS"] = { text = "|cFFFFAA00Set Role:|r |cFF69CCF0DPS|r", dist = 0 }
+    UnitPopupButtons["BOT_ROLE_MDPS"] = { text = "|cFFFFAA00Set Role:|r |cFFFFF569Melee DPS|r", dist = 0 }
+    UnitPopupButtons["BOT_ROLE_RDPS"] = { text = "|cFFFFAA00Set Role:|r |cFFABD473Ranged DPS|r", dist = 0 }
     -- Add role options to BOT_CONTROL menu based on class and set color of companions menu
     if NYCTER_SELECTED_UNIT_CLASS == "Warrior" then
         UnitPopupButtons["BOT_CONTROL"].text = "|cFFC79C6ECompanion Settings|r"
@@ -361,7 +285,10 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_RDPS")
     end
 
-    -- Insert custom buttons into the PARTY pc menu
+    -- Deny danger spells (added after roles by class for those that have them)
+    UnitPopupButtons["BOT_DENY_DANGER_SPELLS"] = { text = "Deny Danger Spells", dist = 0 }
+
+    -- Insert BOT_CONTROL into the PARTY menu
     table.insert(UnitPopupMenus[menuFrame], 1, "BOT_CONTROL")
 
     -- Conditionally edit the tables for each class
@@ -441,7 +368,6 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         UnitPopupButtons["BOT_HUNTER_PET_TURTLE"] = { text = "|cFF0070DETurtle|r |cFFFFFFFF(Shell Shield)|r", dist = 0 }
         UnitPopupButtons["BOT_HUNTER_PET_SERPENT"] = { text = "|cFFFF7D0AWind Serpent|r |cFFFFFFFF(Lightning Breath)|r", dist = 0 }
         UnitPopupButtons["BOT_HUNTER_PET_WOLF"] = { text = "|cFFFFF569Wolf|r |cFFFFFFFF(Furious Howl)|r", dist = 0 }
-        UnitPopupMenus["BOT_PET_TOGGLE"] = { "BOT_PET_ON", "BOT_PET_OFF" }
         UnitPopupMenus["BOT_HUNTER_PET"] = {
             "BOT_HUNTER_PET_BAT",
             "BOT_HUNTER_PET_BEAR",
@@ -463,6 +389,9 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         }
         if NYCTER_SELECTED_UNIT_LEVEL >= 10 then -- Hunters get pets at level 10
             UnitPopupButtons["BOT_PET_TOGGLE"] = { text = "|cFFABD473Pet Control|r", dist = 0, nested = 1 }
+            UnitPopupButtons["BOT_PET_ON"] = { text = "|cff1EFF00Summon Pet|r", dist = 0 }
+            UnitPopupButtons["BOT_PET_OFF"] = { text = "|cffFF0000Dismiss Pet|r", dist = 0 }
+            UnitPopupMenus["BOT_PET_TOGGLE"] = { "BOT_PET_ON", "BOT_PET_OFF" }
             table.insert(dynamicMenus, "BOT_PET_TOGGLE")
             table.insert(dynamicMenus, "BOT_HUNTER_PET")
         end
@@ -497,7 +426,6 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     --[[--------------------------
         Warlock
     ----------------------------]]
-    
     elseif NYCTER_SELECTED_UNIT_CLASS == "Warlock" then
         -- WARLOCK: Summon player ritual
         UnitPopupButtons["BOT_WARLOCK_SUMMON_PLAYER_RITUAL"] = { text = "|cFF9482C9Summon Player|r", dist = 0 }
@@ -511,6 +439,8 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         UnitPopupButtons["BOT_WARLOCK_PET_SUCCUBUS"] = { text = "Succubus", dist = 0 }
         UnitPopupButtons["BOT_WARLOCK_PET_FELHUNTER"] = { text = "Felhunter", dist = 0 }
         UnitPopupButtons["BOT_PET_TOGGLE"] = { text = "|cFF9482C9Pet Control|r", dist = 0, nested = 1 }
+        UnitPopupButtons["BOT_PET_ON"] = { text = "|cff1EFF00Summon Pet|r", dist = 0 }
+        UnitPopupButtons["BOT_PET_OFF"] = { text = "|cffFF0000Dismiss Pet|r", dist = 0 }
         UnitPopupMenus["BOT_PET_TOGGLE"] = { "BOT_PET_ON", "BOT_PET_OFF" }
         UnitPopupMenus["BOT_WARLOCK_PET"] = { "BOT_WARLOCK_PET_IMP" }
         if NYCTER_SELECTED_UNIT_LEVEL >= 10 then
@@ -730,6 +660,53 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     --[[--------------------------
         Add CC and Focus Buttons
     ----------------------------]]
+    -- Assign CC mark buttons
+    UnitPopupButtons["BOT_ASSIGN_CC_MARK"] = { text = "Set |cff00ffffCC|r Mark", dist = 0, nested = 1 }
+    UnitPopupButtons["BOT_ASSIGN_CC_MARK_STAR"] = { text = "|cffFFD100Star|r", dist = 0 }
+    UnitPopupButtons["BOT_ASSIGN_CC_MARK_CIRCLE"] = { text = "|cffFF7F00Circle|r", dist = 0 }
+    UnitPopupButtons["BOT_ASSIGN_CC_MARK_DIAMOND"] = { text = "|cffFF00FFDiamond|r", dist = 0 }
+    UnitPopupButtons["BOT_ASSIGN_CC_MARK_TRIANGLE"] = { text = "|cff1EFF00Triangle|r", dist = 0 }
+    UnitPopupButtons["BOT_ASSIGN_CC_MARK_MOON"] = { text = "|cff6699CCMoon|r", dist = 0 }
+    UnitPopupButtons["BOT_ASSIGN_CC_MARK_SQUARE"] = { text = "|cff00ffffSquare|r", dist = 0 }
+    UnitPopupButtons["BOT_ASSIGN_CC_MARK_CROSS"] = { text = "|cffFF0000Cross|r", dist = 0 }
+    UnitPopupButtons["BOT_ASSIGN_CC_MARK_SKULL"] = { text = "|cFFFFFFA0Skull|r", dist = 0 }
+    UnitPopupButtons["BOT_ASSIGN_CC_MARK_CLEAR"] = { text = "Clear CC (Defaults to |cff6699CCMoon|r)", dist = 0 }
+
+    UnitPopupMenus["BOT_ASSIGN_CC_MARK"] = {
+        "BOT_ASSIGN_CC_MARK_CLEAR",
+        "BOT_ASSIGN_CC_MARK_STAR",
+        "BOT_ASSIGN_CC_MARK_CIRCLE",
+        "BOT_ASSIGN_CC_MARK_DIAMOND",
+        "BOT_ASSIGN_CC_MARK_TRIANGLE",
+        "BOT_ASSIGN_CC_MARK_MOON",
+        "BOT_ASSIGN_CC_MARK_SQUARE",
+        "BOT_ASSIGN_CC_MARK_CROSS",
+        "BOT_ASSIGN_CC_MARK_SKULL"
+    }
+
+    -- Assign focus mark buttons
+    UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK"] = { text = "Set |cffFF0000Focus|r Mark", dist = 0, nested = 1 }
+    UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_STAR"] = { text = "|cffFFD100Star|r", dist = 0 }
+    UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_CIRCLE"] = { text = "|cffFF7F00Circle|r", dist = 0 }
+    UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_DIAMOND"] = { text = "|cffFF00FFDiamond|r", dist = 0 }
+    UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_TRIANGLE"] = { text = "|cff1EFF00Triangle|r", dist = 0 }
+    UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_MOON"] = { text = "|cff6699CCMoon|r", dist = 0 }
+    UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_SQUARE"] = { text = "|cff00ffffSquare|r", dist = 0 }
+    UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_CROSS"] = { text = "|cffFF0000Cross|r", dist = 0 }
+    UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_SKULL"] = { text = "|cFFFFFFA0Skull|r", dist = 0 }
+    UnitPopupButtons["BOT_ASSIGN_FOCUS_MARK_CLEAR"] = { text = "Clear Focus (Defaults to |cFFFFFFA0Skull|r)", dist = 0 }
+
+    UnitPopupMenus["BOT_ASSIGN_FOCUS_MARK"] = {
+        "BOT_ASSIGN_FOCUS_MARK_CLEAR",
+        "BOT_ASSIGN_FOCUS_MARK_STAR",
+        "BOT_ASSIGN_FOCUS_MARK_CIRCLE",
+        "BOT_ASSIGN_FOCUS_MARK_DIAMOND",
+        "BOT_ASSIGN_FOCUS_MARK_TRIANGLE",
+        "BOT_ASSIGN_FOCUS_MARK_MOON",
+        "BOT_ASSIGN_FOCUS_MARK_SQUARE",
+        "BOT_ASSIGN_FOCUS_MARK_CROSS",
+        "BOT_ASSIGN_FOCUS_MARK_SKULL"
+    }
     -- Add cc and focus mark assignment to the dynamic menus in the last position
     table.insert(dynamicMenus, "BOT_ASSIGN_CC_MARK")
     table.insert(dynamicMenus, "BOT_ASSIGN_FOCUS_MARK")
@@ -737,6 +714,9 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     --[[--------------------------
        Add Follow On Buttons
     ----------------------------]]
+    -- Set Follow On
+    UnitPopupButtons["BOT_FOLLOW_ON"] = { text = "Set |cFFFFFFA0Follow|r On", dist = 0, nested = 1 }
+
     -- Set a function to get the unit class and return the color code string for that class
     local function getUnitClassColor(unit)
         local _, class = UnitClass(unit)
