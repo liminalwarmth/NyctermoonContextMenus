@@ -665,7 +665,8 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
                 {level = 30, id = "BOT_SHAMAN_AIR_TOTEM_NATURE"},
                 {level = 30, id = "BOT_SHAMAN_AIR_TOTEM_GROUNDING"},
                 {level = 32, id = "BOT_SHAMAN_AIR_TOTEM_WINDFURY"},
-                {level = 42, id = "BOT_SHAMAN_AIR_TOTEM_GRACE"}
+                {level = 42, id = "BOT_SHAMAN_AIR_TOTEM_GRACE"},
+                {level = 50, id = "BOT_SHAMAN_AIR_TOTEM_TRANQUIL"}
             }
         }
 
