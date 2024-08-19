@@ -346,6 +346,7 @@ UnitPopupButtons["BOT_SHAMAN_AIR_TOTEM_GRACE"] = { text = "Grace of Air", dist =
 UnitPopupButtons["BOT_SHAMAN_AIR_TOTEM_NATURE"] = { text = "Nature Resistance", dist = 0 }
 UnitPopupButtons["BOT_SHAMAN_AIR_TOTEM_WINDFURY"] = { text = "Windfury", dist = 0 }
 UnitPopupButtons["BOT_SHAMAN_AIR_TOTEM_GROUNDING"] = { text = "Grounding", dist = 0 }
+UnitPopupButtons["BOT_SHAMAN_AIR_TOTEM_TRANQUIL"] = { text = "Tranquil Air", dist = 0 }
 
 -- SHAMAN: Choose earth totem
 UnitPopupButtons["BOT_SHAMAN_EARTH_TOTEM"] = { text = "|cFF0070DESet|r |cFF4dd943Earth|r |cFF0070DETotem|r", dist = 0, nested = 1 }
@@ -521,7 +522,7 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
                 table.insert(amplifyMagicOptions, 1, "BOT_MAGE_AMPLIFY_USE")
             end
             UnitPopupMenus["BOT_MAGE_AMPLIFY_MAGIC"] = amplifyMagicOptions
-            table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_MAGE_AMPLIFY_MAGIC")
+            table.insert(dynamicMenus, "BOT_MAGE_AMPLIFY_MAGIC")
         end
         -- Deny Danger Spells
         if NYCTER_SELECTED_UNIT_LEVEL >= 20 then -- Blink is learned at level 20
@@ -1106,6 +1107,8 @@ function UnitPopup_OnClick()
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Windfury Totem")
     elseif button == "BOT_SHAMAN_AIR_TOTEM_GROUNDING" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Grounding Totem")
+    elseif button == "BOT_SHAMAN_AIR_TOTEM_TRANQUIL" then
+        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Tranquil Air Totem")
     --[[------------------------------------
     Shaman earth totems
     --------------------------------------]]
