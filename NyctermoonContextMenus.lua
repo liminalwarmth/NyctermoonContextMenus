@@ -40,6 +40,9 @@ end
 -- Table to store the last 20 messages and their event types
 local messageLog = {}
 
+-- Table to store the list of companions and their classes
+local companions = {}
+
 -- Set up the event handler
 eventFrame:SetScript("OnEvent", function()
     -- Get the message content and event type
@@ -62,6 +65,22 @@ eventFrame:SetScript("OnEvent", function()
     end
     
     if eventType == "CHAT_MSG_SYSTEM" then
+        -- Check if it's a player leaving the party or raid
+        local _, _, leaveName = string.find(cleanMessage, "(%S+) leaves the party%.")
+        if not leaveName then
+            _, _, leaveName = string.find(cleanMessage, "(%S+) has left the raid group")
+        end
+        
+        if leaveName and companions[leaveName] then
+            companions[leaveName] = nil
+            DEFAULT_CHAT_FRAME:AddMessage("Removed companion " .. leaveName .. " from the companions table", 1, 0.5, 0)
+            -- List the current companions
+            DEFAULT_CHAT_FRAME:AddMessage("Current companions:", 0, 1, 0)
+            for companionName, _ in pairs(companions) do
+                DEFAULT_CHAT_FRAME:AddMessage("- " .. companionName, 0, 1, 0)
+            end
+        end
+        
         -- Check if it's a player joining the party or raid
         local _, _, name = string.find(cleanMessage, "(%S+) joins the party%.")
         if not name then
@@ -103,8 +122,19 @@ eventFrame:SetScript("OnEvent", function()
             end
             
             if companionDetected then
-                DEFAULT_CHAT_FRAME:AddMessage("New companion detected: " .. name, 0, 1, 0)  -- Green text for debugging
-                -- Here you can add any actions you want to take when a new companion is detected
+                -- Add the companion's name to the companions table
+                if not companions then
+                    companions = {}
+                end
+
+                companions[name] = true
+                
+                DEFAULT_CHAT_FRAME:AddMessage("Added companion " .. name .. " to the companions table", 0, 1, 0)
+                -- List the current companions
+                DEFAULT_CHAT_FRAME:AddMessage("Current companions:", 0, 1, 0)
+                for companionName, _ in pairs(companions) do
+                    DEFAULT_CHAT_FRAME:AddMessage("- " .. companionName, 0, 1, 0)
+                end
             end
         end
     end
