@@ -23,54 +23,45 @@
 --]]
 
 --[[------------------------------------
-Detect New Companion Hired
+Detect New Companions and Companion Messages
 --------------------------------------]]
--- Function to handle new companion hiring
--- local function HandleNewCompanion(name, class)
---     -- Remove any leading/trailing whitespace
---     name = name:match("^%s*(.-)%s*$")
---     class = class:match("^%s*(.-)%s*$")
-    
---     -- Set follow on player for all classes
---     SendChatMessage(".z " .. name .. " set follow on " .. UnitName("player"), "SAY")
-    
---     -- Print a message to confirm the actions
---     DEFAULT_CHAT_FRAME:AddMessage("Automatic settings applied for new " .. class .. " companion: " .. name)
--- end
-
 -- Create a frame to handle events
 local eventFrame = CreateFrame("Frame")
 
--- Register for all relevant chat message events
+-- Register for all relevant chat events
+eventFrame:RegisterEvent("CHAT_MSG_MONSTER_WHISPER")
 eventFrame:RegisterEvent("CHAT_MSG_SYSTEM")
-eventFrame:RegisterEvent("CHAT_MSG_WHISPER")
 
--- Variable to store the last relevant message
-local lastRelevantMessage = nil
-
--- Hook into the chat frame's AddMessage function
-local originalAddMessage = DEFAULT_CHAT_FRAME.AddMessage
-DEFAULT_CHAT_FRAME.AddMessage = function(self, text, r, g, b, id)
-    -- Check for bot transfer message
-    local _, _, botName, playerName = string.find(text, "(%S+) whispers: %[(%S+)%] has transferred me to you%.")
-    if botName and playerName then
-        lastRelevantMessage = text
-        print("Bot transfer detected: " .. botName .. " from " .. playerName)  -- Debug message
-    end
-    
-    -- Call the original function
-    return originalAddMessage(self, text, r, g, b, id)
+-- Function to clean message of color codes
+local function CleanMessage(message)
+    return string.gsub(string.gsub(message, "|c%x%x%x%x%x%x%x%x", ""), "|r", "")
 end
+
+-- Table to store the last 20 messages and their event types
+local messageLog = {}
 
 -- Set up the event handler
 eventFrame:SetScript("OnEvent", function()
-    -- Get the message content
+    -- Get the message content and event type
     local message = arg1
+    local eventType = event
     
-    if event == "CHAT_MSG_SYSTEM" then
-        -- Remove color codes for easier matching
-        local cleanMessage = string.gsub(string.gsub(message, "|c%x%x%x%x%x%x%x%x", ""), "|r", "")
-        
+    -- Clean the current message
+    local cleanMessage = CleanMessage(message)
+    
+    -- Add the new message to the log
+    if eventType == "CHAT_MSG_MONSTER_WHISPER" then
+        local monsterName = arg2 or "Unknown"
+        cleanMessage = monsterName .. " whispers: " .. cleanMessage
+    end
+    table.insert(messageLog, 1, {message = cleanMessage, event = eventType})
+    
+    -- Keep only the last 20 messages
+    if table.getn(messageLog) > 20 then
+        table.remove(messageLog)
+    end
+    
+    if eventType == "CHAT_MSG_SYSTEM" then
         -- Check if it's a player joining the party or raid
         local _, _, name = string.find(cleanMessage, "(%S+) joins the party%.")
         if not name then
@@ -78,36 +69,46 @@ eventFrame:SetScript("OnEvent", function()
         end
         
         if name then
-            -- Check if the previous message was about a new companion being hired, added, or transferred
-            if lastRelevantMessage then
-                if string.find(lastRelevantMessage, "^New Companion hired") or 
-                   string.find(lastRelevantMessage, "^New Legacy Companion added") or
-                   string.find(lastRelevantMessage, "has transferred me to you") then
-                    DEFAULT_CHAT_FRAME:AddMessage("New companion detected: " .. name, 0, 1, 0)  -- Green text for debugging
+            local companionDetected = false
+            
+            -- Check whispers first
+            for i = 2, table.getn(messageLog) do
+                local logEntry = messageLog[i]
+                if logEntry.event == "CHAT_MSG_MONSTER_WHISPER" then
+                    if string.find(logEntry.message, "^" .. name .. ".*has transferred me to you") then
+                        companionDetected = true
+                        break
+                    else
+                        -- Display the whisper that didn't match
+                        DEFAULT_CHAT_FRAME:AddMessage("Not a match: " .. logEntry.message, 1, 0.5, 0)  -- Orange text for debugging
+                    end
                 end
-                lastRelevantMessage = nil  -- Reset after processing
             end
-        end
-        
-        -- Store the current message if it's relevant
-        if string.find(cleanMessage, "^New Companion hired") or string.find(cleanMessage, "^New Legacy Companion added") then
-            lastRelevantMessage = cleanMessage
-        end
-    elseif event == "CHAT_MSG_WHISPER" then
-        -- Check for the bot transfer message
-        local _, _, botName, playerName = string.find(message, "%[(%S+)%] has transferred me to you%.")
-        if botName and playerName then
-            lastRelevantMessage = message
-            DEFAULT_CHAT_FRAME:AddMessage("Bot transfer detected: " .. botName .. " from " .. playerName, 0, 1, 1)  -- Cyan text for debugging
+            
+            -- If companion not detected in whispers, check system messages
+            if not companionDetected then
+                for i = 2, table.getn(messageLog) do
+                    local logEntry = messageLog[i]
+                    if logEntry.event == "CHAT_MSG_SYSTEM" then
+                        if string.find(logEntry.message, "New Companion hired") or 
+                           string.find(logEntry.message, "New Legacy Companion added") then
+                            companionDetected = true
+                            break
+                        elseif string.find(logEntry.message, "(%S+) joins the party%.") or 
+                               string.find(logEntry.message, "(%S+) has joined the raid group") then
+                            break  -- Stop checking if we encounter another join message
+                        end
+                    end
+                end
+            end
+            
+            if companionDetected then
+                DEFAULT_CHAT_FRAME:AddMessage("New companion detected: " .. name, 0, 1, 0)  -- Green text for debugging
+                -- Here you can add any actions you want to take when a new companion is detected
+            end
         end
     end
 end)
-
---Beldin whispers: [Kronos] has transferred me to you.
---Beldin joins the party.
---[Beldin] has transferred to [Redbank]
---Beldin leaves the party.
-
 
 --[[------------------------------------
     Send Z Commands (Bot Targeted)
