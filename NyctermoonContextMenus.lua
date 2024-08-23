@@ -974,6 +974,12 @@ function UnitPopup_OnClick()
             StaticPopup_Show("SUMMON_CONFIRM")
         end
     --[[------------------------------------
+    Warlock soulstone
+    --------------------------------------]]
+    elseif string.find(button, "^BOT_WARLOCK_SOULSTONE_") then
+        local _, _, playerName = string.find(button, "_([^_]+)$")
+        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set soulstone on " .. playerName)
+    --[[------------------------------------
     Pet toggle
     --------------------------------------]]
     elseif button == "BOT_PET_ON" then
@@ -1146,14 +1152,14 @@ function UnitPopup_OnClick()
     elseif button == "BOT_SHAMAN_WATER_TOTEM_POISON_CLEANSING" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Poison Cleansing Totem")
     --[[------------------------------------
-    Clear & Toggle totems
+    Shaman Clear & Toggle totems
     --------------------------------------]]
     elseif button == "BOT_SHAMAN_CLEAR_TOTEMS" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem cancel")
     elseif button == "BOT_SHAMAN_TOGGLE_TOTEMS" then
         SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "toggle totems")
     --[[------------------------------------
-    Reincarnation
+    Shaman Reincarnation
     --------------------------------------]]
     elseif button == "BOT_SHAMAN_REINCARNATION_ALLOW" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny remove reincarnation")
@@ -1201,6 +1207,15 @@ function UnitPopup_OnClick()
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny remove prowl")
     elseif button == "BOT_DRUID_STEALTH_OFF" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add prowl")
+    --[[------------------------------------
+    Priest Fear Ward
+    --------------------------------------]]
+    elseif string.find(button, "^BOT_PRIEST_FEAR_WARD_") then
+        local _, _, playerName = string.find(button, "_([^_]+)$")
+        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set fearward on " .. playerName)
+    --[[------------------------------------
+    Default Behavior
+    --------------------------------------]]
     else
         originalUnitPopupOnClick()
     end
