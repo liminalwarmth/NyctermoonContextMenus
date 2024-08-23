@@ -315,45 +315,34 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         Add Companion Settings
     ----------------------------]]
     -- COMPANION ROLES: Define & insert role button settings into bot control menu
-    UnitPopupButtons["BOT_ROLE_TANK"] = { text = "|cFFFFAA00Set Role:|r |cFFC79C6ETank|r", dist = 0 }
-    UnitPopupButtons["BOT_ROLE_HEALER"] = { text = "|cFFFFAA00Set Role:|r |cFFF58CBAHealer|r", dist = 0 }
-    UnitPopupButtons["BOT_ROLE_DPS"] = { text = "|cFFFFAA00Set Role:|r |cFF69CCF0DPS|r", dist = 0 }
-    UnitPopupButtons["BOT_ROLE_MDPS"] = { text = "|cFFFFAA00Set Role:|r |cFFFFF569Melee DPS|r", dist = 0 }
-    UnitPopupButtons["BOT_ROLE_RDPS"] = { text = "|cFFFFAA00Set Role:|r |cFFABD473Ranged DPS|r", dist = 0 }
+    local roleButtons = {
+        ["BOT_ROLE_TANK"] = "|cFFC79C6ETank|r",
+        ["BOT_ROLE_HEALER"] = "|cFFF58CBAHealer|r",
+        ["BOT_ROLE_DPS"] = "|cFF69CCF0DPS|r",
+        ["BOT_ROLE_MDPS"] = "|cFFFFF569Melee DPS|r",
+        ["BOT_ROLE_RDPS"] = "|cFFABD473Ranged DPS|r"
+    }
+    for id, text in pairs(roleButtons) do
+        UnitPopupButtons[id] = { text = "|cFFFFAA00Set Role:|r " .. text, dist = 0 }
+    end
+
     -- Add role options to BOT_CONTROL menu based on class and set color of companions menu
-    if NYCTER_SELECTED_UNIT_CLASS == "Warrior" then
-        UnitPopupButtons["BOT_CONTROL"].text = "|cFFC79C6ECompanion Settings|r"
-        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_TANK")
-        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_DPS")
-    elseif NYCTER_SELECTED_UNIT_CLASS == "Paladin" then
-        UnitPopupButtons["BOT_CONTROL"].text = "|cFFF58CBACompanion Settings|r"
-        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_TANK")
-        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_HEALER")
-        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_DPS")
-    elseif NYCTER_SELECTED_UNIT_CLASS == "Hunter" then
-        UnitPopupButtons["BOT_CONTROL"].text = "|cFFABD473Companion Settings|r"
-    elseif NYCTER_SELECTED_UNIT_CLASS == "Rogue" then
-        UnitPopupButtons["BOT_CONTROL"].text = "|cFFFFF569Companion Settings|r"
-    elseif NYCTER_SELECTED_UNIT_CLASS == "Priest" then
-        UnitPopupButtons["BOT_CONTROL"].text = "|cFFFFFFA0Companion Settings|r"
-        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_HEALER")
-        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_DPS")
-    elseif NYCTER_SELECTED_UNIT_CLASS == "Shaman" then
-        UnitPopupButtons["BOT_CONTROL"].text = "|cFF0070DECompanion Settings|r"
-        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_TANK")
-        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_HEALER")
-        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_MDPS")
-        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_RDPS")
-    elseif NYCTER_SELECTED_UNIT_CLASS == "Mage" then
-        UnitPopupButtons["BOT_CONTROL"].text = "|cFF69CCF0Companion Settings|r"
-    elseif NYCTER_SELECTED_UNIT_CLASS == "Warlock" then
-        UnitPopupButtons["BOT_CONTROL"].text = "|cFF9482C9Companion Settings|r"
-    elseif NYCTER_SELECTED_UNIT_CLASS == "Druid" then
-        UnitPopupButtons["BOT_CONTROL"].text = "|cFFFF7D0ACompanion Settings|r"
-        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_TANK")
-        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_HEALER")
-        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_MDPS")
-        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_RDPS")
+    local classSettings = {
+        ["Warrior"] = {color = "C79C6E", roles = {"TANK", "DPS"}},
+        ["Paladin"] = {color = "F58CBA", roles = {"TANK", "HEALER", "DPS"}},
+        ["Hunter"] = {color = "ABD473", roles = {}},
+        ["Rogue"] = {color = "FFF569", roles = {}},
+        ["Priest"] = {color = "FFFFA0", roles = {"HEALER", "DPS"}},
+        ["Shaman"] = {color = "0070DE", roles = {"TANK", "HEALER", "MDPS", "RDPS"}},
+        ["Mage"] = {color = "69CCF0", roles = {}},
+        ["Warlock"] = {color = "9482C9", roles = {}},
+        ["Druid"] = {color = "FF7D0A", roles = {"TANK", "HEALER", "MDPS", "RDPS"}}
+    }
+
+    local classInfo = classSettings[NYCTER_SELECTED_UNIT_CLASS]
+    UnitPopupButtons["BOT_CONTROL"].text = "|cFF" .. classInfo.color .. "Companion Settings|r"
+    for _, role in ipairs(classInfo.roles) do
+        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_" .. role)
     end
 
     -- Deny danger spells (added after roles by class for those that have them)
