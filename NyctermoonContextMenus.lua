@@ -130,6 +130,77 @@ local CLASS_COLORS = {
     ["WARLOCK"] = "cFF9482C9",
     ["PALADIN"] = "cFFF58CBA"
 }
+local function getUnitClassColor(unit)
+    local _, class = UnitClass(unit)
+    return CLASS_COLORS[string.upper(class)] or "cFFFFFFFF"  -- Default to white if class not found
+end
+
+--[[------------------------------------
+    Define Raid Group for Unit
+--------------------------------------]]
+local function GetUnitRaidGroup(unit)
+    if UnitInRaid(unit) then
+        for i = 1, 40 do
+            local name, _, subgroup = GetRaidRosterInfo(i)
+            if name == UnitName(unit) then
+                return subgroup
+            end
+        end
+    end
+    return nil
+end
+
+--[[------------------------------------
+    Get Local Group Members and Build Menu Buttons
+--------------------------------------]]
+local function GetLocalGroupMembers(unit, includePlayer, includeTarget, buttonPrefix)
+    local members = {}
+    local menuItems = {}
+    local playerName = UnitName("player")
+    local targetName = UnitName(unit)
+    local isInRaid = UnitInRaid("player")
+    local unitGroup = GetUnitRaidGroup(unit)
+
+    if includePlayer then
+        local playerColorCode = getUnitClassColor("player")
+        table.insert(members, {name = playerName, colorCode = playerColorCode, isPlayer = true})
+    end
+
+    if isInRaid then
+        -- In a raid, add members of the unit's group
+        for i = 1, 40 do
+            local name, _, subgroup = GetRaidRosterInfo(i)
+            if name and subgroup == unitGroup and (includeTarget or name ~= targetName) and name ~= playerName then
+                local colorCode = getUnitClassColor("raid"..i)
+                table.insert(members, {name = name, colorCode = colorCode, isPlayer = false})
+            end
+        end
+    else
+        -- In a party, add all party members
+        for i = 1, GetNumPartyMembers() do
+            local partyUnit = "party"..i
+            local name = GetUnitName(partyUnit)
+            if name and (includeTarget or name ~= targetName) and name ~= playerName then
+                local colorCode = getUnitClassColor(partyUnit)
+                table.insert(members, {name = name, colorCode = colorCode, isPlayer = false})
+            end
+        end
+    end
+
+    -- Build menu items for each member
+    for _, member in ipairs(members) do
+        local buttonName = buttonPrefix .. "_" .. member.name
+        local displayText = "|" .. member.colorCode .. member.name .. "|r"
+        if member.isPlayer then
+            displayText = displayText .. " (Me)"
+        end
+        UnitPopupButtons[buttonName] = { text = displayText, dist = 0 }
+        table.insert(menuItems, buttonName)
+    end
+
+    return menuItems
+end
+
 
 --[[---------------------------------------------------------------------------------
   PLAYER (SELF) MENU COMMANDS
@@ -458,6 +529,13 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         end
         table.insert(dynamicMenus, "BOT_PET_TOGGLE")
         table.insert(dynamicMenus, "BOT_WARLOCK_PET")
+        
+        -- WARLOCK: Set Soulstone on
+        if NYCTER_SELECTED_UNIT_LEVEL >= 18 then -- Soulstone is learned at level 18
+            UnitPopupButtons["BOT_WARLOCK_SOULSTONE"] = { text = "|cFF9482C9Set Soulstone On|r", dist = 0, nested = 1 }
+            UnitPopupMenus["BOT_WARLOCK_SOULSTONE"] = GetLocalGroupMembers(NYCTER_SELECTED_UNIT, true, true, "BOT_WARLOCK_SOULSTONE")
+            table.insert(dynamicMenus, "BOT_WARLOCK_SOULSTONE")
+        end
 
     --[[--------------------------
         Paladin
@@ -621,9 +699,16 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         Priest
     ----------------------------]]
     elseif NYCTER_SELECTED_UNIT_CLASS == "Priest" then
-        if NYCTER_SELECTED_UNIT_LEVEL >= 14 then -- Psychic Scream is learned at level 14
+        if NYCTER_SELECTED_UNIT_LEVEL >= 14 then
             UnitPopupButtons["BOT_DENY_DANGER_SPELLS"] = { text = "Deny |cFFFFFFA0Danger Spells|r", dist = 0 }
             table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_DENY_DANGER_SPELLS")
+        end
+        
+        -- PRIEST: Fear Ward (Dwarf only)
+        if NYCTER_SELECTED_UNIT_LEVEL >= 20 and UnitRace(NYCTER_SELECTED_UNIT) == "Dwarf" then
+            UnitPopupButtons["BOT_PRIEST_FEAR_WARD"] = { text = "|cFFFFFFA0Set Fear Ward On|r", dist = 0, nested = 1 }
+            UnitPopupMenus["BOT_PRIEST_FEAR_WARD"] = GetLocalGroupMembers(NYCTER_SELECTED_UNIT, true, true, "BOT_PRIEST_FEAR_WARD")
+            table.insert(dynamicMenus, "BOT_PRIEST_FEAR_WARD")
         end
     --[[--------------------------
         Warrior
@@ -714,63 +799,8 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     --[[--------------------------
        Add Follow On Buttons
     ----------------------------]]
-    -- Set Follow On
     UnitPopupButtons["BOT_FOLLOW_ON"] = { text = "Set |cFFFFFFA0Follow|r On", dist = 0, nested = 1 }
-
-    -- Set a function to get the unit class and return the color code string for that class
-    local function getUnitClassColor(unit)
-        local _, class = UnitClass(unit)
-        return CLASS_COLORS[string.upper(class)] or "cFFFFFFFF"  -- Default to white if class not found
-    end
-
-    -- Function to get the raid group number of a unit
-    local function GetUnitRaidGroup(unit)
-        if UnitInRaid(unit) then
-            for i = 1, 40 do
-                local name, _, subgroup = GetRaidRosterInfo(i)
-                if name == UnitName(unit) then
-                    return subgroup
-                end
-            end
-        end
-        return nil
-    end
-
-    -- Build the follow on table from the group party members and add it to the menu
-    local followOnTable = {}
-    local isInRaid = UnitInRaid("player")
-    local selectedUnitGroup = GetUnitRaidGroup(NYCTER_SELECTED_UNIT)
-
-    -- Always add the player (you) as the first follow option
-    local playerName = UnitName("player")
-    local playerColorCode = getUnitClassColor("player")
-    UnitPopupButtons["BOT_FOLLOW_ON_"..playerName] = { text = "|"..playerColorCode..playerName.."|r (Me)", dist = 0 }
-    table.insert(followOnTable, "BOT_FOLLOW_ON_"..playerName)
-
-    if isInRaid then
-        -- In a raid, add members of the selected unit's group
-        for i = 1, 40 do
-            local name, _, subgroup = GetRaidRosterInfo(i)
-            if name and subgroup == selectedUnitGroup and name ~= NYCTER_SELECTED_UNIT_NAME and name ~= playerName then
-                local colorCode = getUnitClassColor("raid"..i)
-                UnitPopupButtons["BOT_FOLLOW_ON_"..name] = { text = "|"..colorCode..name.."|r", dist = 0 }
-                table.insert(followOnTable, "BOT_FOLLOW_ON_"..name)
-            end
-        end
-    else
-        -- In a party, add all party members except the selected unit and the player
-        for i = 1, GetNumPartyMembers() do
-            local unit = "party"..i
-            local name = GetUnitName(unit)
-            if name ~= NYCTER_SELECTED_UNIT_NAME and name ~= playerName then
-                local colorCode = getUnitClassColor(unit)
-                UnitPopupButtons["BOT_FOLLOW_ON_"..name] = { text = "|"..colorCode..name.."|r", dist = 0 }
-                table.insert(followOnTable, "BOT_FOLLOW_ON_"..name)
-            end
-        end
-    end
-
-    UnitPopupMenus["BOT_FOLLOW_ON"] = followOnTable
+    UnitPopupMenus["BOT_FOLLOW_ON"] = GetLocalGroupMembers(NYCTER_SELECTED_UNIT, true, false, "BOT_FOLLOW_ON")
     table.insert(dynamicMenus, "BOT_FOLLOW_ON")
 
     --[[--------------------------
