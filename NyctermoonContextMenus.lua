@@ -262,6 +262,12 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     NYCTER_SELECTED_UNIT_RACE = UnitRace(unit)
     NYCTER_SELECTED_UNIT_LEVEL = UnitLevel(unit)
 
+    -- Check if the selected unit is the player
+    if NYCTER_SELECTED_UNIT_NAME == UnitName("player") then
+        -- If it is, show the self menu instead
+        return originalUnitPopupShowMenu(dropdownMenu, "SELF", unit, name, userData)
+    end
+    
     -- Target the PARTY dropdown menu
     local menuFrame = "PARTY"
 
