@@ -23,6 +23,60 @@
 --]]
 
 --[[------------------------------------
+Detect New Companion Hired
+--------------------------------------]]
+-- Function to handle new companion hiring
+local function HandleNewCompanion(name, class)
+    -- Remove any leading/trailing whitespace
+    name = name:match("^%s*(.-)%s*$")
+    class = class:match("^%s*(.-)%s*$")
+    
+    -- Set follow on player for all classes
+    SendChatMessage(".z " .. name .. " set follow on " .. UnitName("player"), "SAY")
+    
+    -- Print a message to confirm the actions
+    DEFAULT_CHAT_FRAME:AddMessage("Automatic settings applied for new " .. class .. " companion: " .. name)
+end
+
+-- Create a frame to handle events
+local eventFrame = CreateFrame("Frame")
+
+-- Register for all chat message events
+eventFrame:RegisterEvent("CHAT_MSG_SYSTEM")
+eventFrame:RegisterEvent("CHAT_MSG_SAY")
+eventFrame:RegisterEvent("CHAT_MSG_YELL")
+eventFrame:RegisterEvent("CHAT_MSG_WHISPER")
+eventFrame:RegisterEvent("CHAT_MSG_PARTY")
+eventFrame:RegisterEvent("CHAT_MSG_RAID")
+eventFrame:RegisterEvent("CHAT_MSG_GUILD")
+eventFrame:RegisterEvent("CHAT_MSG_OFFICER")
+eventFrame:RegisterEvent("CHAT_MSG_CHANNEL")
+eventFrame:RegisterEvent("CHAT_MSG_EMOTE")
+eventFrame:RegisterEvent("CHAT_MSG_TEXT_EMOTE")
+
+-- Set up the event handler
+eventFrame:SetScript("OnEvent", function()
+    local event = event
+    -- Get the message content
+    local message = arg1
+    
+    -- Print the message content for debugging -- content works, match may not
+    if message then
+        DEFAULT_CHAT_FRAME:AddMessage("Message Content: " .. message, 0, 1, 0)  -- Green text
+    end
+    
+    -- Handle the new companion message
+    if event == "CHAT_MSG_SYSTEM" then
+        -- local name, class = string.match(message, "New Companion hired: ([^%(]+) %(([^%)]+)%)")
+        -- if name and class then
+        --     HandleNewCompanion(name, class)
+        -- end
+    end
+    
+    -- You can add more specific handling for other message types here if needed
+end)
+
+--[[------------------------------------
     Send Z Commands (Bot Targeted)
 --------------------------------------]]
 local function SendTargetedBotZCommand(unit, command)
