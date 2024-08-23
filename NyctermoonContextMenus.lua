@@ -488,6 +488,11 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
             UnitPopupButtons["BOT_HUNTER_ASPECT"] = { text = "|cFFABD473Set Aspect|r", dist = 0, nested = 1 }
             table.insert(dynamicMenus, "BOT_HUNTER_ASPECT")
         end
+    -- HUNTER: Deny dangerous spells
+    if NYCTER_SELECTED_UNIT_LEVEL >= 8 then -- Scare Beast is learned at level 8
+        UnitPopupButtons["BOT_DENY_DANGER_SPELLS"] = { text = "Deny |cFFABD473Danger Spells|r", dist = 0 }
+        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_DENY_DANGER_SPELLS")
+    end
 
     --[[--------------------------
         Warlock
@@ -734,6 +739,15 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         if NYCTER_SELECTED_UNIT_LEVEL >= 20 then -- Stealth is learned at level 20 (cat form)
             UnitPopupMenus["BOT_DRUID_STEALTH"] = { "BOT_DRUID_STEALTH_ON", "BOT_DRUID_STEALTH_OFF" }
             table.insert(dynamicMenus, "BOT_DRUID_STEALTH")
+        end
+
+        -- DRUID: Rebirth control
+        UnitPopupButtons["BOT_DRUID_REBIRTH"] = { text = "|cFFFF7D0ARebirth|r", dist = 0, nested = 1 }
+        UnitPopupButtons["BOT_DRUID_REBIRTH_ALLOW"] = { text = "|cff1EFF00Allow Combat Resurrect|r", dist = 0 }
+        UnitPopupButtons["BOT_DRUID_REBIRTH_DENY"] = { text = "|cffFF0000Deny Combat Resurrect|r", dist = 0 }
+        if NYCTER_SELECTED_UNIT_LEVEL >= 20 then -- Rebirth is learned at level 20
+            UnitPopupMenus["BOT_DRUID_REBIRTH"] = { "BOT_DRUID_REBIRTH_ALLOW", "BOT_DRUID_REBIRTH_DENY" }
+            table.insert(dynamicMenus, "BOT_DRUID_REBIRTH")
         end
     end
 
@@ -1008,14 +1022,10 @@ function UnitPopup_OnClick()
     --------------------------------------]]
     elseif button == "BOT_HUNTER_ASPECT_DEFAULT" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aspect cancel")
-    -- elseif button == "BOT_HUNTER_ASPECT_MONKEY" then
-    --     SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aspect Aspect of the Monkey")
     elseif button == "BOT_HUNTER_ASPECT_HAWK" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aspect Aspect of the Hawk")
     elseif button == "BOT_HUNTER_ASPECT_CHEETAH" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aspect Aspect of the Cheetah")
-    -- elseif button == "BOT_HUNTER_ASPECT_BEAST" then
-    --     SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aspect Aspect of the Beast")
     elseif button == "BOT_HUNTER_ASPECT_PACK" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aspect Aspect of the Pack")
     elseif button == "BOT_HUNTER_ASPECT_WILD" then
@@ -1150,6 +1160,13 @@ function UnitPopup_OnClick()
     elseif button == "BOT_SHAMAN_REINCARNATION_DENY" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add reincarnation")
     --[[------------------------------------
+    Druid Rebirth
+    --------------------------------------]]
+    elseif button == "BOT_DRUID_REBIRTH_ALLOW" then
+        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny remove rebirth")
+    elseif button == "BOT_DRUID_REBIRTH_DENY" then
+        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add rebirth")
+    --[[------------------------------------
     Deny danger spells
     --------------------------------------]]
     elseif button == "BOT_DENY_DANGER_SPELLS" then
@@ -1167,6 +1184,8 @@ function UnitPopup_OnClick()
             end
         elseif NYCTER_SELECTED_UNIT_CLASS == "Warrior" then
             SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add intimidating shout")
+        elseif NYCTER_SELECTED_UNIT_CLASS == "Hunter" then
+            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add scare beast")
         end
     --[[------------------------------------
     Rogue stealth control
