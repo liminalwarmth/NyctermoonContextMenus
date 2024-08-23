@@ -26,55 +26,88 @@
 Detect New Companion Hired
 --------------------------------------]]
 -- Function to handle new companion hiring
-local function HandleNewCompanion(name, class)
-    -- Remove any leading/trailing whitespace
-    name = name:match("^%s*(.-)%s*$")
-    class = class:match("^%s*(.-)%s*$")
+-- local function HandleNewCompanion(name, class)
+--     -- Remove any leading/trailing whitespace
+--     name = name:match("^%s*(.-)%s*$")
+--     class = class:match("^%s*(.-)%s*$")
     
-    -- Set follow on player for all classes
-    SendChatMessage(".z " .. name .. " set follow on " .. UnitName("player"), "SAY")
+--     -- Set follow on player for all classes
+--     SendChatMessage(".z " .. name .. " set follow on " .. UnitName("player"), "SAY")
     
-    -- Print a message to confirm the actions
-    DEFAULT_CHAT_FRAME:AddMessage("Automatic settings applied for new " .. class .. " companion: " .. name)
-end
+--     -- Print a message to confirm the actions
+--     DEFAULT_CHAT_FRAME:AddMessage("Automatic settings applied for new " .. class .. " companion: " .. name)
+-- end
 
 -- Create a frame to handle events
 local eventFrame = CreateFrame("Frame")
 
--- Register for all chat message events
+-- Register for all relevant chat message events
 eventFrame:RegisterEvent("CHAT_MSG_SYSTEM")
-eventFrame:RegisterEvent("CHAT_MSG_SAY")
-eventFrame:RegisterEvent("CHAT_MSG_YELL")
 eventFrame:RegisterEvent("CHAT_MSG_WHISPER")
-eventFrame:RegisterEvent("CHAT_MSG_PARTY")
-eventFrame:RegisterEvent("CHAT_MSG_RAID")
-eventFrame:RegisterEvent("CHAT_MSG_GUILD")
-eventFrame:RegisterEvent("CHAT_MSG_OFFICER")
-eventFrame:RegisterEvent("CHAT_MSG_CHANNEL")
-eventFrame:RegisterEvent("CHAT_MSG_EMOTE")
-eventFrame:RegisterEvent("CHAT_MSG_TEXT_EMOTE")
+
+-- Variable to store the last relevant message
+local lastRelevantMessage = nil
+
+-- Hook into the chat frame's AddMessage function
+local originalAddMessage = DEFAULT_CHAT_FRAME.AddMessage
+DEFAULT_CHAT_FRAME.AddMessage = function(self, text, r, g, b, id)
+    -- Check for bot transfer message
+    local _, _, botName, playerName = string.find(text, "(%S+) whispers: %[(%S+)%] has transferred me to you%.")
+    if botName and playerName then
+        lastRelevantMessage = text
+        print("Bot transfer detected: " .. botName .. " from " .. playerName)  -- Debug message
+    end
+    
+    -- Call the original function
+    return originalAddMessage(self, text, r, g, b, id)
+end
 
 -- Set up the event handler
 eventFrame:SetScript("OnEvent", function()
-    local event = event
     -- Get the message content
     local message = arg1
     
-    -- Print the message content for debugging -- content works, match may not
-    if message then
-        DEFAULT_CHAT_FRAME:AddMessage("Message Content: " .. message, 0, 1, 0)  -- Green text
-    end
-    
-    -- Handle the new companion message
     if event == "CHAT_MSG_SYSTEM" then
-        -- local name, class = string.match(message, "New Companion hired: ([^%(]+) %(([^%)]+)%)")
-        -- if name and class then
-        --     HandleNewCompanion(name, class)
-        -- end
+        -- Remove color codes for easier matching
+        local cleanMessage = string.gsub(string.gsub(message, "|c%x%x%x%x%x%x%x%x", ""), "|r", "")
+        
+        -- Check if it's a player joining the party or raid
+        local _, _, name = string.find(cleanMessage, "(%S+) joins the party%.")
+        if not name then
+            _, _, name = string.find(cleanMessage, "(%S+) has joined the raid group")
+        end
+        
+        if name then
+            -- Check if the previous message was about a new companion being hired, added, or transferred
+            if lastRelevantMessage then
+                if string.find(lastRelevantMessage, "^New Companion hired") or 
+                   string.find(lastRelevantMessage, "^New Legacy Companion added") or
+                   string.find(lastRelevantMessage, "has transferred me to you") then
+                    DEFAULT_CHAT_FRAME:AddMessage("New companion detected: " .. name, 0, 1, 0)  -- Green text for debugging
+                end
+                lastRelevantMessage = nil  -- Reset after processing
+            end
+        end
+        
+        -- Store the current message if it's relevant
+        if string.find(cleanMessage, "^New Companion hired") or string.find(cleanMessage, "^New Legacy Companion added") then
+            lastRelevantMessage = cleanMessage
+        end
+    elseif event == "CHAT_MSG_WHISPER" then
+        -- Check for the bot transfer message
+        local _, _, botName, playerName = string.find(message, "%[(%S+)%] has transferred me to you%.")
+        if botName and playerName then
+            lastRelevantMessage = message
+            DEFAULT_CHAT_FRAME:AddMessage("Bot transfer detected: " .. botName .. " from " .. playerName, 0, 1, 1)  -- Cyan text for debugging
+        end
     end
-    
-    -- You can add more specific handling for other message types here if needed
 end)
+
+--Beldin whispers: [Kronos] has transferred me to you.
+--Beldin joins the party.
+--[Beldin] has transferred to [Redbank]
+--Beldin leaves the party.
+
 
 --[[------------------------------------
     Send Z Commands (Bot Targeted)
