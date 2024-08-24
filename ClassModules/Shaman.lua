@@ -2,16 +2,19 @@ ShamanModule = {}
 ShamanModule.buttons = {}
 ShamanModule.menus = {}
 ShamanModule.actions = {}
+ShamanModule.menuOrder = {}
 
 function ShamanModule:UpdateMenu(NYCTER_SELECTED_UNIT_LEVEL)
     self.buttons = {}
     self.menus = {}
     self.actions = {}
+    self.menuOrder = {}
     
     -- Toggle totem control
     if NYCTER_SELECTED_UNIT_LEVEL >= 10 then
         self.buttons.BOT_SHAMAN_TOGGLE_TOTEMS = { text = "|cFF0070DEToggle Totems|r", dist = 0 }
         self.actions.BOT_SHAMAN_TOGGLE_TOTEMS = "toggle totems"
+        table.insert(self.menuOrder, "BOT_SHAMAN_TOGGLE_TOTEMS")
     end
 
     -- Totem controls
@@ -50,14 +53,18 @@ function ShamanModule:UpdateMenu(NYCTER_SELECTED_UNIT_LEVEL)
         }
     }
 
-    for totemType, totemList in pairs(totems) do
-        self.menus["BOT_SHAMAN_" .. string.upper(totemType) .. "_TOTEM"] = {}
-        for _, totem in ipairs(totemList) do
+    local elementOrder = {"earth", "fire", "water", "air"}
+    for _, element in ipairs(elementOrder) do
+        self.menus["BOT_SHAMAN_" .. string.upper(element) .. "_TOTEM"] = {}
+        for _, totem in ipairs(totems[element]) do
             if NYCTER_SELECTED_UNIT_LEVEL >= totem.level then
                 self.buttons[totem.id] = { text = totem.name, dist = 0 }
                 self.actions[totem.id] = "set totem " .. totem.name .. " Totem"
-                table.insert(self.menus["BOT_SHAMAN_" .. string.upper(totemType) .. "_TOTEM"], totem.id)
+                table.insert(self.menus["BOT_SHAMAN_" .. string.upper(element) .. "_TOTEM"], totem.id)
             end
+        end
+        if table.getn(self.menus["BOT_SHAMAN_" .. string.upper(element) .. "_TOTEM"]) > 0 then
+            table.insert(self.menuOrder, "BOT_SHAMAN_" .. string.upper(element) .. "_TOTEM")
         end
     end
 
@@ -65,6 +72,7 @@ function ShamanModule:UpdateMenu(NYCTER_SELECTED_UNIT_LEVEL)
     if NYCTER_SELECTED_UNIT_LEVEL >= 10 then
         self.buttons.BOT_SHAMAN_CLEAR_TOTEMS = { text = "|cFF0070DEClear Totem Settings|r", dist = 0 }
         self.actions.BOT_SHAMAN_CLEAR_TOTEMS = "set totem cancel"
+        table.insert(self.menuOrder, "BOT_SHAMAN_CLEAR_TOTEMS")
     end
 
     -- Reincarnation controls
@@ -75,6 +83,7 @@ function ShamanModule:UpdateMenu(NYCTER_SELECTED_UNIT_LEVEL)
         self.actions.BOT_SHAMAN_REINCARNATION_ALLOW = "deny remove reincarnation"
         self.actions.BOT_SHAMAN_REINCARNATION_DENY = "deny add reincarnation"
         self.menus.BOT_SHAMAN_REINCARNATION = { "BOT_SHAMAN_REINCARNATION_ALLOW", "BOT_SHAMAN_REINCARNATION_DENY" }
+        table.insert(self.menuOrder, "BOT_SHAMAN_REINCARNATION")
     end
 end
 

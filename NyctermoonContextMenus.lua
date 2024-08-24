@@ -167,15 +167,24 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
             end
             for menuName, menuItems in pairs(classModule.menus) do
                 UnitPopupMenus[menuName] = menuItems
-                table.insert(dynamicMenus, menuName)
             end
-            -- Add the main menu items in the correct order
-            for _, menuItem in ipairs(classModule.menuOrder) do
-                table.insert(UnitPopupMenus.NYCTER_BOT_MENU, menuItem)
+            -- If there's a menuOrder, it will be used (primarily for Shaman)
+            if classModule.menuOrder then
+                for _, menuItem in ipairs(classModule.menuOrder) do
+                    table.insert(dynamicMenus, menuItem)
+                end
+            -- Otherwise, add the menus in reverse order, which is the order they're defined in
+            else
+                local menuNames = {}
+                for menuName, _ in pairs(classModule.menus) do
+                    table.insert(menuNames, menuName)
+                end
+                for i = table.getn(menuNames), 1, -1 do
+                    table.insert(dynamicMenus, menuNames[i])
+                end
             end
         end
     end
-
     UpdateClassMenu(NYCTER_SELECTED_UNIT_CLASS, NYCTER_SELECTED_UNIT_LEVEL)
 
     --[[--------------------------
