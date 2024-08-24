@@ -23,6 +23,102 @@
 --]]
 
 --[[------------------------------------
+    Send Z Commands (Bot Targeted)
+--------------------------------------]]
+local function SendTargetedBotZCommand(unit, command)
+    -- Target the bot whose command we want to send
+    TargetUnit(unit)
+    -- Use a non-blocking delay mechanism to let the target go through (c_timer does not work, less than a second misses them sometimes)
+    local delayTime = 1.0
+    local frame = CreateFrame("Frame")
+    frame:SetScript("OnUpdate", function()
+        delayTime = delayTime - arg1
+        if delayTime <= 0 then
+            local chatType = "SAY"
+            if UnitInRaid("player") then
+                chatType = "RAID"
+            elseif GetNumPartyMembers() > 0 then
+                chatType = "PARTY"
+            end
+            SendChatMessage(".z " .. command, chatType)
+            frame:SetScript("OnUpdate", nil)
+        end
+    end)
+end
+
+--[[------------------------------------
+    Add Companion and Get Info
+--------------------------------------]]
+-- Table to store the list of companions and their classes
+local companions = {}
+local function AddCompanionAndGetInfo(name)
+    if not companions then
+        companions = {}
+    end
+    
+    companions[name] = true
+    
+    -- Create an invisible frame to capture chat messages
+    local captureFrame = CreateFrame("Frame")
+    captureFrame:Hide()
+    
+    local originalAddMessage = DEFAULT_CHAT_FRAME.AddMessage
+    local capturedInfo = {}
+    local capturingInfo = false
+    
+    -- Override the AddMessage function to capture companion info
+    DEFAULT_CHAT_FRAME.AddMessage = function(self, text, r, g, b, id)
+        if capturingInfo then
+            if string.find(text, "^%-%-%-%-%-%-%-%-%-%-$") then
+                if table.getn(capturedInfo) == 0 then
+                    -- Start of companion info
+                    capturingInfo = true
+                else
+                    -- End of companion info
+                    capturingInfo = false
+                    -- Process captured info here if needed
+                    -- For now, we'll just print it to demonstrate
+                    DEFAULT_CHAT_FRAME.AddMessage = originalAddMessage
+                    DEFAULT_CHAT_FRAME:AddMessage("Captured Companion Info for " .. name .. ":", 0, 1, 0)
+                    for i = 1, table.getn(capturedInfo) do
+                        DEFAULT_CHAT_FRAME:AddMessage(capturedInfo[i], 0, 1, 0)
+                    end
+                end
+            elseif capturingInfo then
+                table.insert(capturedInfo, text)
+            end
+        else
+            originalAddMessage(self, text, r, g, b, id)
+        end
+    end
+    
+    -- Start capturing
+    capturingInfo = true
+    
+    -- Send the command to get companion info
+    ClearTarget()
+    SendChatMessage(".z who", "SAY")
+    
+    -- Set a timer to restore the original AddMessage function in case the capture fails
+    local restoreTimer = CreateFrame("Frame")
+    restoreTimer.time = 0
+    restoreTimer:SetScript("OnUpdate", function()
+        local elapsed = arg1
+        restoreTimer.time = restoreTimer.time + elapsed
+        if restoreTimer.time > 5 then  -- 5 seconds timeout
+            DEFAULT_CHAT_FRAME.AddMessage = originalAddMessage
+            DEFAULT_CHAT_FRAME:AddMessage("Failed to capture companion info for " .. name, 1, 0, 0)
+            -- Print captured info on fail
+            DEFAULT_CHAT_FRAME:AddMessage("Captured info before failure:", 1, 1, 0)
+            for i = 1, table.getn(capturedInfo) do
+                DEFAULT_CHAT_FRAME:AddMessage(capturedInfo[i], 1, 1, 0)
+            end
+            restoreTimer:SetScript("OnUpdate", nil)
+        end
+    end)
+end
+
+--[[------------------------------------
 Detect New Companions and Companion Messages
 --------------------------------------]]
 -- Create a frame to handle events
@@ -39,9 +135,6 @@ end
 
 -- Table to store the last 20 messages and their event types
 local messageLog = {}
-
--- Table to store the list of companions and their classes
-local companions = {}
 
 -- Set up the event handler
 eventFrame:SetScript("OnEvent", function()
@@ -122,12 +215,8 @@ eventFrame:SetScript("OnEvent", function()
             end
             
             if companionDetected then
-                -- Add the companion's name to the companions table
-                if not companions then
-                    companions = {}
-                end
-
-                companions[name] = true
+                -- Add the companion and get their info
+                AddCompanionAndGetInfo(name)
                 
                 DEFAULT_CHAT_FRAME:AddMessage("Added companion " .. name .. " to the companions table", 0, 1, 0)
                 -- List the current companions
@@ -139,30 +228,6 @@ eventFrame:SetScript("OnEvent", function()
         end
     end
 end)
-
---[[------------------------------------
-    Send Z Commands (Bot Targeted)
---------------------------------------]]
-local function SendTargetedBotZCommand(unit, command)
-    -- Target the bot whose command we want to send
-    TargetUnit(unit)
-    -- Use a non-blocking delay mechanism to let the target go through (c_timer does not work, less than a second misses them sometimes)
-    local delayTime = 1.0
-    local frame = CreateFrame("Frame")
-    frame:SetScript("OnUpdate", function()
-        delayTime = delayTime - arg1
-        if delayTime <= 0 then
-            local chatType = "SAY"
-            if UnitInRaid("player") then
-                chatType = "RAID"
-            elseif GetNumPartyMembers() > 0 then
-                chatType = "PARTY"
-            end
-            SendChatMessage(".z " .. command, chatType)
-            frame:SetScript("OnUpdate", nil)
-        end
-    end)
-end
 
 --[[------------------------------------
     Send Whisper Commands to Bot
