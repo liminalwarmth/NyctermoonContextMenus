@@ -1,24 +1,24 @@
 -- Define the settings structure
 local NCMSettings = {
     ["Confirmation Dialogs"] = {
-        { id = "CONFIRM_MAGE_PORTALS", label = "Mage Portals", type = "bool", default = true },
-        { id = "CONFIRM_WARLOCK_SUMMONING", label = "Warlock Summoning", type = "bool", default = true },
+        { id = "CONFIRM_MAGE_PORTALS", label = "Mage Portals", type = "bool", value = true },
+        { id = "CONFIRM_WARLOCK_SUMMONING", label = "Warlock Summoning", type = "bool", value = true },
     },
     ["Auto-Disable on Hire"] = {
-        { id = "DISABLE_DANGEROUS_SPELLS", label = "Dangerous Spells", type = "bool", default = true },
-        { id = "DISABLE_DRUID_REBIRTH", label = "Druid Rebirth", type = "bool", default = true },
-        { id = "DISABLE_SHAMAN_REINCARNATE", label = "Shaman Reincarnate", type = "bool", default = true },
-        { id = "DISABLE_MAGE_AMPLIFY_MAGIC", label = "Mage Amplify Magic", type = "bool", default = false },
-        { id = "DISABLE_STEALTH_PROWL", label = "Stealth/Prowl", type = "bool", default = false },
+        { id = "DISABLE_DANGEROUS_SPELLS", label = "Dangerous Spells", type = "bool", value = true },
+        { id = "DISABLE_DRUID_REBIRTH", label = "Druid Rebirth", type = "bool", value = true },
+        { id = "DISABLE_SHAMAN_REINCARNATE", label = "Shaman Reincarnate", type = "bool", value = true },
+        { id = "DISABLE_MAGE_AMPLIFY_MAGIC", label = "Mage Amplify Magic", type = "bool", value = false },
+        { id = "DISABLE_STEALTH_PROWL", label = "Stealth/Prowl", type = "bool", value = false },
     },
     -- Add more groups and settings as needed
 }
 
--- Initialize NCMCONFIG with default values
+-- Initialize NCMCONFIG with initial values
 NCMCONFIG = {}
 for _, group in pairs(NCMSettings) do
     for _, setting in ipairs(group) do
-        NCMCONFIG[setting.id] = setting.default
+        NCMCONFIG[setting.id] = setting.value
     end
 end
 
@@ -36,23 +36,6 @@ local function LoadNCMConfig()
             NCMCONFIG[k] = v
         end
     end
-end
-
--- Global function to get a setting value by ID
-function NCMConfig_GetSetting(settingId)
-    if NCMCONFIG and NCMCONFIG[settingId] ~= nil then
-        return NCMCONFIG[settingId]
-    else
-        -- Return the default value if the setting is not found
-        for _, group in pairs(NCMSettings) do
-            for _, setting in ipairs(group) do
-                if setting.id == settingId then
-                    return setting.default
-                end
-            end
-        end
-    end
-    return nil -- Return nil if the setting is not found at all
 end
 
 -- Call LoadNCMConfig when the addon loads

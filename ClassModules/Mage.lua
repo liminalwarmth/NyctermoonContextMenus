@@ -68,17 +68,24 @@ function MageModule:HandleButtonClick(button, NYCTER_SELECTED_UNIT)
                 portalCity = string.gsub(portalCity, "(%a)([%w_']*)", function(first, rest)
                     return string.upper(first)..string.lower(rest)
                 end)
-                StaticPopupDialogs["PORTAL_CONFIRM"] = {
-                    text = "Are you sure you want " .. unitName .. " to open a mage portal to " .. portalCity .. "? You have a limited number of portals per hire.",
-                    button1 = OKAY,
-                    button2 = CANCEL,
-                    OnAccept = function()
-                        SendTargetedBotWhisperCommand(unitName, command)
-                    end,
-                    timeout = 0,
-                    hideOnEscape = 1,
-                }
-                StaticPopup_Show("PORTAL_CONFIRM")
+                
+                local function castPortal()
+                    SendTargetedBotWhisperCommand(unitName, command)
+                end
+                
+                if NCMCONFIG["CONFIRM_MAGE_PORTALS"] then
+                    StaticPopupDialogs["PORTAL_CONFIRM"] = {
+                        text = "Are you sure you want " .. unitName .. " to open a mage portal to " .. portalCity .. "? You have a limited number of portals per hire.",
+                        button1 = OKAY,
+                        button2 = CANCEL,
+                        OnAccept = castPortal,
+                        timeout = 0,
+                        hideOnEscape = 1,
+                    }
+                    StaticPopup_Show("PORTAL_CONFIRM")
+                else
+                    castPortal()
+                end
                 return true
             end
         else
