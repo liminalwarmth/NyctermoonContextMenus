@@ -1,79 +1,107 @@
--- Displays Settings Menu for NCM
-local CheckBoxTables = {
-    ["Context Menu Settings"] = {
-        [0] = "NCMSettingsCheckboxGroup",
-        [1] = { "NCMSettingsCheckbox01", "Enable Context Menus" },
-        [2] = { "NCMSettingsCheckbox02", "Show Keybinds" },
-        [3] = { "NCMSettingsCheckbox03", "Auto-hide Menu" }
+-- Define the settings structure
+local NCMSettings = {
+    ["Confirmation Dialogs"] = {
+        { id = "CONFIRM_MAGE_PORTALS", label = "Mage Portals", type = "bool", default = true },
+        { id = "CONFIRM_WARLOCK_SUMMONING", label = "Warlock Summoning", type = "bool", default = true },
     },
-    ["Dummy Menu"] = {
-        [0] = "DummyMenuCheckboxGroup",
-        [1] = { "DummyMenuCheckbox21", "Option 1" },
-        [2] = { "DummyMenuCheckbox22", "Option 2" },
-        [3] = { "DummyMenuCheckbox23", "Option 3" },
-        [4] = { "DummyMenuCheckbox24", "Option 4" },
-        [5] = { "DummyMenuCheckbox25", "Option 5" },
-        [6] = { "DummyMenuCheckbox26", "Option 6" },
-        [7] = { "DummyMenuCheckbox27", "Option 7" },
-        [8] = { "DummyMenuCheckbox28", "Option 8" },
-        [9] = { "DummyMenuCheckbox29", "Option 9" },
-        [10] = { "DummyMenuCheckbox30", "Option 10" }
+    ["Auto-Disable on Hire"] = {
+        { id = "DISABLE_DANGEROUS_SPELLS", label = "Dangerous Spells", type = "bool", default = true },
+        { id = "DISABLE_DRUID_REBIRTH", label = "Druid Rebirth", type = "bool", default = true },
+        { id = "DISABLE_SHAMAN_REINCARNATE", label = "Shaman Reincarnate", type = "bool", default = true },
+        { id = "DISABLE_MAGE_AMPLIFY_MAGIC", label = "Mage Amplify Magic", type = "bool", default = false },
+        { id = "DISABLE_STEALTH_PROWL", label = "Stealth/Prowl", type = "bool", default = false },
     },
-    ["Menu Customization"] = {
-        [0] = "MenuCustomizationCheckboxGroup",
-        [1] = { "MenuCustomizationCheckbox41", "Custom Colors" },
-        [2] = { "MenuCustomizationCheckbox42", "Transparent Background" },
-        [3] = { "MenuCustomizationCheckbox43", "Large Font" }
-    }
+    -- Add more groups and settings as needed
 }
 
-local function CheckBoxGroup(hParent, offsetX, offsetY, sTitle, tCheck)
-    local frame = CreateFrame("Frame", tCheck[0], hParent)
-    frame:SetPoint("TOPLEFT", hParent, "TOPLEFT", offsetX, offsetY)
+-- Initialize NCMCONFIG with default values
+NCMCONFIG = {}
+for _, group in pairs(NCMSettings) do
+    for _, setting in ipairs(group) do
+        NCMCONFIG[setting.id] = setting.default
+    end
+end
+
+-- Function to save NCMCONFIG
+local function SaveNCMConfig()
+    if not NCMCONFIG.NOSAVE then
+        NCMConfig = NCMCONFIG
+    end
+end
+
+-- Function to load NCMCONFIG
+local function LoadNCMConfig()
+    if NCMConfig then
+        for k, v in pairs(NCMConfig) do
+            NCMCONFIG[k] = v
+        end
+    end
+end
+
+-- Global function to get a setting value by ID
+function NCMConfig_GetSetting(settingId)
+    if NCMCONFIG and NCMCONFIG[settingId] ~= nil then
+        return NCMCONFIG[settingId]
+    else
+        -- Return the default value if the setting is not found
+        for _, group in pairs(NCMSettings) do
+            for _, setting in ipairs(group) do
+                if setting.id == settingId then
+                    return setting.default
+                end
+            end
+        end
+    end
+    return nil -- Return nil if the setting is not found at all
+end
+
+-- Call LoadNCMConfig when the addon loads
+LoadNCMConfig()
+
+-- Function to create checkbox groups
+local function CreateCheckBoxGroup(parent, offsetX, offsetY, groupName, settings)
+    local frame = CreateFrame("Frame", nil, parent)
+    frame:SetPoint("TOPLEFT", parent, "TOPLEFT", offsetX, offsetY)
     frame:SetWidth(11)
     frame:SetHeight(11)
 
     local fs_title = frame:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     fs_title:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, 0)
     fs_title:SetTextColor(1, 1, 1, 1)
-    fs_title:SetText(sTitle)
+    fs_title:SetText(groupName)
 
     frame.fs_title = fs_title
     frame.cb = {}
 
-    for k,v in ipairs(tCheck) do
-        local cb = CreateFrame("CheckButton", v[1], frame, "UICheckButtonTemplate")
-        cb:SetPoint("TOPLEFT", frame, "BOTTOMLEFT", 8, -(4+(k-1)*14))
+    for i, setting in ipairs(settings) do
+        local cb = CreateFrame("CheckButton", "NCMSettingsCheckbox"..setting.id, frame, "UICheckButtonTemplate")
+        cb:SetPoint("TOPLEFT", frame, "BOTTOMLEFT", 8, -(4+(i-1)*14))
         cb:SetWidth(16)
         cb:SetHeight(16)
         
-        if v[2] then cb.tooltipTitle = v[2] end
-        if v[3] then cb.tooltipText = v[3] end
-
-        local num = tonumber(string.sub(v[1], -2))
+        cb.tooltipTitle = setting.label
+        cb.settingId = setting.id
 
         cb:SetScript("OnShow", function()
-            NCM_GetSetting(num)
+            local checked = NCMCONFIG[this.settingId]
+            this:SetChecked(checked)
+            getglobal(this:GetName().."Text"):SetText(this.tooltipTitle)
         end)
         cb:SetScript("OnClick", function()
-            NCM_SetSetting(num)
+            NCMCONFIG[this.settingId] = this:GetChecked()
+            SaveNCMConfig()
         end)
         cb:SetScript("OnEnter", function()
-            if this.tooltipTitle then
-                GameTooltip:SetOwner(this, "ANCHOR_TOPRIGHT")
-                GameTooltip:SetBackdropColor(.01, .01, .01, .91)
-                GameTooltip:SetText(this.tooltipTitle)
-                if this.tooltipText then
-                    GameTooltip:AddLine(this.tooltipText, 1, 1, 1)
-                end
-                GameTooltip:Show()
-            end
+            GameTooltip:SetOwner(this, "ANCHOR_TOPRIGHT")
+            GameTooltip:SetBackdropColor(.01, .01, .01, .91)
+            GameTooltip:SetText(this.tooltipTitle)
+            GameTooltip:Show()
         end)
         cb:SetScript("OnLeave", function()
             GameTooltip:Hide()
         end)
 
-        frame.cb[k] = cb
+        frame.cb[i] = cb
     end
 
     return frame
@@ -148,112 +176,29 @@ function NCM_CreateSettingsFrame()
     end)
     
     local yOffset = -45 -- Start below the title
-    local groupOrder = {}
-    for groupName, _ in pairs(CheckBoxTables) do
-        table.insert(groupOrder, groupName)
+    
+    -- Create a temporary table to store the groups
+    local tempGroups = {}
+    for groupName, groupSettings in pairs(NCMSettings) do
+        table.insert(tempGroups, {name = groupName, settings = groupSettings})
     end
-    table.sort(groupOrder) -- Sort the group names alphabetically
-    for i = 1, table.getn(groupOrder) do
-        local groupName = groupOrder[i]
-        local groupData = CheckBoxTables[groupName]
+    
+    -- Reverse the order of the groups
+    for i = table.getn(tempGroups), 1, -1 do
+        local group = tempGroups[i]
+        local groupName = group.name
+        local groupSettings = group.settings
+        
         local groupKey = "cbgroup_" .. string.lower(string.gsub(groupName, "%s+", ""))
         
-
-        frame[groupKey] = CheckBoxGroup(frame, 20, yOffset, groupName, groupData)
+        frame[groupKey] = CreateCheckBoxGroup(frame, 20, yOffset, groupName, groupSettings)
         
         -- Calculate the height of the current group
-        local groupHeight = 14 * table.getn(groupData)  -- 14 pixels per option
+        local groupHeight = 14 * table.getn(groupSettings)  -- 14 pixels per option
         
         -- Update yOffset for the next group
         yOffset = yOffset - groupHeight - 20
     end
 
     return frame
-end
-
--- Define NCMStrings table
-NCMStrings = {}
-for _, groupData in pairs(CheckBoxTables) do
-    for i = 1, table.getn(groupData) do
-        local checkboxData = groupData[i]
-        if checkboxData and checkboxData[2] then
-            local num = tonumber(string.sub(checkboxData[1], -2))
-            NCMStrings[num] = checkboxData[2]
-        end
-    end
-end
-
--- Define NCMObjects table
-NCMObjects = {}
-
--- Define NCMCONFIG table with default values
-NCMCONFIG = {
-    ENABLED = true,
-    SHOWKEYBINDS = true,
-    AUTOHIDE = false,
-    CUSTOMCOLORS = false,
-    TRANSPARENT = false,
-    LARGEFONT = false
-}
-
--- Function to save NCMCONFIG
-local function SaveNCMConfig()
-    if not NCMCONFIG.NOSAVE then
-        NCMConfig = NCMCONFIG
-    end
-end
-
--- Function to load NCMCONFIG
-local function LoadNCMConfig()
-    if NCMConfig then
-        for k, v in pairs(NCMConfig) do
-            NCMCONFIG[k] = v
-        end
-    end
-end
-
--- Call LoadNCMConfig when the addon loads
-LoadNCMConfig()
-
--- Hook the original NCM_SetSetting function
-local original_NCM_SetSetting = NCM_SetSetting
-NCM_SetSetting = function(num)
-    original_NCM_SetSetting(num)
-    SaveNCMConfig()
-end
-
-function NCM_GetSetting(num)
-    local labelString = getglobal(this:GetName().."Text")
-    local label = NCMStrings[num] or ""
-    NCMObjects[num] = this
-
-    if num == 01 and NCMCONFIG.ENABLED
-    or num == 02 and NCMCONFIG.SHOWKEYBINDS
-    or num == 03 and NCMCONFIG.AUTOHIDE
-    or num == 11 and NCMCONFIG.CUSTOMCOLORS
-    or num == 12 and NCMCONFIG.TRANSPARENT
-    or num == 13 and NCMCONFIG.LARGEFONT
-    or nil then
-        this:SetChecked(true)
-    else
-        this:SetChecked(nil)
-    end
-    labelString:SetText(label)
-end
-
-function NCM_SetSetting(num)
-    local checked = this:GetChecked()
-    if num == 01 then
-        NCMCONFIG.ENABLED = checked
-    elseif num == 02 then
-        NCMCONFIG.SHOWKEYBINDS = checked
-    elseif num == 03 then
-        NCMCONFIG.AUTOHIDE = checked
-    elseif num == 11 then
-        NCMCONFIG.CUSTOMCOLORS = checked
-    elseif num == 12 then
-        NCMCONFIG.TRANSPARENT = checked
-    elseif num == 13 then
-        NCMCONFIG.LARGEFONT = checked
-    end
 end
