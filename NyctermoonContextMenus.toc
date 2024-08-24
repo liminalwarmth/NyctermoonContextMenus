@@ -4,11 +4,14 @@
 ## Author: Liminal_Warmth
 ## Version: 1.0
 
+# Instantiate UI file functions
+UI\SettingsMenu.lua
+
 # Utility files
 Utils.lua
 CompanionData.lua
 
-# Menu files
+# Context Menu files
 PlayerMenu.lua
 ClassModules\Druid.lua
 ClassModules\Hunter.lua

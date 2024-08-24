@@ -1,4 +1,23 @@
 --[[------------------------------------
+    NCM Slash Commands
+--------------------------------------]]
+SLASH_NCM1 = "/ncm"
+SlashCmdList["NCM"] = function(msg)
+    -- Call the function to show the settings frame
+    NCM_ShowSettingsFrame()
+end
+
+function NCM_ShowSettingsFrame()
+    -- Check if the frame exists, create it if not
+    if not NCMSettingsFrame then
+        NCMSettingsFrame = NCM_CreateSettingsFrame()
+    end
+    
+    -- Show the frame
+    NCMSettingsFrame:Show()
+end
+
+--[[------------------------------------
     Send Z Commands (Bot Targeted)
 --------------------------------------]]
 function SendTargetedBotZCommand(unit, command)
