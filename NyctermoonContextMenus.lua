@@ -28,6 +28,7 @@
 -- Load Class Modules
 local ClassModules = {
     Druid = DruidModule,
+    Hunter = HunterModule,
     -- Add other class modules as they are created
 }
 -- Hook the UnitPopup_ShowMenu function to establish the variables of which party member is being clicked
@@ -217,25 +218,6 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         -- Deny Danger Spells
         if NYCTER_SELECTED_UNIT_LEVEL >= 20 then -- Blink is learned at level 20
             UnitPopupButtons["BOT_DENY_DANGER_SPELLS"] = { text = "Deny |cFF69CCF0Danger Spells|r", dist = 0 }
-            table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_DENY_DANGER_SPELLS")
-        end
-
-    --[[--------------------------
-        Hunter
-    ----------------------------]]
-    elseif NYCTER_SELECTED_UNIT_CLASS == "Hunter" then
-        -- Load Hunter module
-        local hunterMenus = HunterModule:CreateMenu(NYCTER_SELECTED_UNIT_LEVEL)
-        for menuName, menuItems in pairs(hunterMenus) do
-            UnitPopupMenus[menuName] = menuItems
-            table.insert(dynamicMenus, menuName)
-        end
-        for buttonName, buttonData in pairs(HunterModule.Buttons) do
-            UnitPopupButtons[buttonName] = buttonData
-        end
-        -- HUNTER: Deny dangerous spells
-        if NYCTER_SELECTED_UNIT_LEVEL >= 8 then -- Scare Beast is learned at level 8
-            UnitPopupButtons["BOT_DENY_DANGER_SPELLS"] = { text = "Deny |cFFABD473Danger Spells|r", dist = 0 }
             table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_DENY_DANGER_SPELLS")
         end
 
@@ -703,63 +685,6 @@ function UnitPopup_OnClick()
     elseif string.find(button, "^BOT_WARLOCK_SOULSTONE_") then
         local _, _, playerName = string.find(button, "_([^_]+)$")
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set soulstone on " .. playerName)
-    --[[------------------------------------
-    Pet toggle
-    --------------------------------------]]
-    elseif button == "BOT_PET_ON" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet on")
-    elseif button == "BOT_PET_OFF" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet off")
-    --[[------------------------------------
-    Hunter pets
-    --------------------------------------]]
-    elseif button == "BOT_HUNTER_PET_BAT" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet bat")
-    elseif button == "BOT_HUNTER_PET_BEAR" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet bear")
-    elseif button == "BOT_HUNTER_PET_BIRD" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet bird")
-    elseif button == "BOT_HUNTER_PET_BOAR" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet boar")
-    elseif button == "BOT_HUNTER_PET_CAT" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet cat")
-    elseif button == "BOT_HUNTER_PET_CRAB" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet crab")
-    elseif button == "BOT_HUNTER_PET_CROC" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet croc")
-    elseif button == "BOT_HUNTER_PET_GORILLA" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet gorilla")
-    elseif button == "BOT_HUNTER_PET_HYENA" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet hyena")
-    elseif button == "BOT_HUNTER_PET_OWL" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet owl")
-    elseif button == "BOT_HUNTER_PET_RAPTOR" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet raptor")
-    elseif button == "BOT_HUNTER_PET_SCORPID" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet scorpid")
-    elseif button == "BOT_HUNTER_PET_SERPENT" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet serpent")
-    elseif button == "BOT_HUNTER_PET_SPIDER" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet spider")
-    elseif button == "BOT_HUNTER_PET_STRIDER" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet strider")
-    elseif button == "BOT_HUNTER_PET_TURTLE" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet turtle")
-    elseif button == "BOT_HUNTER_PET_WOLF" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet wolf")
-    --[[------------------------------------
-    Hunter aspects
-    --------------------------------------]]
-    elseif button == "BOT_HUNTER_ASPECT_DEFAULT" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aspect cancel")
-    elseif button == "BOT_HUNTER_ASPECT_HAWK" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aspect Aspect of the Hawk")
-    elseif button == "BOT_HUNTER_ASPECT_CHEETAH" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aspect Aspect of the Cheetah")
-    elseif button == "BOT_HUNTER_ASPECT_PACK" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aspect Aspect of the Pack")
-    elseif button == "BOT_HUNTER_ASPECT_WILD" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aspect Aspect of the Wild")
     --[[------------------------------------
     Warlock pets
     --------------------------------------]]
