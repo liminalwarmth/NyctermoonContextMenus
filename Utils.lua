@@ -146,10 +146,16 @@ function GetUnitRaidGroup(unit)
 end
 
 --[[------------------------------------
-    Clean Message of Color Codes
+    Clean Message of Color Codes and Player Name Data
 --------------------------------------]]
 function CleanMessage(message)
-    return string.gsub(string.gsub(message, "|c%x%x%x%x%x%x%x%x", ""), "|r", "")
+    -- Remove color codes
+    message = string.gsub(message, "|c%x%x%x%x%x%x%x%x", "")
+    -- Remove color terminator
+    message = string.gsub(message, "|r", "")
+    -- Convert clickable player names to plain text
+    message = string.gsub(message, "|Hplayer:([^|]+)|h([^|]+)|h", "%2")
+    return message
 end
 
 --[[------------------------------------

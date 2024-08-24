@@ -1,3 +1,10 @@
+--[[------------------------------------
+    Settings Menu
+
+    TODO:
+    - Save and load from file on login/logout
+    - Save settings by character AND account (especially important for comp list)
+--------------------------------------]]
 -- Define the settings structure
 local NCMSettings = {
     ["Confirmation Dialogs"] = {

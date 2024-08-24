@@ -1,13 +1,87 @@
 -- CompanionData.lua: This file is used to capture the info of companions when they are hired and maintain stored info about them.
 
--- Table to store the list of companions and their classes
+-- Table to store the list of companions and data about them
 companions = {}
+
 --[[------------------------------------
-    Add Companion and Get Who Info
+    Companions Table Data Management
 --------------------------------------]]
-function AddCompanionAndGetInfo(name)
+-- add a companion to the companions table
+function AddCompanion(name)
     companions[name] = true
-    
+end
+
+-- initialize companions after they are added to the companions table
+function InitializeCompanion(name)
+    companions[name] = true
+end 
+
+-- remove companions from the companions table
+function RemoveCompanion(name)
+    companions[name] = nil
+end
+
+-- compare the companions table to the who info and update the companions table
+function CompareCompanionsToWhoInfo(whoInfo)
+    for _, companion in pairs(whoInfo) do
+        if companion.name then
+            companions[companion.name] = true
+        end
+    end
+end
+
+-- parse the who info and create companions data
+function ParseWhoInfo(whoInfo)
+    local tempCompanions = {}
+    local currentCompanion = nil
+
+    for _, line in ipairs(whoInfo) do
+        local _, _, number, name = string.find(line, "^(%d+)%. %[([^%]]+)%]")
+        if number and name then
+            currentCompanion = name
+            tempCompanions[currentCompanion] = {}
+
+            local _, _, rank, class, race, spec, role = string.find(line, ":(%w+) %- (%w+) (%w+) %- ([^-]+) %- (.+)$")
+            if rank and class and race and spec and role then
+                tempCompanions[currentCompanion].Rank = rank
+                tempCompanions[currentCompanion].Class = class
+                tempCompanions[currentCompanion].Race = race
+                tempCompanions[currentCompanion].Spec = string.gsub(spec, "^%s*(.-)%s*$", "%1")
+                tempCompanions[currentCompanion].Role = string.gsub(role, "^%s*(.-)%s*$", "%1")
+            end
+        elseif currentCompanion then
+            local _, _, owner, master = string.find(line, "O:%[([^%]]+)%] M:%[([^%]]+)%]")
+            if owner and master then
+                tempCompanions[currentCompanion].Owner = owner
+                tempCompanions[currentCompanion].Master = master
+            end
+        end
+    end
+
+    -- Print tempCompanions table to chat for debugging
+    DEFAULT_CHAT_FRAME:AddMessage("Parsed Companions Data:", 0, 1, 0)
+    for name, _ in pairs(tempCompanions) do
+        local infoString = "Name: '" .. name .. "', "
+        infoString = infoString .. "Rank: '" .. (tempCompanions[name].Rank or "N/A") .. "', "
+        infoString = infoString .. "Class: '" .. (tempCompanions[name].Class or "N/A") .. "', "
+        infoString = infoString .. "Race: '" .. (tempCompanions[name].Race or "N/A") .. "', "
+        infoString = infoString .. "Spec: '" .. (tempCompanions[name].Spec or "N/A") .. "', "
+        infoString = infoString .. "Role: '" .. (tempCompanions[name].Role or "N/A") .. "', "
+        infoString = infoString .. "Owner: '" .. (tempCompanions[name].Owner or "N/A") .. "', "
+        infoString = infoString .. "Master: '" .. (tempCompanions[name].Master or "N/A") .. "'"
+        DEFAULT_CHAT_FRAME:AddMessage(infoString, 0, 1, 0)
+    end
+
+    -- Update the global companions table
+    for name, data in pairs(tempCompanions) do
+        companions[name] = data
+    end
+end
+
+--[[------------------------------------
+    Get Who Info
+--------------------------------------]]
+function GetWhoInfo()
     -- Create an invisible frame to capture chat messages
     local captureFrame = CreateFrame("Frame")
     captureFrame:Hide()
@@ -15,20 +89,21 @@ function AddCompanionAndGetInfo(name)
     local originalAddMessage = DEFAULT_CHAT_FRAME.AddMessage
     local capturedInfo = {}
     local capturingInfo = false
+    local captureComplete = false
     
-    -- Override the AddMessage function to capture companion info
+    -- Override the AddMessage function to capture who info
     DEFAULT_CHAT_FRAME.AddMessage = function(self, text, r, g, b, id)
         local cleanText = CleanMessage(text)
         if string.find(cleanText, "^%-%-%-%-%-%-%-%-%-%-$") then
             capturingInfo = not capturingInfo
             if not capturingInfo then
-                -- End of companion info, process captured info if needed
-                -- For now, we'll just print it to demonstrate
-                DEFAULT_CHAT_FRAME:AddMessage("Captured Companion Info for " .. name .. ":", 0, 1, 0)
-                for i = 1, table.getn(capturedInfo) do
-                    DEFAULT_CHAT_FRAME:AddMessage(capturedInfo[i], 0, 1, 0)
-                end
+                -- Parse the captured info
+                ParseWhoInfo(capturedInfo)
+                -- Clear the captured info
                 capturedInfo = {}
+                -- Restore original AddMessage function
+                DEFAULT_CHAT_FRAME.AddMessage = originalAddMessage
+                captureComplete = true
             end
         elseif capturingInfo then
             table.insert(capturedInfo, cleanText)
@@ -36,7 +111,48 @@ function AddCompanionAndGetInfo(name)
             originalAddMessage(self, text, r, g, b, id)
         end
     end
+
+    -- Check if player is in a raid or party
+    if UnitInRaid("player") then
+        SendChatMessage(".z who", "RAID")
+    elseif UnitInParty("player") then
+        SendChatMessage(".z who", "PARTY")
+    else
+        -- Print an error message if not in raid or party
+        DEFAULT_CHAT_FRAME:AddMessage("Error getting who info! You are not in a raid or party.", 1, 0, 0)
+    end
+
+    -- If we haven't restored the original AddMessage function after 5 seconds, restore it and display an error message only if capture is not complete
+    local timer = CreateFrame("Frame")
+    timer:SetScript("OnUpdate", function()
+        this.elapsed = (this.elapsed or 0) + arg1
+        if this.elapsed >= 5 then
+            timer:SetScript("OnUpdate", nil)
+            if not captureComplete then
+                DEFAULT_CHAT_FRAME.AddMessage = originalAddMessage
+                DEFAULT_CHAT_FRAME:AddMessage("Error: Failed to properly log who info. Captured data:", 1, 0, 0)
+                for i = 1, table.getn(capturedInfo) do
+                    DEFAULT_CHAT_FRAME:AddMessage(capturedInfo[i], 0, 1, 0)
+                end
+            end
+        end
+    end)
 end
+
+--[[
+Captured format:
+
+[Cian] Dungeon:None Raid:None
+ 
+1. [Gazryklite]:T0D - Shaman Orc - Default - Melee DPS
+O:[Gazryk] M:[Cian] P:[None]
+ 
+2. [Raelynlite]:T0D - Priest Human - Default - Range DPS
+O:[Raelyn] M:[Cian] P:[None]
+ 
+3. [Ribble]:T3R - Mage Gnome - Arcane - Range DPS
+O:[Raelyn] M:[Cian] P:[None]
+]]--
 
 --[[------------------------------------
 Detect New Companions and Companion Messages
@@ -105,9 +221,6 @@ eventFrame:SetScript("OnEvent", function()
                     if string.find(logEntry.message, "^" .. name .. ".*has transferred me to you") then
                         companionDetected = true
                         break
-                    else
-                        -- Display the whisper that didn't match
-                        DEFAULT_CHAT_FRAME:AddMessage("Not a match: " .. logEntry.message, 1, 0.5, 0)  -- Orange text for debugging
                     end
                 end
             end
@@ -131,7 +244,8 @@ eventFrame:SetScript("OnEvent", function()
             
             if companionDetected then
                 -- Add the companion and get their info
-                AddCompanionAndGetInfo(name)
+                -- AddCompanionAndGetInfo(name)
+                GetWhoInfo()
                 
                 DEFAULT_CHAT_FRAME:AddMessage("Added companion " .. name .. " to the companions table", 0, 1, 0)
                 -- List the current companions

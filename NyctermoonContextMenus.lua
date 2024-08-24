@@ -2,9 +2,6 @@
 -- Coded for Vanilla WoW 1.12.1, using LUA version 5.0
 
 --[[ TODO:
-- Slash commands and options menu
-- Make portal and summoning confirmations optional
-
 [MAYBE?]
 - Custom stats display frame on your character
 - Add tooltips to menu commands
@@ -15,7 +12,6 @@
 
 [RAID MENU?]
     - Set distancing (Rag, some BWL)
-
 --]]
 
 --[[---------------------------------------------------------------------------------
