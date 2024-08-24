@@ -29,6 +29,11 @@
 local ClassModules = {
     Druid = DruidModule,
     Hunter = HunterModule,
+    Priest = PriestModule,
+    Warrior = WarriorModule,
+    Rogue = RogueModule,
+    Paladin = PaladinModule,
+    Shaman = ShamanModule,
     -- Add other class modules as they are created
 }
 -- Hook the UnitPopup_ShowMenu function to establish the variables of which party member is being clicked
@@ -164,6 +169,10 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
                 UnitPopupMenus[menuName] = menuItems
                 table.insert(dynamicMenus, menuName)
             end
+            -- Add the main menu items in the correct order
+            for _, menuItem in ipairs(classModule.menuOrder) do
+                table.insert(UnitPopupMenus.NYCTER_BOT_MENU, menuItem)
+            end
         end
     end
 
@@ -264,199 +273,8 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
             table.insert(dynamicMenus, "BOT_WARLOCK_SOULSTONE")
         end
 
-    --[[--------------------------
-        Paladin
-    ----------------------------]]
-    elseif NYCTER_SELECTED_UNIT_CLASS == "Paladin" then
-        -- PALADIN: Choose blessing
-        UnitPopupButtons["BOT_PALADIN_BLESSING"] = { text = "|cFFF58CBASet Blessing|r", dist = 0, nested = 1 }
-        UnitPopupButtons["BOT_PALADIN_BLESSING_DEFAULT"] = { text = "AI Default (Clear Setting)", dist = 0 }
-        UnitPopupButtons["BOT_PALADIN_BLESSING_MIGHT"] = { text = "Blessing of Might", dist = 0 }
-        UnitPopupButtons["BOT_PALADIN_BLESSING_WISDOM"] = { text = "Blessing of Wisdom", dist = 0 }
-        UnitPopupButtons["BOT_PALADIN_BLESSING_KINGS"] = { text = "Blessing of Kings", dist = 0 }
-        UnitPopupButtons["BOT_PALADIN_BLESSING_LIGHT"] = { text = "Blessing of Light", dist = 0 }
-        UnitPopupButtons["BOT_PALADIN_BLESSING_SALVATION"] = { text = "Blessing of Salvation", dist = 0 }
-        local blessings = {
-            {level = 4,  id = "BOT_PALADIN_BLESSING_MIGHT"},
-            {level = 14, id = "BOT_PALADIN_BLESSING_WISDOM"},
-            {level = 26, id = "BOT_PALADIN_BLESSING_SALVATION"},
-            {level = 40, id = "BOT_PALADIN_BLESSING_LIGHT"},
-            {level = 60, id = "BOT_PALADIN_BLESSING_KINGS"}
-        }
-        local blessingItems = {}
-        for _, blessing in ipairs(blessings) do
-            if NYCTER_SELECTED_UNIT_LEVEL >= blessing.level then
-                table.insert(blessingItems, blessing.id)
-            end
-        end
-        if table.getn(blessingItems) > 0 then
-            table.insert(blessingItems, 1, "BOT_PALADIN_BLESSING_DEFAULT")
-            UnitPopupMenus["BOT_PALADIN_BLESSING"] = blessingItems
-            table.insert(dynamicMenus, "BOT_PALADIN_BLESSING")
-        end
-        
-        -- PALADIN: Choose auras
-        UnitPopupButtons["BOT_PALADIN_AURAS"] = { text = "|cFFF58CBASet Aura|r", dist = 0, nested = 1 }
-        UnitPopupButtons["BOT_PALADIN_AURAS_DEFAULT"] = { text = "AI Default (Clear Setting)", dist = 0 }
-        UnitPopupButtons["BOT_PALADIN_AURA_DEVOTION"] = { text = "Devotion Aura", dist = 0 }
-        UnitPopupButtons["BOT_PALADIN_AURA_RETRIBUTION"] = { text = "Retribution Aura", dist = 0 }
-        UnitPopupButtons["BOT_PALADIN_AURA_CONCENTRATION"] = { text = "Concentration Aura", dist = 0 }
-        UnitPopupButtons["BOT_PALADIN_AURA_SANCTITY"] = { text = "Sanctity Aura", dist = 0 }
-        UnitPopupButtons["BOT_PALADIN_AURA_SHADOW_RESISTANCE"] = { text = "Shadow Resistance Aura", dist = 0 }
-        UnitPopupButtons["BOT_PALADIN_AURA_FROST_RESISTANCE"] = { text = "Frost Resistance Aura", dist = 0 }
-        UnitPopupButtons["BOT_PALADIN_AURA_FIRE_RESISTANCE"] = { text = "Fire Resistance Aura", dist = 0 }
-        local auras = {
-            {level = 1,  id = "BOT_PALADIN_AURA_DEVOTION"},
-            {level = 16, id = "BOT_PALADIN_AURA_RETRIBUTION"},
-            {level = 22, id = "BOT_PALADIN_AURA_CONCENTRATION"},
-            {level = 28, id = "BOT_PALADIN_AURA_SHADOW_RESISTANCE"},
-            {level = 30, id = "BOT_PALADIN_AURA_SANCTITY"},
-            {level = 32, id = "BOT_PALADIN_AURA_FROST_RESISTANCE"},
-            {level = 36, id = "BOT_PALADIN_AURA_FIRE_RESISTANCE"}
-        }
-        local auraItems = {}
-        for _, aura in ipairs(auras) do
-            if NYCTER_SELECTED_UNIT_LEVEL >= aura.level then
-                table.insert(auraItems, aura.id)
-            end
-        end
-        if table.getn(auraItems) > 0 then
-            table.insert(auraItems, 1, "BOT_PALADIN_AURAS_DEFAULT")
-            UnitPopupMenus["BOT_PALADIN_AURAS"] = auraItems
-            table.insert(dynamicMenus, "BOT_PALADIN_AURAS")
-        end
-    --[[--------------------------
-        Shaman
-    ----------------------------]]
-    elseif NYCTER_SELECTED_UNIT_CLASS == "Shaman" then
-        -- SHAMAN: Choose air totem
-        UnitPopupButtons["BOT_SHAMAN_AIR_TOTEM"] = { text = "|cFF0070DESet|r |cFFb8bcffAir|r |cFF0070DETotem|r", dist = 0, nested = 1 }
-        UnitPopupButtons["BOT_SHAMAN_AIR_TOTEM_GRACE"] = { text = "Grace of Air", dist = 0 }
-        UnitPopupButtons["BOT_SHAMAN_AIR_TOTEM_NATURE"] = { text = "Nature Resistance", dist = 0 }
-        UnitPopupButtons["BOT_SHAMAN_AIR_TOTEM_WINDFURY"] = { text = "Windfury", dist = 0 }
-        UnitPopupButtons["BOT_SHAMAN_AIR_TOTEM_GROUNDING"] = { text = "Grounding", dist = 0 }
-        UnitPopupButtons["BOT_SHAMAN_AIR_TOTEM_TRANQUIL"] = { text = "Tranquil Air", dist = 0 }
 
-        -- SHAMAN: Choose earth totem
-        UnitPopupButtons["BOT_SHAMAN_EARTH_TOTEM"] = { text = "|cFF0070DESet|r |cFF4dd943Earth|r |cFF0070DETotem|r", dist = 0, nested = 1 }
-        UnitPopupButtons["BOT_SHAMAN_EARTH_TOTEM_STONESKIN"] = { text = "Stoneskin", dist = 0 }
-        UnitPopupButtons["BOT_SHAMAN_EARTH_TOTEM_EARTHBIND"] = { text = "Earthbind", dist = 0 }
-        UnitPopupButtons["BOT_SHAMAN_EARTH_TOTEM_STRENGTH"] = { text = "Strength of Earth", dist = 0 }
-        UnitPopupButtons["BOT_SHAMAN_EARTH_TOTEM_TREMOR"] = { text = "Tremor", dist = 0 }
-
-        -- SHAMAN: Choose fire totem
-        UnitPopupButtons["BOT_SHAMAN_FIRE_TOTEM"] = { text = "|cFF0070DESet|r |cFFFF4500Fire|r |cFF0070DETotem|r", dist = 0, nested = 1 }
-        UnitPopupButtons["BOT_SHAMAN_FIRE_TOTEM_SEARING"] = { text = "Searing", dist = 0 }
-        UnitPopupButtons["BOT_SHAMAN_FIRE_TOTEM_FIRE_NOVA"] = { text = "Fire Nova", dist = 0 }
-        UnitPopupButtons["BOT_SHAMAN_FIRE_TOTEM_FROST_RESISTANCE"] = { text = "Frost Resistance", dist = 0 }
-        UnitPopupButtons["BOT_SHAMAN_FIRE_TOTEM_MAGMA"] = { text = "Magma", dist = 0 }
-        UnitPopupButtons["BOT_SHAMAN_FIRE_TOTEM_FLAMETONGUE"] = { text = "Flametongue", dist = 0 }
-
-        -- SHAMAN: Choose water totem
-        UnitPopupButtons["BOT_SHAMAN_WATER_TOTEM"] = { text = "|cFF0070DESet|r |cFF34EBD2Water|r |cFF0070DETotem|r", dist = 0, nested = 1 }
-        UnitPopupButtons["BOT_SHAMAN_WATER_TOTEM_HEALING"] = { text = "Healing Stream", dist = 0 }
-        UnitPopupButtons["BOT_SHAMAN_WATER_TOTEM_MANA_SPRING"] = { text = "Mana Spring", dist = 0 }
-        UnitPopupButtons["BOT_SHAMAN_WATER_TOTEM_FIRE_RESISTANCE"] = { text = "Fire Resistance", dist = 0 }
-        UnitPopupButtons["BOT_SHAMAN_WATER_TOTEM_DISEASE_CLEANSING"] = { text = "Disease Cleansing", dist = 0 }
-        UnitPopupButtons["BOT_SHAMAN_WATER_TOTEM_POISON_CLEANSING"] = { text = "Poison Cleansing", dist = 0 }
-
-        -- SHAMAN: Clear set totems or toggle off
-        UnitPopupButtons["BOT_SHAMAN_CLEAR_TOTEMS"] = { text = "|cFF0070DEClear Totem Settings|r", dist = 0 }
-        UnitPopupButtons["BOT_SHAMAN_TOGGLE_TOTEMS"] = { text = "|cFF0070DEToggle Totems|r", dist = 0 }
-         
-        -- SHAMAN: Totems
-        local totems = {
-            earth = {
-                {level = 4,  id = "BOT_SHAMAN_EARTH_TOTEM_STONESKIN"},
-                {level = 6,  id = "BOT_SHAMAN_EARTH_TOTEM_EARTHBIND"},
-                {level = 10, id = "BOT_SHAMAN_EARTH_TOTEM_STRENGTH"},
-                {level = 18, id = "BOT_SHAMAN_EARTH_TOTEM_TREMOR"}
-            },
-            fire = {
-                {level = 10, id = "BOT_SHAMAN_FIRE_TOTEM_SEARING"},
-                {level = 12, id = "BOT_SHAMAN_FIRE_TOTEM_FIRE_NOVA"},
-                {level = 24, id = "BOT_SHAMAN_FIRE_TOTEM_FROST_RESISTANCE"},
-                {level = 26, id = "BOT_SHAMAN_FIRE_TOTEM_MAGMA"},
-                {level = 28, id = "BOT_SHAMAN_FIRE_TOTEM_FLAMETONGUE"}
-            },
-            water = {
-                {level = 20, id = "BOT_SHAMAN_WATER_TOTEM_HEALING"},
-                {level = 22, id = "BOT_SHAMAN_WATER_TOTEM_POISON_CLEANSING"},
-                {level = 26, id = "BOT_SHAMAN_WATER_TOTEM_MANA_SPRING"},
-                {level = 28, id = "BOT_SHAMAN_WATER_TOTEM_FIRE_RESISTANCE"},
-                {level = 38, id = "BOT_SHAMAN_WATER_TOTEM_DISEASE_CLEANSING"}
-            },
-            air = {
-                {level = 30, id = "BOT_SHAMAN_AIR_TOTEM_NATURE"},
-                {level = 30, id = "BOT_SHAMAN_AIR_TOTEM_GROUNDING"},
-                {level = 32, id = "BOT_SHAMAN_AIR_TOTEM_WINDFURY"},
-                {level = 42, id = "BOT_SHAMAN_AIR_TOTEM_GRACE"},
-                {level = 50, id = "BOT_SHAMAN_AIR_TOTEM_TRANQUIL"}
-            }
-        }
-        if NYCTER_SELECTED_UNIT_LEVEL >= 10 then -- First totem is available at level 10
-            table.insert(dynamicMenus, "BOT_SHAMAN_TOGGLE_TOTEMS")
-        end
-        local elementOrder = {"earth", "fire", "water", "air"}
-        for _, element in ipairs(elementOrder) do
-            local menuItems = {}
-            for _, totem in ipairs(totems[element]) do
-                if NYCTER_SELECTED_UNIT_LEVEL >= totem.level then
-                    table.insert(menuItems, totem.id)
-                end
-            end
-            if table.getn(menuItems) > 0 then
-                UnitPopupMenus["BOT_SHAMAN_"..string.upper(element).."_TOTEM"] = menuItems
-                table.insert(dynamicMenus, "BOT_SHAMAN_"..string.upper(element).."_TOTEM")
-            end
-        end
-        if NYCTER_SELECTED_UNIT_LEVEL >= 10 then -- First totem is available at level 10
-            table.insert(dynamicMenus, "BOT_SHAMAN_CLEAR_TOTEMS")
-        end
-
-        -- SHAMAN: Reincarnation
-        UnitPopupButtons["BOT_SHAMAN_REINCARNATION"] = { text = "|cFF0070DEReincarnation|r", dist = 0, nested = 1 }
-        UnitPopupButtons["BOT_SHAMAN_REINCARNATION_ALLOW"] = { text = "|cff1EFF00Allow Self-Resurrection|r", dist = 0 }
-        UnitPopupButtons["BOT_SHAMAN_REINCARNATION_DENY"] = { text = "|cffFF0000Deny Self-Resurrection|r", dist = 0 }
-        if NYCTER_SELECTED_UNIT_LEVEL >= 30 then -- Reincarnation is learned at level 30
-            UnitPopupMenus["BOT_SHAMAN_REINCARNATION"] = { "BOT_SHAMAN_REINCARNATION_ALLOW", "BOT_SHAMAN_REINCARNATION_DENY" }
-            table.insert(dynamicMenus, "BOT_SHAMAN_REINCARNATION")
-        end
-    --[[--------------------------
-        Priest
-    ----------------------------]]
-    elseif NYCTER_SELECTED_UNIT_CLASS == "Priest" then
-        if NYCTER_SELECTED_UNIT_LEVEL >= 14 then
-            UnitPopupButtons["BOT_DENY_DANGER_SPELLS"] = { text = "Deny |cFFFFFFA0Danger Spells|r", dist = 0 }
-            table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_DENY_DANGER_SPELLS")
-        end
-        
-        -- PRIEST: Fear Ward (Dwarf only)
-        if NYCTER_SELECTED_UNIT_LEVEL >= 20 and UnitRace(NYCTER_SELECTED_UNIT) == "Dwarf" then
-            UnitPopupButtons["BOT_PRIEST_FEAR_WARD"] = { text = "|cFFFFFFA0Set Fear Ward On|r", dist = 0, nested = 1 }
-            UnitPopupMenus["BOT_PRIEST_FEAR_WARD"] = GetLocalGroupMembers(NYCTER_SELECTED_UNIT, true, true, "BOT_PRIEST_FEAR_WARD")
-            table.insert(dynamicMenus, "BOT_PRIEST_FEAR_WARD")
-        end
-    --[[--------------------------
-        Warrior
-    ----------------------------]]
-    elseif NYCTER_SELECTED_UNIT_CLASS == "Warrior" then
-        if NYCTER_SELECTED_UNIT_LEVEL >= 22 then -- Intimidating Shout is learned at level 22
-            UnitPopupButtons["BOT_DENY_DANGER_SPELLS"] = { text = "Deny |cFFC79C6EDanger Spells|r", dist = 0 }
-            table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_DENY_DANGER_SPELLS")
-        end
-    --[[--------------------------
-        Rogue
-    ----------------------------]]
-    elseif NYCTER_SELECTED_UNIT_CLASS == "Rogue" then -- Stealth at level 1
-        -- ROGUE: Stealth control on or off
-        UnitPopupButtons["BOT_ROGUE_STEALTH"] = { text = "|cFFFFF569Stealth Control|r", dist = 0, nested = 1 }
-        UnitPopupButtons["BOT_ROGUE_STEALTH_ON"] = { text = "|cff1EFF00Allow Stealth|r", dist = 0 }
-        UnitPopupButtons["BOT_ROGUE_STEALTH_OFF"] = { text = "|cffFF0000Prevent Stealth|r", dist = 0 }
-        UnitPopupMenus["BOT_ROGUE_STEALTH"] = { "BOT_ROGUE_STEALTH_ON", "BOT_ROGUE_STEALTH_OFF" }
-        table.insert(dynamicMenus, "BOT_ROGUE_STEALTH")
     end
-
     --[[--------------------------
         Add CC and Focus Buttons
     ----------------------------]]
@@ -536,7 +354,17 @@ end
 local originalUnitPopupOnClick = UnitPopup_OnClick
 function UnitPopup_OnClick()
 	local button = this.value;
+    --[[------------------------------------
+    Class-specific actions with modules
+    --------------------------------------]]
     local classModule = ClassModules[NYCTER_SELECTED_UNIT_CLASS]
+    -- Check if the button is handled by the class module
+    if classModule and classModule.HandleButtonClick then
+        if classModule:HandleButtonClick(button, NYCTER_SELECTED_UNIT) then
+            CloseDropDownMenus()
+            return
+        end
+    end
     --[[------------------------------------
     Player (self commands)
     --------------------------------------]]
@@ -696,168 +524,35 @@ function UnitPopup_OnClick()
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet succubus")
     elseif button == "BOT_WARLOCK_PET_FELHUNTER" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set pet felhunter")
-    --[[------------------------------------
-    Paladin blessings
-    --------------------------------------]]
-    elseif button == "BOT_PALADIN_BLESSING_DEFAULT" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing cancel")
-    elseif button == "BOT_PALADIN_BLESSING_MIGHT" then
-        if NYCTER_SELECTED_UNIT_LEVEL >= 52 then
-            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing Greater Blessing of Might")
-        else
-            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing Blessing of Might")
-        end
-    elseif button == "BOT_PALADIN_BLESSING_WISDOM" then
-        if NYCTER_SELECTED_UNIT_LEVEL >= 54 then
-            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing Greater Blessing of Wisdom")
-        else
-            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing Blessing of Wisdom")
-        end
-    elseif button == "BOT_PALADIN_BLESSING_KINGS" then
-        if NYCTER_SELECTED_UNIT_LEVEL >= 60 then
-            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing Greater Blessing of Kings")
-        else
-            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing Blessing of Kings")
-        end
-    elseif button == "BOT_PALADIN_BLESSING_LIGHT" then
-        if NYCTER_SELECTED_UNIT_LEVEL >= 60 then
-            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing Greater Blessing of Light")
-        else
-            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing Blessing of Light")
-        end
-    elseif button == "BOT_PALADIN_BLESSING_SALVATION" then
-        if NYCTER_SELECTED_UNIT_LEVEL >= 56 then
-            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing Greater Blessing of Salvation")
-        else
-            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set blessing Blessing of Salvation")
-        end
-    --[[------------------------------------
-    Paladin auras
-    --------------------------------------]]
-    elseif button == "BOT_PALADIN_AURAS_DEFAULT" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aura cancel")
-    elseif button == "BOT_PALADIN_AURA_DEVOTION" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aura Devotion Aura")
-    elseif button == "BOT_PALADIN_AURA_RETRIBUTION" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aura Retribution Aura")
-    elseif button == "BOT_PALADIN_AURA_SANCTITY" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aura Sanctity Aura")
-    elseif button == "BOT_PALADIN_AURA_CONCENTRATION" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aura Concentration Aura")
-    elseif button == "BOT_PALADIN_AURA_SHADOW_RESISTANCE" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aura Shadow Resistance Aura")
-    elseif button == "BOT_PALADIN_AURA_FROST_RESISTANCE" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aura Frost Resistance Aura")
-    elseif button == "BOT_PALADIN_AURA_FIRE_RESISTANCE" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set aura Fire Resistance Aura")
-    --[[------------------------------------
-    Shaman air totems
-    --------------------------------------]]
-    elseif button == "BOT_SHAMAN_AIR_TOTEM_GRACE" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Grace of Air Totem")
-    elseif button == "BOT_SHAMAN_AIR_TOTEM_NATURE" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Nature Resistance Totem")
-    elseif button == "BOT_SHAMAN_AIR_TOTEM_WINDFURY" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Windfury Totem")
-    elseif button == "BOT_SHAMAN_AIR_TOTEM_GROUNDING" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Grounding Totem")
-    elseif button == "BOT_SHAMAN_AIR_TOTEM_TRANQUIL" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Tranquil Air Totem")
-    --[[------------------------------------
-    Shaman earth totems
-    --------------------------------------]]
-    elseif button == "BOT_SHAMAN_EARTH_TOTEM_STONESKIN" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Stoneskin Totem")
-    elseif button == "BOT_SHAMAN_EARTH_TOTEM_EARTHBIND" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Earthbind Totem")
-    elseif button == "BOT_SHAMAN_EARTH_TOTEM_STRENGTH" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Strength of Earth Totem")
-    elseif button == "BOT_SHAMAN_EARTH_TOTEM_TREMOR" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Tremor Totem")
-    --[[------------------------------------
-    Shaman fire totems
-    --------------------------------------]]
-    elseif button == "BOT_SHAMAN_FIRE_TOTEM_SEARING" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Searing Totem")
-    elseif button == "BOT_SHAMAN_FIRE_TOTEM_FIRE_NOVA" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Fire Nova Totem")
-    elseif button == "BOT_SHAMAN_FIRE_TOTEM_FROST_RESISTANCE" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Frost Resistance Totem")
-    elseif button == "BOT_SHAMAN_FIRE_TOTEM_MAGMA" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Magma Totem")
-    elseif button == "BOT_SHAMAN_FIRE_TOTEM_FLAMETONGUE" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Flametongue Totem")
-    --[[------------------------------------
-    Shaman water totems
-    --------------------------------------]]
-    elseif button == "BOT_SHAMAN_WATER_TOTEM_HEALING" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Healing Stream Totem")
-    elseif button == "BOT_SHAMAN_WATER_TOTEM_MANA_SPRING" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Mana Spring Totem")
-    elseif button == "BOT_SHAMAN_WATER_TOTEM_FIRE_RESISTANCE" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Fire Resistance Totem")
-    elseif button == "BOT_SHAMAN_WATER_TOTEM_DISEASE_CLEANSING" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Disease Cleansing Totem")
-    elseif button == "BOT_SHAMAN_WATER_TOTEM_POISON_CLEANSING" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem Poison Cleansing Totem")
-    --[[------------------------------------
-    Shaman Clear & Toggle totems
-    --------------------------------------]]
-    elseif button == "BOT_SHAMAN_CLEAR_TOTEMS" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set totem cancel")
-    elseif button == "BOT_SHAMAN_TOGGLE_TOTEMS" then
-        SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "toggle totems")
-    --[[------------------------------------
-    Shaman Reincarnation
-    --------------------------------------]]
-    elseif button == "BOT_SHAMAN_REINCARNATION_ALLOW" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny remove reincarnation")
-    elseif button == "BOT_SHAMAN_REINCARNATION_DENY" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add reincarnation")
-    
-    --[[------------------------------------
-    Class-specific actions with modules
-    --------------------------------------]]
-    elseif classModule and classModule.HandleButtonClick then
-        if classModule:HandleButtonClick(button, NYCTER_SELECTED_UNIT_NAME) then
-            -- If the module handled the click, close menus and return
-            CloseDropDownMenus()
-            return
-        end
+
     --[[------------------------------------
     Deny danger spells
     --------------------------------------]]
     elseif button == "BOT_DENY_DANGER_SPELLS" then
         if NYCTER_SELECTED_UNIT_CLASS == "Mage" then
+            -- Blink: Level 20
             SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add blink")
         elseif NYCTER_SELECTED_UNIT_CLASS == "Priest" then
+            -- Psychic Scream: Level 8
             SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add psychic scream")
             if NYCTER_SELECTED_UNIT_LEVEL >= 20 then
+                -- Holy Nova: Level 20
                 SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add holy nova")
             end
         elseif NYCTER_SELECTED_UNIT_CLASS == "Warlock" then
+            -- Fear: Level 8
             SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add fear")
             if NYCTER_SELECTED_UNIT_LEVEL >= 40 then
+                -- Howl of Terror: Level 40
                 SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add howl of terror")
             end
         elseif NYCTER_SELECTED_UNIT_CLASS == "Warrior" then
+            -- Intimidating Shout: Level 22
             SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add intimidating shout")
         elseif NYCTER_SELECTED_UNIT_CLASS == "Hunter" then
+            -- Scare Beast: Level 8
             SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add scare beast")
         end
-    --[[------------------------------------
-    Rogue stealth control
-    --------------------------------------]]
-    elseif button == "BOT_ROGUE_STEALTH_ON" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny remove stealth")
-    elseif button == "BOT_ROGUE_STEALTH_OFF" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add stealth")
-    --[[------------------------------------
-    Priest Fear Ward
-    --------------------------------------]]
-    elseif string.find(button, "^BOT_PRIEST_FEAR_WARD_") then
-        local _, _, playerName = string.find(button, "_([^_]+)$")
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "set fearward on " .. playerName)
     --[[------------------------------------
     Default Behavior
     --------------------------------------]]

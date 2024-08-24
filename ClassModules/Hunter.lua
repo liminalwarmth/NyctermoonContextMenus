@@ -83,9 +83,12 @@ function HunterModule:UpdateMenu(NYCTER_SELECTED_UNIT_LEVEL)
     end
 end
 
-function HunterModule:HandleButtonClick(button, NYCTER_SELECTED_UNIT_NAME)
+function HunterModule:HandleButtonClick(button, NYCTER_SELECTED_UNIT)
     local command = self.actions[button]
     if command then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, command)
+        local unitName = UnitName(NYCTER_SELECTED_UNIT)
+        SendTargetedBotWhisperCommand(unitName, command)
+        return true
     end
+    return false
 end
