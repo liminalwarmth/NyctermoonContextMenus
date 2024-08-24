@@ -8,10 +8,6 @@
 [MAYBE?]
 - Custom stats display frame on your character
 - Add tooltips to menu commands
-- Add new changes:
-    .settings notifications commands [on/off]
-    .settings notifications emotes [on/off]
-    .settings notifications [on/off] -- for both
 - Set resist gear (for 1, for all)
     syntax is whisper "set gear fire" etc
     "set gear all fire" whispered to any comp will set for all comps. Provided they are out of combat and your res >= 255
