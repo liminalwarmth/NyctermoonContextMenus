@@ -47,7 +47,7 @@ local function SendTargetedBotZCommand(unit, command)
 end
 
 --[[------------------------------------
-    Add Companion and Get Info
+    Add Companion and Get Who Info
 --------------------------------------]]
 -- Table to store the list of companions and their classes
 local companions = {}
@@ -68,54 +68,24 @@ local function AddCompanionAndGetInfo(name)
     
     -- Override the AddMessage function to capture companion info
     DEFAULT_CHAT_FRAME.AddMessage = function(self, text, r, g, b, id)
-        if capturingInfo then
-            if string.find(text, "^%-%-%-%-%-%-%-%-%-%-$") then
-                if table.getn(capturedInfo) == 0 then
-                    -- Start of companion info
-                    capturingInfo = true
-                else
-                    -- End of companion info
-                    capturingInfo = false
-                    -- Process captured info here if needed
-                    -- For now, we'll just print it to demonstrate
-                    DEFAULT_CHAT_FRAME.AddMessage = originalAddMessage
-                    DEFAULT_CHAT_FRAME:AddMessage("Captured Companion Info for " .. name .. ":", 0, 1, 0)
-                    for i = 1, table.getn(capturedInfo) do
-                        DEFAULT_CHAT_FRAME:AddMessage(capturedInfo[i], 0, 1, 0)
-                    end
+        local cleanText = CleanMessage(text)
+        if string.find(cleanText, "^%-%-%-%-%-%-%-%-%-%-$") then
+            capturingInfo = not capturingInfo
+            if not capturingInfo then
+                -- End of companion info, process captured info if needed
+                -- For now, we'll just print it to demonstrate
+                DEFAULT_CHAT_FRAME:AddMessage("Captured Companion Info for " .. name .. ":", 0, 1, 0)
+                for i = 1, table.getn(capturedInfo) do
+                    DEFAULT_CHAT_FRAME:AddMessage(capturedInfo[i], 0, 1, 0)
                 end
-            elseif capturingInfo then
-                table.insert(capturedInfo, text)
+                capturedInfo = {}
             end
+        elseif capturingInfo then
+            table.insert(capturedInfo, cleanText)
         else
             originalAddMessage(self, text, r, g, b, id)
         end
     end
-    
-    -- Start capturing
-    capturingInfo = true
-    
-    -- Send the command to get companion info
-    ClearTarget()
-    SendChatMessage(".z who", "SAY")
-    
-    -- Set a timer to restore the original AddMessage function in case the capture fails
-    local restoreTimer = CreateFrame("Frame")
-    restoreTimer.time = 0
-    restoreTimer:SetScript("OnUpdate", function()
-        local elapsed = arg1
-        restoreTimer.time = restoreTimer.time + elapsed
-        if restoreTimer.time > 5 then  -- 5 seconds timeout
-            DEFAULT_CHAT_FRAME.AddMessage = originalAddMessage
-            DEFAULT_CHAT_FRAME:AddMessage("Failed to capture companion info for " .. name, 1, 0, 0)
-            -- Print captured info on fail
-            DEFAULT_CHAT_FRAME:AddMessage("Captured info before failure:", 1, 1, 0)
-            for i = 1, table.getn(capturedInfo) do
-                DEFAULT_CHAT_FRAME:AddMessage(capturedInfo[i], 1, 1, 0)
-            end
-            restoreTimer:SetScript("OnUpdate", nil)
-        end
-    end)
 end
 
 --[[------------------------------------
@@ -127,11 +97,6 @@ local eventFrame = CreateFrame("Frame")
 -- Register for all relevant chat events
 eventFrame:RegisterEvent("CHAT_MSG_MONSTER_WHISPER")
 eventFrame:RegisterEvent("CHAT_MSG_SYSTEM")
-
--- Function to clean message of color codes
-local function CleanMessage(message)
-    return string.gsub(string.gsub(message, "|c%x%x%x%x%x%x%x%x", ""), "|r", "")
-end
 
 -- Table to store the last 20 messages and their event types
 local messageLog = {}
