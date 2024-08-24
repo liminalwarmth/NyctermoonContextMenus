@@ -5,4 +5,6 @@
 ## Version: 1.0
 
 Utils.lua
+CompanionData.lua
+PlayerMenu.lua
 NyctermoonContextMenus.lua
