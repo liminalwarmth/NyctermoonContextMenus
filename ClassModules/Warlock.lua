@@ -75,17 +75,23 @@ function WarlockModule:HandleButtonClick(button, NYCTER_SELECTED_UNIT)
             }
             StaticPopup_Show("SUMMON_INVALID_TARGET")
         else
-            StaticPopupDialogs["SUMMON_CONFIRM"] = {
-                text = "Are you sure you want " .. unitName .. " to cast Ritual of Summoning on " .. targetName .. "? You have a limited number of uses.",
-                button1 = OKAY,
-                button2 = CANCEL,
-                OnAccept = function()
-                    SendTargetedBotWhisperCommand(unitName, self.actions[button])
-                end,
-                timeout = 0,
-                hideOnEscape = 1,
-            }
-            StaticPopup_Show("SUMMON_CONFIRM")
+            local function castSummon()
+                SendTargetedBotWhisperCommand(unitName, self.actions[button])
+            end
+            -- Check config for confirmation dialog setting
+            if NCMCONFIG["CONFIRM_WARLOCK_SUMMONING"] then
+                StaticPopupDialogs["SUMMON_CONFIRM"] = {
+                    text = "Are you sure you want " .. unitName .. " to cast Ritual of Summoning on " .. targetName .. "? You have a limited number of uses.",
+                    button1 = OKAY,
+                    button2 = CANCEL,
+                    OnAccept = castSummon,
+                    timeout = 0,
+                    hideOnEscape = 1,
+                }
+                StaticPopup_Show("SUMMON_CONFIRM")
+            else
+                castSummon()
+            end
         end
         return true
     elseif string.find(button, "^BOT_WARLOCK_SOULSTONE_") then

@@ -72,7 +72,7 @@ function MageModule:HandleButtonClick(button, NYCTER_SELECTED_UNIT)
                 local function castPortal()
                     SendTargetedBotWhisperCommand(unitName, command)
                 end
-                
+                -- Check config for confirmation dialog setting
                 if NCMCONFIG["CONFIRM_MAGE_PORTALS"] then
                     StaticPopupDialogs["PORTAL_CONFIRM"] = {
                         text = "Are you sure you want " .. unitName .. " to open a mage portal to " .. portalCity .. "? You have a limited number of portals per hire.",
