@@ -4,7 +4,21 @@
 ## Author: Liminal_Warmth
 ## Version: 1.0
 
+# Utility files
 Utils.lua
 CompanionData.lua
+
+# Menu files
 PlayerMenu.lua
+ClassModules\Druid.lua
+ClassModules\Hunter.lua
+ClassModules\Mage.lua
+ClassModules\Paladin.lua
+ClassModules\Priest.lua
+ClassModules\Rogue.lua
+ClassModules\Shaman.lua
+ClassModules\Warlock.lua
+ClassModules\Warrior.lua
+
+# Main file
 NyctermoonContextMenus.lua

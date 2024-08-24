@@ -616,7 +616,6 @@ end
 local originalUnitPopupOnClick = UnitPopup_OnClick
 function UnitPopup_OnClick()
 	local button = this.value;
-    
     --[[------------------------------------
     Player (self commands)
     --------------------------------------]]
