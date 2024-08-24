@@ -274,11 +274,11 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
             UnitPopupButtons["BOT_HUNTER_ASPECT"] = { text = "|cFFABD473Set Aspect|r", dist = 0, nested = 1 }
             table.insert(dynamicMenus, "BOT_HUNTER_ASPECT")
         end
-    -- HUNTER: Deny dangerous spells
-    if NYCTER_SELECTED_UNIT_LEVEL >= 8 then -- Scare Beast is learned at level 8
-        UnitPopupButtons["BOT_DENY_DANGER_SPELLS"] = { text = "Deny |cFFABD473Danger Spells|r", dist = 0 }
-        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_DENY_DANGER_SPELLS")
-    end
+        -- HUNTER: Deny dangerous spells
+        if NYCTER_SELECTED_UNIT_LEVEL >= 8 then -- Scare Beast is learned at level 8
+            UnitPopupButtons["BOT_DENY_DANGER_SPELLS"] = { text = "Deny |cFFABD473Danger Spells|r", dist = 0 }
+            table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_DENY_DANGER_SPELLS")
+        end
 
     --[[--------------------------
         Warlock
@@ -518,22 +518,13 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         Druid
     ----------------------------]]
     elseif NYCTER_SELECTED_UNIT_CLASS == "Druid" then
-        -- DRUID: Stealth control on or off
-        UnitPopupButtons["BOT_DRUID_STEALTH"] = { text = "|cFFFF7D0AStealth Control|r", dist = 0, nested = 1 }
-        UnitPopupButtons["BOT_DRUID_STEALTH_ON"] = { text = "|cff1EFF00Allow Stealth|r", dist = 0 }
-        UnitPopupButtons["BOT_DRUID_STEALTH_OFF"] = { text = "|cffFF0000Prevent Stealth|r", dist = 0 }
-        if NYCTER_SELECTED_UNIT_LEVEL >= 20 then -- Stealth is learned at level 20 (cat form)
-            UnitPopupMenus["BOT_DRUID_STEALTH"] = { "BOT_DRUID_STEALTH_ON", "BOT_DRUID_STEALTH_OFF" }
-            table.insert(dynamicMenus, "BOT_DRUID_STEALTH")
+        local druidMenus = DruidModule:CreateMenu(NYCTER_SELECTED_UNIT_LEVEL)
+        for menuName, menuItems in pairs(druidMenus) do
+            UnitPopupMenus[menuName] = menuItems
+            table.insert(dynamicMenus, menuName)
         end
-
-        -- DRUID: Rebirth control
-        UnitPopupButtons["BOT_DRUID_REBIRTH"] = { text = "|cFFFF7D0ARebirth|r", dist = 0, nested = 1 }
-        UnitPopupButtons["BOT_DRUID_REBIRTH_ALLOW"] = { text = "|cff1EFF00Allow Combat Resurrect|r", dist = 0 }
-        UnitPopupButtons["BOT_DRUID_REBIRTH_DENY"] = { text = "|cffFF0000Deny Combat Resurrect|r", dist = 0 }
-        if NYCTER_SELECTED_UNIT_LEVEL >= 20 then -- Rebirth is learned at level 20
-            UnitPopupMenus["BOT_DRUID_REBIRTH"] = { "BOT_DRUID_REBIRTH_ALLOW", "BOT_DRUID_REBIRTH_DENY" }
-            table.insert(dynamicMenus, "BOT_DRUID_REBIRTH")
+        for buttonName, buttonData in pairs(DruidModule.Buttons) do
+            UnitPopupButtons[buttonName] = buttonData
         end
     end
 
@@ -953,10 +944,8 @@ function UnitPopup_OnClick()
     --[[------------------------------------
     Druid Rebirth
     --------------------------------------]]
-    elseif button == "BOT_DRUID_REBIRTH_ALLOW" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny remove rebirth")
-    elseif button == "BOT_DRUID_REBIRTH_DENY" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add rebirth")
+    elseif NYCTER_SELECTED_UNIT_CLASS == "Druid" then
+        DruidModule:HandleButtonClick(button, NYCTER_SELECTED_UNIT_NAME)
     --[[------------------------------------
     Deny danger spells
     --------------------------------------]]
