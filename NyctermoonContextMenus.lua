@@ -25,6 +25,11 @@
 --[[---------------------------------------------------------------------------------
   COMPANION MENU COMMANDS
 ----------------------------------------------------------------------------------]]
+-- Load Class Modules
+local ClassModules = {
+    Druid = DruidModule,
+    -- Add other class modules as they are created
+}
 -- Hook the UnitPopup_ShowMenu function to establish the variables of which party member is being clicked
 local originalUnitPopupShowMenu = UnitPopup_ShowMenu
 function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
@@ -145,6 +150,24 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
 
     -- Conditionally edit the tables for each class
     local dynamicMenus = {}
+
+    -- Function to update class-specific menus if a module exists
+    local function UpdateClassMenu(class, level)
+        local classModule = ClassModules[class]
+        if classModule then
+            classModule:UpdateMenu(level)
+            for buttonName, buttonData in pairs(classModule.buttons) do
+                UnitPopupButtons[buttonName] = buttonData
+            end
+            for menuName, menuItems in pairs(classModule.menus) do
+                UnitPopupMenus[menuName] = menuItems
+                table.insert(dynamicMenus, menuName)
+            end
+        end
+    end
+
+    UpdateClassMenu(NYCTER_SELECTED_UNIT_CLASS, NYCTER_SELECTED_UNIT_LEVEL)
+
     --[[--------------------------
         Mage
     ----------------------------]]
@@ -201,78 +224,14 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         Hunter
     ----------------------------]]
     elseif NYCTER_SELECTED_UNIT_CLASS == "Hunter" then
-        -- HUNTER: Choose pet type
-        UnitPopupButtons["BOT_HUNTER_PET"] = { text = "|cFFABD473Choose Beast|r", dist = 0, nested = 1 }
-        UnitPopupButtons["BOT_HUNTER_PET_BAT"] = { text = "|cFFFF7D0ABat|r", dist = 0 }
-        UnitPopupButtons["BOT_HUNTER_PET_BEAR"] = { text = "|cFF0070DEBear|r", dist = 0 }
-        UnitPopupButtons["BOT_HUNTER_PET_BOAR"] = { text = "|cFF0070DEBoar|r |cFFFFFFFF(Charge)|r", dist = 0 }
-        UnitPopupButtons["BOT_HUNTER_PET_BIRD"] = { text = "|cFFFFF569Carrion Bird|r", dist = 0 }
-        UnitPopupButtons["BOT_HUNTER_PET_CAT"] = { text = "|cFFFF7D0ACat|r |cFFFFFFFF(Prowl)|r", dist = 0 }
-        UnitPopupButtons["BOT_HUNTER_PET_CRAB"] = { text = "|cFF0070DECrab|r", dist = 0 }
-        UnitPopupButtons["BOT_HUNTER_PET_CROC"] = { text = "|cFF0070DECrocolisk|r", dist = 0 }
-        UnitPopupButtons["BOT_HUNTER_PET_GORILLA"] = { text = "|cFF0070DEGorilla|r |cFFFFFFFF(Thunderstomp)|r", dist = 0 }
-        UnitPopupButtons["BOT_HUNTER_PET_HYENA"] = { text = "|cFFFFF569Hyena|r", dist = 0 }
-        UnitPopupButtons["BOT_HUNTER_PET_OWL"] = { text = "|cFFFF7D0AOwl|r", dist = 0 }
-        UnitPopupButtons["BOT_HUNTER_PET_RAPTOR"] = { text = "|cFFFF7D0ARaptor|r", dist = 0 }
-        UnitPopupButtons["BOT_HUNTER_PET_SCORPID"] = { text = "|cFF0070DEScorpid|r |cFFFFFFFF(Scorpid Poison)|r", dist = 0 }
-        UnitPopupButtons["BOT_HUNTER_PET_SPIDER"] = { text = "|cFFFF7D0ASpider|r", dist = 0 }
-        UnitPopupButtons["BOT_HUNTER_PET_STRIDER"] = { text = "|cFF0070DETallstrider|r", dist = 0 }
-        UnitPopupButtons["BOT_HUNTER_PET_TURTLE"] = { text = "|cFF0070DETurtle|r |cFFFFFFFF(Shell Shield)|r", dist = 0 }
-        UnitPopupButtons["BOT_HUNTER_PET_SERPENT"] = { text = "|cFFFF7D0AWind Serpent|r |cFFFFFFFF(Lightning Breath)|r", dist = 0 }
-        UnitPopupButtons["BOT_HUNTER_PET_WOLF"] = { text = "|cFFFFF569Wolf|r |cFFFFFFFF(Furious Howl)|r", dist = 0 }
-        UnitPopupMenus["BOT_HUNTER_PET"] = {
-            "BOT_HUNTER_PET_BAT",
-            "BOT_HUNTER_PET_BEAR",
-            "BOT_HUNTER_PET_BOAR",
-            "BOT_HUNTER_PET_BIRD",
-            "BOT_HUNTER_PET_CAT",
-            "BOT_HUNTER_PET_CRAB",
-            "BOT_HUNTER_PET_CROC",
-            "BOT_HUNTER_PET_GORILLA",
-            "BOT_HUNTER_PET_HYENA",
-            "BOT_HUNTER_PET_OWL",
-            "BOT_HUNTER_PET_RAPTOR",
-            "BOT_HUNTER_PET_SCORPID", 
-            "BOT_HUNTER_PET_SPIDER",
-            "BOT_HUNTER_PET_STRIDER",
-            "BOT_HUNTER_PET_TURTLE",
-            "BOT_HUNTER_PET_SERPENT",
-            "BOT_HUNTER_PET_WOLF"
-        }
-        if NYCTER_SELECTED_UNIT_LEVEL >= 10 then -- Hunters get pets at level 10
-            UnitPopupButtons["BOT_PET_TOGGLE"] = { text = "|cFFABD473Pet Control|r", dist = 0, nested = 1 }
-            UnitPopupButtons["BOT_PET_ON"] = { text = "|cff1EFF00Summon Pet|r", dist = 0 }
-            UnitPopupButtons["BOT_PET_OFF"] = { text = "|cffFF0000Dismiss Pet|r", dist = 0 }
-            UnitPopupMenus["BOT_PET_TOGGLE"] = { "BOT_PET_ON", "BOT_PET_OFF" }
-            table.insert(dynamicMenus, "BOT_PET_TOGGLE")
-            table.insert(dynamicMenus, "BOT_HUNTER_PET")
+        -- Load Hunter module
+        local hunterMenus = HunterModule:CreateMenu(NYCTER_SELECTED_UNIT_LEVEL)
+        for menuName, menuItems in pairs(hunterMenus) do
+            UnitPopupMenus[menuName] = menuItems
+            table.insert(dynamicMenus, menuName)
         end
-
-        -- HUNTER: Choose aspect
-        UnitPopupButtons["BOT_HUNTER_ASPECT_DEFAULT"] = { text = "AI Default (Clear Setting)", dist = 0 }
-        UnitPopupButtons["BOT_HUNTER_ASPECT_HAWK"] = { text = "Aspect of the Hawk", dist = 0 }
-        UnitPopupButtons["BOT_HUNTER_ASPECT_CHEETAH"] = { text = "Aspect of the Cheetah", dist = 0 }
-        UnitPopupButtons["BOT_HUNTER_ASPECT_PACK"] = { text = "Aspect of the Pack", dist = 0 }
-        UnitPopupButtons["BOT_HUNTER_ASPECT_WILD"] = { text = "Aspect of the Wild", dist = 0 }
-        local aspects = {
-            -- Monkey omitted intentionally (cannot be set)
-            {level = 10,  id = "BOT_HUNTER_ASPECT_HAWK"},
-            {level = 20, id = "BOT_HUNTER_ASPECT_CHEETAH"},
-            -- Beast omitted intentionally (cannot be set)
-            {level = 40, id = "BOT_HUNTER_ASPECT_PACK"},
-            {level = 46, id = "BOT_HUNTER_ASPECT_WILD"}
-        }
-        local aspectItems = {}
-        for i = 1, table.getn(aspects) do
-            if NYCTER_SELECTED_UNIT_LEVEL >= aspects[i].level then
-                table.insert(aspectItems, aspects[i].id)
-            end
-        end
-        if table.getn(aspectItems) > 0 then
-            table.insert(aspectItems, 1, "BOT_HUNTER_ASPECT_DEFAULT")
-            UnitPopupMenus["BOT_HUNTER_ASPECT"] = aspectItems
-            UnitPopupButtons["BOT_HUNTER_ASPECT"] = { text = "|cFFABD473Set Aspect|r", dist = 0, nested = 1 }
-            table.insert(dynamicMenus, "BOT_HUNTER_ASPECT")
+        for buttonName, buttonData in pairs(HunterModule.Buttons) do
+            UnitPopupButtons[buttonName] = buttonData
         end
         -- HUNTER: Deny dangerous spells
         if NYCTER_SELECTED_UNIT_LEVEL >= 8 then -- Scare Beast is learned at level 8
@@ -514,18 +473,6 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         UnitPopupButtons["BOT_ROGUE_STEALTH_OFF"] = { text = "|cffFF0000Prevent Stealth|r", dist = 0 }
         UnitPopupMenus["BOT_ROGUE_STEALTH"] = { "BOT_ROGUE_STEALTH_ON", "BOT_ROGUE_STEALTH_OFF" }
         table.insert(dynamicMenus, "BOT_ROGUE_STEALTH")
-    --[[--------------------------
-        Druid
-    ----------------------------]]
-    elseif NYCTER_SELECTED_UNIT_CLASS == "Druid" then
-        local druidMenus = DruidModule:CreateMenu(NYCTER_SELECTED_UNIT_LEVEL)
-        for menuName, menuItems in pairs(druidMenus) do
-            UnitPopupMenus[menuName] = menuItems
-            table.insert(dynamicMenus, menuName)
-        end
-        for buttonName, buttonData in pairs(DruidModule.Buttons) do
-            UnitPopupButtons[buttonName] = buttonData
-        end
     end
 
     --[[--------------------------
@@ -607,6 +554,7 @@ end
 local originalUnitPopupOnClick = UnitPopup_OnClick
 function UnitPopup_OnClick()
 	local button = this.value;
+    local classModule = ClassModules[NYCTER_SELECTED_UNIT_CLASS]
     --[[------------------------------------
     Player (self commands)
     --------------------------------------]]
@@ -941,11 +889,16 @@ function UnitPopup_OnClick()
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny remove reincarnation")
     elseif button == "BOT_SHAMAN_REINCARNATION_DENY" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add reincarnation")
+    
     --[[------------------------------------
-    Druid Rebirth
+    Class-specific actions with modules
     --------------------------------------]]
-    elseif NYCTER_SELECTED_UNIT_CLASS == "Druid" then
-        DruidModule:HandleButtonClick(button, NYCTER_SELECTED_UNIT_NAME)
+    elseif classModule and classModule.HandleButtonClick then
+        if classModule:HandleButtonClick(button, NYCTER_SELECTED_UNIT_NAME) then
+            -- If the module handled the click, close menus and return
+            CloseDropDownMenus()
+            return
+        end
     --[[------------------------------------
     Deny danger spells
     --------------------------------------]]
@@ -974,13 +927,6 @@ function UnitPopup_OnClick()
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny remove stealth")
     elseif button == "BOT_ROGUE_STEALTH_OFF" then
         SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add stealth")
-    --[[------------------------------------
-    Druid stealth control
-    --------------------------------------]]
-    elseif button == "BOT_DRUID_STEALTH_ON" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny remove prowl")
-    elseif button == "BOT_DRUID_STEALTH_OFF" then
-        SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add prowl")
     --[[------------------------------------
     Priest Fear Ward
     --------------------------------------]]
