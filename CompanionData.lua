@@ -7,8 +7,25 @@ companions = {}
     Companions Table Data Management
 --------------------------------------]]
 -- add a companion to the companions table
-function AddCompanion(name)
-    companions[name] = true
+function AddCompanion(name, rank, class, race, spec, role, owner, master)
+    companions[name] = {
+        Rank = rank or "N/A",
+        Class = class or "N/A",
+        Race = race or "N/A",
+        Spec = spec or "N/A",
+        Role = role or "N/A",
+        Owner = owner or "N/A",
+        Master = master or "N/A"
+    }
+    
+    local addedCompanion = companions[name]
+    local infoString = "Added companion " .. name .. " ("
+    infoString = infoString .. (addedCompanion.Rank or "N/A") .. " "
+    infoString = infoString .. (addedCompanion.Race or "N/A") .. " "
+    infoString = infoString .. (addedCompanion.Class or "N/A") .. ")"
+    DEFAULT_CHAT_FRAME:AddMessage(infoString, 1, 0.5, 0)
+    
+    DisplayCurrentCompanions()
 end
 
 -- initialize companions after they are added to the companions table
@@ -16,9 +33,34 @@ function InitializeCompanion(name)
     companions[name] = true
 end 
 
--- remove companions from the companions table
+-- Function to display current companions
+function DisplayCurrentCompanions()
+    DEFAULT_CHAT_FRAME:AddMessage("Current companions:", 0, 1, 0)
+    for companionName, companionData in pairs(companions) do
+        local infoString = companionName .. " ("
+        infoString = infoString .. (companionData.Rank or "N/A") .. " "
+        infoString = infoString .. (companionData.Race or "N/A") .. " "
+        infoString = infoString .. (companionData.Class or "N/A") .. ")"
+        DEFAULT_CHAT_FRAME:AddMessage(infoString, 1, 0.5, 0)
+    end
+end
+
+-- Remove companions from the companions table
 function RemoveCompanion(name)
-    companions[name] = nil
+    if companions[name] then
+        local removedCompanion = companions[name]
+        companions[name] = nil
+        if removedCompanion then
+            local removedInfo = "Removed companion " .. name .. " ("
+            removedInfo = removedInfo .. (removedCompanion.Rank or "N/A") .. " "
+            removedInfo = removedInfo .. (removedCompanion.Race or "N/A") .. " "
+            removedInfo = removedInfo .. (removedCompanion.Class or "N/A") .. ")"
+            DEFAULT_CHAT_FRAME:AddMessage(removedInfo, 1, 0.5, 0)
+        end
+        DisplayCurrentCompanions()
+    else
+        DEFAULT_CHAT_FRAME:AddMessage("ERROR: Companion " .. name .. " not found in the companions table...", 1, 0, 0)
+    end
 end
 
 -- compare the companions table to the who info and update the companions table
@@ -77,6 +119,25 @@ function ParseWhoInfo(whoInfo)
         companions[name] = data
     end
 end
+
+--[[
+    Data structure visualization:
+    companions = {
+        [CompanionName1] = {
+            Rank = string,
+            Class = string,
+            Race = string,
+            Spec = string,
+            Role = string,
+            Owner = string,
+            Master = string
+        },
+        [CompanionName2] = {
+            -- Same structure as CompanionName1
+        },
+        -- More companions...
+    }
+]]
 
 --[[------------------------------------
     Get Who Info
@@ -140,120 +201,100 @@ function GetWhoInfo()
 end
 
 --[[
-Captured format:
-
-[Cian] Dungeon:None Raid:None
- 
-1. [Gazryklite]:T0D - Shaman Orc - Default - Melee DPS
-O:[Gazryk] M:[Cian] P:[None]
- 
-2. [Raelynlite]:T0D - Priest Human - Default - Range DPS
-O:[Raelyn] M:[Cian] P:[None]
- 
-3. [Ribble]:T3R - Mage Gnome - Arcane - Range DPS
-O:[Raelyn] M:[Cian] P:[None]
+Structure:
+- Invisible frame to capture whispers and system messages
+- Listener monitors the frame for events and updates the companions table
+- Some actions or commands will trigger a listener queue state so we validate responses
 ]]--
 
 --[[------------------------------------
-Detect New Companions and Companion Messages
+Companion Event Frame for Message Captures
 --------------------------------------]]
--- Create a frame to handle events
-eventFrame = CreateFrame("Frame")
+CompanionEventFrame = CreateFrame("Frame")
+CompanionEventFrame.messageQueue = {}
+CompanionEventFrame.maxQueueSize = 30
 
--- Register for all relevant chat events
-eventFrame:RegisterEvent("CHAT_MSG_MONSTER_WHISPER")
-eventFrame:RegisterEvent("CHAT_MSG_SYSTEM")
+CompanionEventFrame:RegisterEvent("CHAT_MSG_MONSTER_WHISPER")
+CompanionEventFrame:RegisterEvent("CHAT_MSG_SYSTEM")
 
--- Table to store the last 20 messages and their event types
-messageLog = {}
-
--- Set up the event handler
-eventFrame:SetScript("OnEvent", function()
-    -- Get the message content and event type
+CompanionEventFrame:SetScript("OnEvent", function()
     local message = arg1
     local eventType = event
+    local source = "System"
     
-    -- Clean the current message
     local cleanMessage = CleanMessage(message)
     
-    -- Add the new message to the log
     if eventType == "CHAT_MSG_MONSTER_WHISPER" then
-        local monsterName = arg2 or "Unknown"
-        cleanMessage = monsterName .. " whispers: " .. cleanMessage
-    end
-    table.insert(messageLog, 1, {message = cleanMessage, event = eventType})
-    
-    -- Keep only the last 20 messages
-    if table.getn(messageLog) > 20 then
-        table.remove(messageLog)
+        source = arg2 or "Unknown"
+        cleanMessage = source .. " whispers: " .. cleanMessage
     end
     
-    if eventType == "CHAT_MSG_SYSTEM" then
-        -- Check if it's a player leaving the party or raid
-        local _, _, leaveName = string.find(cleanMessage, "(%S+) leaves the party%.")
-        if not leaveName then
-            _, _, leaveName = string.find(cleanMessage, "(%S+) has left the raid group")
-        end
-        
-        if leaveName and companions[leaveName] then
-            companions[leaveName] = nil
-            DEFAULT_CHAT_FRAME:AddMessage("Removed companion " .. leaveName .. " from the companions table", 1, 0.5, 0)
-            -- List the current companions
-            DEFAULT_CHAT_FRAME:AddMessage("Current companions:", 0, 1, 0)
-            for companionName, _ in pairs(companions) do
-                DEFAULT_CHAT_FRAME:AddMessage("- " .. companionName, 0, 1, 0)
-            end
-        end
-        
-        -- Check if it's a player joining the party or raid
-        local _, _, name = string.find(cleanMessage, "(%S+) joins the party%.")
-        if not name then
-            _, _, name = string.find(cleanMessage, "(%S+) has joined the raid group")
-        end
-        
-        if name then
-            local companionDetected = false
-            
-            -- Check whispers first
-            for i = 2, table.getn(messageLog) do
-                local logEntry = messageLog[i]
-                if logEntry.event == "CHAT_MSG_MONSTER_WHISPER" then
-                    if string.find(logEntry.message, "^" .. name .. ".*has transferred me to you") then
-                        companionDetected = true
-                        break
-                    end
-                end
-            end
-            
-            -- If companion not detected in whispers, check system messages
-            if not companionDetected then
-                for i = 2, table.getn(messageLog) do
-                    local logEntry = messageLog[i]
-                    if logEntry.event == "CHAT_MSG_SYSTEM" then
-                        if string.find(logEntry.message, "New Companion hired") or 
-                           string.find(logEntry.message, "New Legacy Companion added") then
-                            companionDetected = true
-                            break
-                        elseif string.find(logEntry.message, "(%S+) joins the party%.") or 
-                               string.find(logEntry.message, "(%S+) has joined the raid group") then
-                            break  -- Stop checking if we encounter another join message
-                        end
-                    end
-                end
-            end
-            
-            if companionDetected then
-                -- Add the companion and get their info
-                -- AddCompanionAndGetInfo(name)
-                GetWhoInfo()
-                
-                DEFAULT_CHAT_FRAME:AddMessage("Added companion " .. name .. " to the companions table", 0, 1, 0)
-                -- List the current companions
-                DEFAULT_CHAT_FRAME:AddMessage("Current companions:", 0, 1, 0)
-                for companionName, _ in pairs(companions) do
-                    DEFAULT_CHAT_FRAME:AddMessage("- " .. companionName, 0, 1, 0)
-                end
-            end
-        end
+    local entry = {message = cleanMessage, event = eventType, source = source}
+    table.insert(CompanionEventFrame.messageQueue, 1, entry)
+    
+    if table.getn(CompanionEventFrame.messageQueue) > CompanionEventFrame.maxQueueSize then
+        table.remove(CompanionEventFrame.messageQueue)
     end
+    -- Debug whisper
+    if eventType == "CHAT_MSG_MONSTER_WHISPER" then
+        DEFAULT_CHAT_FRAME:AddMessage("Debug: Whisper received from " .. source .. ": " .. cleanMessage, 1, 1, 0)
+    end
+
+    -- Every time a message is added to the queue, run our listener to determine actions
+    CompanionMessageListener(entry)
 end)
+
+--[[------------------------------------
+Companion Message Listener
+--------------------------------------]]
+
+local function CompanionMessageListener(logEntry)
+    local cleanMessage = logEntry.message
+    local eventType = logEntry.event
+    -- Source only works to identify speaker of whispers (System is other source)
+    local source = logEntry.source 
+    
+    -- Check for companion leaving and remove them from the companions table
+    local _, _, leaveName = string.find(cleanMessage, "(%S+) leaves the party%.")
+    if not leaveName then
+        _, _, leaveName = string.find(cleanMessage, "(%S+) has left the raid group")
+    end
+    if leaveName and companions[leaveName] then
+        RemoveCompanion(leaveName)
+        return
+    end
+    
+    -- Check for player joining party or raid
+    local _, _, joinName = string.find(cleanMessage, "(%S+) joins the party%.")
+    if not joinName then
+        _, _, joinName = string.find(cleanMessage, "(%S+) has joined the raid group")
+    end
+    if joinName then
+        -- Check if the player is a companion
+        local companionDetected = false
+        
+        -- Check recent messages for companion detection
+        for i = 1, table.getn(CompanionEventFrame.messageQueue) do
+            local queueEntry = CompanionEventFrame.messageQueue[i]
+            if queueEntry.event == "CHAT_MSG_MONSTER_WHISPER" then
+                if string.find(queueEntry.message, "^" .. joinName .. ".*has transferred me to you") then
+                    companionDetected = true
+                    break
+                end
+            elseif queueEntry.event == "CHAT_MSG_SYSTEM" then
+                if string.find(queueEntry.message, "New Companion hired") or 
+                   string.find(queueEntry.message, "New Legacy Companion added") then
+                    companionDetected = true
+                    break
+                elseif string.find(queueEntry.message, "(%S+) joins the party%.") or 
+                       string.find(queueEntry.message, "(%S+) has joined the raid group") then
+                    break
+                end
+            end
+        end
+        
+        if companionDetected then
+            AddCompanion(joinName)
+        end
+    end
+end
