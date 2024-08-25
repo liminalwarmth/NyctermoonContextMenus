@@ -1,3 +1,5 @@
+-- Add aura tooltips and blessing tooltips for functions
+
 PaladinModule = {}
 PaladinModule.buttons = {}
 PaladinModule.menus = {}

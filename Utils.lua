@@ -208,3 +208,49 @@ function GetLocalGroupMembers(unit, includePlayer, includeTarget, buttonPrefix)
 
     return menuItems
 end
+
+
+--[[------------------------------------
+    NCM Timers
+--------------------------------------]]
+-- Custom timer table to track delayed events
+ncmTimers = {}
+
+-- Function to add a timer
+function AddNCMTimer(name, duration, func, retries, ...)
+    local args = {}
+    for i = 1, arg.n do
+        args[i] = arg[i]
+    end
+    local triggerTime = GetTime() + duration
+    ncmTimers[name] = {
+        triggerTime = triggerTime,
+        duration = duration,
+        func = func,
+        args = args,
+        retries = retries or 0,
+        originalRetries = retries or 0
+    }
+end
+
+-- Function to handle timers
+function CheckNCMTimers()
+    local currentTime = GetTime()
+    for timerName, timerData in pairs(ncmTimers) do
+        if currentTime >= timerData.triggerTime then
+            local result = timerData.func(unpack(timerData.args))
+            if result == false and timerData.retries > 0 then
+                -- Reschedule the timer
+                timerData.triggerTime = GetTime() + timerData.duration
+                timerData.retries = timerData.retries - 1
+            else
+                ncmTimers[timerName] = nil
+            end
+        end
+    end
+end
+
+timerFrame = CreateFrame("Frame")
+timerFrame:SetScript("OnUpdate", function()
+    CheckNCMTimers()
+end)
