@@ -6,6 +6,7 @@
 
 # Instantiate UI file functions
 UI\SettingsMenu.lua
+UI\DangerousSpells.lua
 
 # Utility files
 Utils.lua

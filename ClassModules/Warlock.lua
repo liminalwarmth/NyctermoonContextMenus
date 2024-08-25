@@ -79,7 +79,7 @@ function WarlockModule:HandleButtonClick(button, NYCTER_SELECTED_UNIT)
                 SendTargetedBotWhisperCommand(unitName, self.actions[button])
             end
             -- Check config for confirmation dialog setting
-            if NCMCONFIG["CONFIRM_WARLOCK_SUMMONING"] then
+            if NCMCONFIG.CONFIRM_WARLOCK_SUMMONING then
                 StaticPopupDialogs["SUMMON_CONFIRM"] = {
                     text = "Are you sure you want " .. unitName .. " to cast Ritual of Summoning on " .. targetName .. "? You have a limited number of uses.",
                     button1 = OKAY,

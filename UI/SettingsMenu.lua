@@ -8,17 +8,19 @@
 -- Define the settings structure
 local NCMSettings = {
     ["Confirmation Dialogs"] = {
-        { id = "CONFIRM_MAGE_PORTALS", label = "Mage Portals", type = "bool", value = true },
-        { id = "CONFIRM_WARLOCK_SUMMONING", label = "Warlock Summoning", type = "bool", value = true },
+        { id = "CONFIRM_MAGE_PORTALS", label = "|cFF69CCF0[Mage]|r City Portals", type = "bool", value = true, tooltip = "Show a confirmation dialog before casting city portals" },
+        { id = "CONFIRM_WARLOCK_SUMMONING", label = "|cFF9482C9[Warlock]|r Ritual of Summoning", type = "bool", value = true, tooltip = "Show a confirmation dialog before performing Ritual of Summoning" },
     },
     ["Auto-Disable on Hire"] = {
-        { id = "DISABLE_DANGEROUS_SPELLS", label = "Dangerous Spells", type = "bool", value = true },
-        { id = "DISABLE_DRUID_REBIRTH", label = "Druid Rebirth", type = "bool", value = true },
-        { id = "DISABLE_SHAMAN_REINCARNATE", label = "Shaman Reincarnate", type = "bool", value = true },
-        { id = "DISABLE_MAGE_AMPLIFY_MAGIC", label = "Mage Amplify Magic", type = "bool", value = false },
-        { id = "DISABLE_STEALTH_PROWL", label = "Stealth/Prowl", type = "bool", value = false },
+        { id = "DISABLE_DANGEROUS_SPELLS", label = "|cFFFFFFFF[All]|r Dangerous Spells", type = "bool", value = true, tooltip = "Automatically attempt to deny spells known to be dangerous in dungeons when a companion joins." },
+        { id = "DISABLE_DRUID_REBIRTH", label = "|cFFFF7D0A[Druid]|r Rebirth", type = "bool", value = true, tooltip = "Automatically deny Rebirth (combat resurrection) when hiring a Druid companion" },
+        { id = "DISABLE_SHAMAN_REINCARNATE", label = "|cFF0070DE[Shaman]|r Reincarnate", type = "bool", value = true, tooltip = "Automatically deny Reincarnation (self-resurrection) when hiring a Shaman companion" },
+        { id = "DISABLE_MAGE_AMPLIFY_MAGIC", label = "|cFF69CCF0[Mage]|r Amplify Magic", type = "bool", value = true, tooltip = "Automatically set Amplify Magic behavior to 'None' when hiring a Mage companion" },
+        { id = "DISABLE_STEALTH_PROWL", label = "|cFFFFF569[Rogue]|r or |cFFFF7D0A[Druid]|r Stealth/Prowl", type = "bool", value = true, tooltip = "Automatically deny Stealth/Prowl when hiring a Rogue or Druid companion" },
     },
-    -- Add more groups and settings as needed
+    ["Addon Information"] = {
+        { id = "COMPANION_MESSAGES_VERBOSE", label = "Verbose Companion Messages", type = "bool", value = true, tooltip = "Enable detailed chat window messages about companions joining, leaving, and skill usage." },
+    },
 }
 
 -- Initialize NCMCONFIG with initial values
@@ -70,6 +72,7 @@ local function CreateCheckBoxGroup(parent, offsetX, offsetY, groupName, settings
         cb:SetHeight(16)
         
         cb.tooltipTitle = setting.label
+        cb.tooltipText = setting.tooltip
         cb.settingId = setting.id
 
         cb:SetScript("OnShow", function()
@@ -85,6 +88,7 @@ local function CreateCheckBoxGroup(parent, offsetX, offsetY, groupName, settings
             GameTooltip:SetOwner(this, "ANCHOR_TOPRIGHT")
             GameTooltip:SetBackdropColor(.01, .01, .01, .91)
             GameTooltip:SetText(this.tooltipTitle)
+            GameTooltip:AddLine(this.tooltipText, 1, 1, 1, true)
             GameTooltip:Show()
         end)
         cb:SetScript("OnLeave", function()

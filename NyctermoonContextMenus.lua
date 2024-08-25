@@ -353,35 +353,6 @@ function UnitPopup_OnClick()
         SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "focusmark moon")
     elseif button == "BOT_ASSIGN_FOCUS_MARK_SKULL" then
         SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, "focusmark skull")
-
-    --[[------------------------------------
-    Deny danger spells
-    --------------------------------------]]
-    elseif button == "BOT_DENY_DANGER_SPELLS" then
-        if NYCTER_SELECTED_UNIT_CLASS == "Mage" then
-            -- Blink: Level 20
-            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add blink")
-        elseif NYCTER_SELECTED_UNIT_CLASS == "Priest" then
-            -- Psychic Scream: Level 8
-            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add psychic scream")
-            if NYCTER_SELECTED_UNIT_LEVEL >= 20 then
-                -- Holy Nova: Level 20
-                SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add holy nova")
-            end
-        elseif NYCTER_SELECTED_UNIT_CLASS == "Warlock" then
-            -- Fear: Level 8
-            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add fear")
-            if NYCTER_SELECTED_UNIT_LEVEL >= 40 then
-                -- Howl of Terror: Level 40
-                SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add howl of terror")
-            end
-        elseif NYCTER_SELECTED_UNIT_CLASS == "Warrior" then
-            -- Intimidating Shout: Level 22
-            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add intimidating shout")
-        elseif NYCTER_SELECTED_UNIT_CLASS == "Hunter" then
-            -- Scare Beast: Level 8
-            SendTargetedBotWhisperCommand(NYCTER_SELECTED_UNIT_NAME, "deny add scare beast")
-        end
     --[[------------------------------------
     Default Behavior
     --------------------------------------]]

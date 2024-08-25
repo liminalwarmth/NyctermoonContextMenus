@@ -3,6 +3,11 @@ MageModule.buttons = {}
 MageModule.menus = {}
 MageModule.actions = {}
 
+NCM_CLASS_DEFAULT_SETTINGS.Mage = {
+    PORTALS_MAX = 0,
+    PORTALS_CURRENT = 0,
+}
+
 function MageModule:UpdateMenu(NYCTER_SELECTED_UNIT_LEVEL)
     self.buttons = {}
     self.menus = {}
@@ -73,7 +78,7 @@ function MageModule:HandleButtonClick(button, NYCTER_SELECTED_UNIT)
                     SendTargetedBotWhisperCommand(unitName, command)
                 end
                 -- Check config for confirmation dialog setting
-                if NCMCONFIG["CONFIRM_MAGE_PORTALS"] then
+                if NCMCONFIG.CONFIRM_MAGE_PORTALS then
                     StaticPopupDialogs["PORTAL_CONFIRM"] = {
                         text = "Are you sure you want " .. unitName .. " to open a mage portal to " .. portalCity .. "? You have a limited number of portals per hire.",
                         button1 = OKAY,

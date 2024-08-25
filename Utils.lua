@@ -209,7 +209,6 @@ function GetLocalGroupMembers(unit, includePlayer, includeTarget, buttonPrefix)
     return menuItems
 end
 
-
 --[[------------------------------------
     NCM Timers
 --------------------------------------]]
@@ -254,3 +253,19 @@ timerFrame = CreateFrame("Frame")
 timerFrame:SetScript("OnUpdate", function()
     CheckNCMTimers()
 end)
+
+--[[------------------------------------
+    Other Global Variables
+--------------------------------------]]
+-- Class default settings template
+NCM_CLASS_DEFAULT_SETTINGS = {
+    Druid = {},
+    Hunter = {},
+    Mage = {},
+    Paladin = {},
+    Priest = {},
+    Rogue = {},
+    Shaman = {},
+    Warlock = {},
+    Warrior = {}
+}
