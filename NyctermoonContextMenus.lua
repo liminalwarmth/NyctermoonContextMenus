@@ -144,9 +144,6 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
         table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_" .. role)
     end
 
-    -- Deny danger spells (added after roles by class for those that have them)
-    UnitPopupButtons["BOT_DENY_DANGER_SPELLS"] = { text = "Deny Danger Spells", dist = 0 }
-
     -- Insert BOT_CONTROL into the PARTY menu
     table.insert(UnitPopupMenus[menuFrame], 1, "BOT_CONTROL")
 
