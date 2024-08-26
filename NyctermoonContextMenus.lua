@@ -17,6 +17,18 @@
 --[[---------------------------------------------------------------------------------
   COMPANION MENU COMMANDS
 ----------------------------------------------------------------------------------]]
+local frame = CreateFrame("Frame")
+frame:RegisterEvent("PLAYER_LOGOUT")
+frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+frame:RegisterEvent("ADDON_LOADED")
+frame:SetScript("OnEvent", function(self, event, addonName)
+    if event == "PLAYER_LOGOUT" then
+        SaveNCMConfig()
+    elseif event == "PLAYER_ENTERING_WORLD" or (event == "ADDON_LOADED" and addonName == "NyctermoonContextMenus") then
+        LoadNCMConfig()
+    end
+end)
+
 -- Load Class Modules
 local ClassModules = {
     Druid = DruidModule,

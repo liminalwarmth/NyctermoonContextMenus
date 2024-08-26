@@ -34,16 +34,41 @@ end
 -- Function to save NCMCONFIG
 local function SaveNCMConfig()
     if not NCMCONFIG.NOSAVE then
+        -- Save account-wide settings
         NCMConfig = NCMCONFIG
+        
+        -- Save window position
+        if NCMSettingsFrame then
+            NCMConfig.WindowPosition = {
+                point = NCMSettingsFrame:GetPoint()
+            }
+        end
+        
+        -- Save character-specific companions data
+        NCMCompanions = companions
     end
 end
 
 -- Function to load NCMCONFIG
 local function LoadNCMConfig()
+    -- Load account-wide settings
     if NCMConfig then
         for k, v in pairs(NCMConfig) do
             NCMCONFIG[k] = v
         end
+        
+        -- Restore window position
+        if NCMConfig.WindowPosition and NCMSettingsFrame then
+            NCMSettingsFrame:ClearAllPoints()
+            NCMSettingsFrame:SetPoint(unpack(NCMConfig.WindowPosition))
+        end
+    end
+    
+    -- Load character-specific companions data
+    if NCMCompanions then
+        companions = NCMCompanions
+    else
+        companions = {}
     end
 end
 
