@@ -13,22 +13,9 @@
 [RAID MENU?]
     - Set distancing (Rag, some BWL)
 --]]
-
 --[[---------------------------------------------------------------------------------
-  COMPANION MENU COMMANDS
+    LOAD ADDON DATA
 ----------------------------------------------------------------------------------]]
-local frame = CreateFrame("Frame")
-frame:RegisterEvent("PLAYER_LOGOUT")
-frame:RegisterEvent("PLAYER_ENTERING_WORLD")
-frame:RegisterEvent("ADDON_LOADED")
-frame:SetScript("OnEvent", function(self, event, addonName)
-    if event == "PLAYER_LOGOUT" then
-        SaveNCMConfig()
-    elseif event == "PLAYER_ENTERING_WORLD" or (event == "ADDON_LOADED" and addonName == "NyctermoonContextMenus") then
-        LoadNCMConfig()
-    end
-end)
-
 -- Load Class Modules
 local ClassModules = {
     Druid = DruidModule,
@@ -41,6 +28,10 @@ local ClassModules = {
     Mage = MageModule,
     Warlock = WarlockModule
 }
+
+--[[---------------------------------------------------------------------------------
+    COMPANION MENU COMMANDS
+----------------------------------------------------------------------------------]]
 -- Hook the UnitPopup_ShowMenu function to establish the variables of which party member is being clicked
 local originalUnitPopupShowMenu = UnitPopup_ShowMenu
 function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)

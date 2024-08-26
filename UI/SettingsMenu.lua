@@ -1,79 +1,35 @@
 --[[------------------------------------
     Settings Menu
-
-    TODO:
-    - Save and load from file on login/logout
-    - Save settings by character AND account (especially important for comp list)
 --------------------------------------]]
 -- Define the settings structure
 local NCMSettings = {
     ["Confirmation Dialogs"] = {
-        { id = "CONFIRM_MAGE_PORTALS", label = "|cFF69CCF0[Mage]|r City Portals", type = "bool", value = true, tooltip = "Show a confirmation dialog before casting city portals" },
-        { id = "CONFIRM_WARLOCK_SUMMONING", label = "|cFF9482C9[Warlock]|r Ritual of Summoning", type = "bool", value = true, tooltip = "Show a confirmation dialog before performing Ritual of Summoning" },
+        { id = "CONFIRM_MAGE_PORTALS", label = "|cFF69CCF0[Mage]|r City Portals", type = "bool", value = 1, tooltip = "Show a confirmation dialog before casting city portals" },
+        { id = "CONFIRM_WARLOCK_SUMMONING", label = "|cFF9482C9[Warlock]|r Ritual of Summoning", type = "bool", value = 1, tooltip = "Show a confirmation dialog before performing Ritual of Summoning" },
     },
     ["Auto-Disable on Hire"] = {
-        { id = "DISABLE_DANGEROUS_SPELLS", label = "|cFFFFFFFF[All]|r Dangerous Spells", type = "bool", value = true, tooltip = "Automatically attempt to deny spells known to be dangerous in dungeons when a companion joins." },
-        { id = "DISABLE_DRUID_REBIRTH", label = "|cFFFF7D0A[Druid]|r Rebirth", type = "bool", value = true, tooltip = "Automatically deny Rebirth (combat resurrection) when hiring a Druid companion" },
-        { id = "DISABLE_SHAMAN_REINCARNATE", label = "|cFF0070DE[Shaman]|r Reincarnate", type = "bool", value = true, tooltip = "Automatically deny Reincarnation (self-resurrection) when hiring a Shaman companion" },
-        { id = "DISABLE_MAGE_AMPLIFY_MAGIC", label = "|cFF69CCF0[Mage]|r Amplify Magic", type = "bool", value = true, tooltip = "Automatically set Amplify Magic behavior to 'None' when hiring a Mage companion" },
-        { id = "DISABLE_STEALTH_PROWL", label = "|cFFFFF569[Rogue]|r or |cFFFF7D0A[Druid]|r Stealth/Prowl", type = "bool", value = true, tooltip = "Automatically deny Stealth/Prowl when hiring a Rogue or Druid companion" },
+        { id = "DISABLE_DANGEROUS_SPELLS", label = "|cFFFFFFFF[All]|r Dangerous Spells", type = "bool", value = 1, tooltip = "Automatically attempt to deny spells known to be dangerous in dungeons when a companion joins." },
+        { id = "DISABLE_DRUID_REBIRTH", label = "|cFFFF7D0A[Druid]|r Rebirth", type = "bool", value = 1, tooltip = "Automatically deny Rebirth (combat resurrection) when hiring a Druid companion" },
+        { id = "DISABLE_SHAMAN_REINCARNATE", label = "|cFF0070DE[Shaman]|r Reincarnate", type = "bool", value = 1, tooltip = "Automatically deny Reincarnation (self-resurrection) when hiring a Shaman companion" },
+        { id = "DISABLE_MAGE_AMPLIFY_MAGIC", label = "|cFF69CCF0[Mage]|r Amplify Magic", type = "bool", value = 1, tooltip = "Automatically set Amplify Magic behavior to 'None' when hiring a Mage companion" },
+        { id = "DISABLE_STEALTH_PROWL", label = "|cFFFFF569[Rogue]|r or |cFFFF7D0A[Druid]|r Stealth/Prowl", type = "bool", value = 1, tooltip = "Automatically deny Stealth/Prowl when hiring a Rogue or Druid companion" },
     },
     ["Addon Information"] = {
-        { id = "COMPANION_MESSAGES_VERBOSE", label = "Verbose Companion Messages", type = "bool", value = true, tooltip = "Enable detailed chat window messages about companions joining, leaving, and skill usage." },
+        { id = "COMPANION_MESSAGES_VERBOSE", label = "Verbose Companion Messages", type = "bool", value = 1, tooltip = "Enable detailed chat window messages about companions joining, leaving, and skill usage." },
     },
 }
 
 -- Initialize NCMCONFIG with initial values
-NCMCONFIG = {}
-for _, group in pairs(NCMSettings) do
-    for _, setting in ipairs(group) do
-        NCMCONFIG[setting.id] = setting.value
-    end
-end
-
--- Function to save NCMCONFIG
-local function SaveNCMConfig()
-    if not NCMCONFIG.NOSAVE then
-        -- Save account-wide settings
-        NCMConfig = NCMCONFIG
-        
-        -- Save window position
-        if NCMSettingsFrame then
-            NCMConfig.WindowPosition = {
-                point = NCMSettingsFrame:GetPoint()
-            }
-        end
-        
-        -- Save character-specific companions data
-        NCMCompanions = companions
-    end
-end
-
--- Function to load NCMCONFIG
-local function LoadNCMConfig()
-    -- Load account-wide settings
-    if NCMConfig then
-        for k, v in pairs(NCMConfig) do
-            NCMCONFIG[k] = v
-        end
-        
-        -- Restore window position
-        if NCMConfig.WindowPosition and NCMSettingsFrame then
-            NCMSettingsFrame:ClearAllPoints()
-            NCMSettingsFrame:SetPoint(unpack(NCMConfig.WindowPosition))
+if not NCMCONFIG then
+    NCMCONFIG = {}
+    for _, group in pairs(NCMSettings) do
+        for _, setting in ipairs(group) do
+            if NCMCONFIG[setting.id] == nil then
+                NCMCONFIG[setting.id] = setting.value
+            end
         end
     end
-    
-    -- Load character-specific companions data
-    if NCMCompanions then
-        companions = NCMCompanions
-    else
-        companions = {}
-    end
 end
-
--- Call LoadNCMConfig when the addon loads
-LoadNCMConfig()
 
 -- Function to create checkbox groups
 local function CreateCheckBoxGroup(parent, offsetX, offsetY, groupName, settings)
@@ -101,13 +57,12 @@ local function CreateCheckBoxGroup(parent, offsetX, offsetY, groupName, settings
         cb.settingId = setting.id
 
         cb:SetScript("OnShow", function()
-            local checked = NCMCONFIG[this.settingId]
+            local checked = NCMCONFIG[this.settingId] == 1
             this:SetChecked(checked)
             getglobal(this:GetName().."Text"):SetText(this.tooltipTitle)
         end)
         cb:SetScript("OnClick", function()
-            NCMCONFIG[this.settingId] = this:GetChecked()
-            SaveNCMConfig()
+            NCMCONFIG[this.settingId] = this:GetChecked() and 1 or 0
         end)
         cb:SetScript("OnEnter", function()
             GameTooltip:SetOwner(this, "ANCHOR_TOPRIGHT")
@@ -134,7 +89,18 @@ function NCM_CreateSettingsFrame()
     frame:SetWidth(480)
     frame:SetHeight(428)
     
-    frame:SetPoint("TOPLEFT", nil, "TOPLEFT", 250, -50)
+    -- Set initial position to the center of the screen
+    frame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+    
+    -- Load saved position if available
+    if NCMCONFIG.WindowPosition then
+        local point, relativeTo, relativePoint, xOffset, yOffset = unpack(NCMCONFIG.WindowPosition)
+        if point and relativeTo and relativePoint and xOffset and yOffset then
+            frame:ClearAllPoints()
+            frame:SetPoint(point, relativeTo, relativePoint, xOffset, yOffset)
+        end
+    end
+    
     frame:SetBackdrop({
         bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", 
         edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border", 
@@ -160,12 +126,18 @@ function NCM_CreateSettingsFrame()
         if arg1 == "LeftButton" and this.isMoving then
             this:StopMovingOrSizing()
             this.isMoving = false
+            -- Save the new position
+            local point, _, relativePoint, xOffset, yOffset = this:GetPoint()
+            NCMCONFIG.WindowPosition = {point, "UIParent", relativePoint, xOffset, yOffset}
         end
     end)
     frame:SetScript("OnHide", function()
         if this.isMoving then
             this:StopMovingOrSizing()
             this.isMoving = false
+            -- Save the new position
+            local point, _, relativePoint, xOffset, yOffset = this:GetPoint()
+            NCMCONFIG.WindowPosition = {point, "UIParent", relativePoint, xOffset, yOffset}
         end
     end)
 

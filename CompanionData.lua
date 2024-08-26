@@ -1,16 +1,14 @@
 -- CompanionData.lua: This file is used to capture the info of companions when they are hired and maintain stored info about them.
 
 -- Table to store the list of companions and data about them
-companions = {}
-
-
+NCMCompanions = NCMCompanions or {}
 
 --[[------------------------------------
     Companions Table Data Management
 --------------------------------------]]
--- add a companion to the companions table
+-- add a companion to the NCMCompanions table
 function AddCompanion(name, rank, class, race, spec, role, owner, master)
-    companions[name] = {
+    NCMCompanions[name] = {
         Rank = rank or "N/A",
         Class = class or "N/A",
         Race = race or "N/A",
@@ -24,14 +22,14 @@ function AddCompanion(name, rank, class, race, spec, role, owner, master)
     AddNCMTimer("InitializeCompanion_" .. name, 0.5, InitializeCompanion, 10, name)
 end
 
--- Remove companions from the companions table
+-- Remove companions from the NCMCompanions table
 function RemoveCompanion(name)
-    if companions[name] then
-        local removedCompanion = companions[name]
+    if NCMCompanions[name] then
+        local removedCompanion = NCMCompanions[name]
         local unitID = removedCompanion.UnitID
-        companions[name] = nil
+        NCMCompanions[name] = nil
         local coloredName = "|" .. (removedCompanion.ClassColor or "cFFFFFFFF") .. name .. "|r"
-        if NCMCONFIG.COMPANION_MESSAGES_VERBOSE then
+        if NCMCONFIG.COMPANION_MESSAGES_VERBOSE == 1 then
             local removedInfo = "|cFFFFAA00Companion departed: [|r" .. coloredName .. "|cFFFFAA00]|r "
             removedInfo = removedInfo .. "[|cff1EFF00" .. (removedCompanion.Rank or "N/A") .. "|r] "
             removedInfo = removedInfo .. "(|cFF87CEFA" .. "L." .. (removedCompanion.Level or "??") .. "|r "
@@ -47,7 +45,7 @@ end
 -- Function to display current companions
 function DisplayCurrentCompanions()
     DEFAULT_CHAT_FRAME:AddMessage("|cFFFFAA00Current Companions:|r", 1, 1, 1)
-    for companionName, companionData in pairs(companions) do
+    for companionName, companionData in pairs(NCMCompanions) do
         local coloredName = "|" .. (companionData.ClassColor or "cFFFFFFFF") .. companionName .. "|r"
         local infoString = "|cFFFFFFFF" .. coloredName .. " "
         infoString = infoString .. "[|cff1EFF00" .. (companionData.Rank or "N/A") .. "|r] "
@@ -65,7 +63,7 @@ end
 --[[------------------------------------
     Companion Initialization
 --------------------------------------]]
--- Runs on companions after they are added to the companions table to handle initial settings
+-- Runs on companions after they are added to the NCMCompanions table to handle initial settings
 function InitializeCompanion(name)
     -- Get and update the companion's level and unit reference
     local companionUnit = nil
@@ -95,16 +93,16 @@ function InitializeCompanion(name)
     
     -- Create new entries for UnitID, Level, and ClassColor in the companion's data
     if companionUnit and companionLevel then
-        companions[name].UnitID = companionUnit
-        companions[name].Level = companionLevel
-        companions[name].ClassColor = getUnitClassColor(companionUnit)
+        NCMCompanions[name].UnitID = companionUnit
+        NCMCompanions[name].Level = companionLevel
+        NCMCompanions[name].ClassColor = getUnitClassColor(companionUnit)
         -- Initialize class-specific settings
-        companions[name].ClassSettings = {}
+        NCMCompanions[name].ClassSettings = {}
         
         -- Display the companion's info in chat
-        local addedCompanion = companions[name]
+        local addedCompanion = NCMCompanions[name]
         local coloredName = "|" .. (addedCompanion.ClassColor or "cFFFFFFFF") .. name .. "|r"
-        if NCMCONFIG.COMPANION_MESSAGES_VERBOSE then
+        if NCMCONFIG.COMPANION_MESSAGES_VERBOSE == 1 then
             local infoString = "|cFFFFAA00Companion arrived: [|r" .. coloredName .. "|cFFFFAA00]|r "
             infoString = infoString .. "[|cff1EFF00" .. (addedCompanion.Rank or "N/A") .. "|r] "
             infoString = infoString .. "(|cFF87CEFA" .. "L." .. (addedCompanion.Level or "??") .. "|r "
@@ -128,7 +126,7 @@ end
 --  1,2,3,4,5,10 for T0D,T1R,T2R,T3R,T4R,T5R
 -- Initialize class settings for companions
 function InitializeClassSettings(name)
-    local companion = companions[name]
+    local companion = NCMCompanions[name]
     if not companion then return end
     local coloredName = "|" .. companion.ClassColor .. name .. "|r"
 
@@ -153,7 +151,7 @@ function InitializeClassSettings(name)
         companion.Mage.PORTALS_MAX = portalCounts[companion.Rank] or 0
         companion.Mage.PORTALS_CURRENT = companion.Mage.PORTALS_MAX
         -- Report the number of portals available
-        if NCMCONFIG.COMPANION_MESSAGES_VERBOSE then
+        if NCMCONFIG.COMPANION_MESSAGES_VERBOSE == 1 then
             local currentPortals = companion.Mage.PORTALS_CURRENT == 0 and "|cFFFF0000" .. companion.Mage.PORTALS_CURRENT .. "|r" or "|cff1EFF00" .. companion.Mage.PORTALS_CURRENT .. "|r"
             DEFAULT_CHAT_FRAME:AddMessage("[" .. coloredName .. "] Portals available: " .. currentPortals .. "/" .. companion.Mage.PORTALS_MAX, 1, 0.67, 0)
         end
@@ -165,49 +163,49 @@ function InitializeClassSettings(name)
         companion.Warlock.SUMMONS_MAX = portalCounts[companion.Rank] or 0
         companion.Warlock.SUMMONS_CURRENT = companion.Warlock.SUMMONS_MAX
         -- Report the number of summons available
-        if NCMCONFIG.COMPANION_MESSAGES_VERBOSE then
+        if NCMCONFIG.COMPANION_MESSAGES_VERBOSE == 1 then
             local currentSummons = companion.Warlock.SUMMONS_CURRENT == 0 and "|cFFFF0000" .. companion.Warlock.SUMMONS_CURRENT .. "|r" or "|cff1EFF00" .. companion.Warlock.SUMMONS_CURRENT .. "|r"
             DEFAULT_CHAT_FRAME:AddMessage("[" .. coloredName .. "] Summons available: " .. currentSummons .. "/" .. companion.Warlock.SUMMONS_MAX, 1, 0.67, 0)
         end
     end
 
     -- Check for auto-disable settings and take action
-    if companion.Class == "Druid" and NCMCONFIG.DISABLE_DRUID_REBIRTH then
-        if NCMCONFIG.COMPANION_MESSAGES_VERBOSE then
+    if companion.Class == "Druid" and NCMCONFIG.DISABLE_DRUID_REBIRTH == 1 then
+        if NCMCONFIG.COMPANION_MESSAGES_VERBOSE == 1 then
             DEFAULT_CHAT_FRAME:AddMessage("[" .. coloredName .. "] Auto-disabling combat resurrection...", 1, 0.67, 0)
         end
         SendTargetedBotWhisperCommand(name, "deny add rebirth")
     end
 
-    if companion.Class == "Shaman" and NCMCONFIG.DISABLE_SHAMAN_REINCARNATE then
-        if NCMCONFIG.COMPANION_MESSAGES_VERBOSE then
+    if companion.Class == "Shaman" and NCMCONFIG.DISABLE_SHAMAN_REINCARNATE == 1 then
+        if NCMCONFIG.COMPANION_MESSAGES_VERBOSE == 1 then
             DEFAULT_CHAT_FRAME:AddMessage("[" .. coloredName .. "] Auto-disabling self resurrection...", 1, 0.67, 0)
         end
         SendTargetedBotWhisperCommand(name, "deny add reincarnation")
     end
 
-    if companion.Class == "Mage" and NCMCONFIG.DISABLE_MAGE_AMPLIFY_MAGIC then
-        if NCMCONFIG.COMPANION_MESSAGES_VERBOSE then
+    if companion.Class == "Mage" and NCMCONFIG.DISABLE_MAGE_AMPLIFY_MAGIC == 1 then
+        if NCMCONFIG.COMPANION_MESSAGES_VERBOSE == 1 then
             DEFAULT_CHAT_FRAME:AddMessage("[" .. coloredName .. "] Auto-disabling amplify magic...", 1, 0.67, 0)
         end
         SendTargetedBotWhisperCommand(name, "set magic none")
     end
 
-    if companion.Class == "Rogue" and NCMCONFIG.DISABLE_STEALTH_PROWL then
-        if NCMCONFIG.COMPANION_MESSAGES_VERBOSE then
+    if companion.Class == "Rogue" and NCMCONFIG.DISABLE_STEALTH_PROWL == 1 then
+        if NCMCONFIG.COMPANION_MESSAGES_VERBOSE == 1 then
             DEFAULT_CHAT_FRAME:AddMessage("[" .. coloredName .. "] Auto-disabling stealth...", 1, 0.67, 0)
         end
         SendTargetedBotWhisperCommand(name, "deny add stealth")
-    elseif companion.Class == "Druid" and NCMCONFIG.DISABLE_STEALTH_PROWL then
-        if NCMCONFIG.COMPANION_MESSAGES_VERBOSE then
+    elseif companion.Class == "Druid" and NCMCONFIG.DISABLE_STEALTH_PROWL == 1 then
+        if NCMCONFIG.COMPANION_MESSAGES_VERBOSE == 1 then
             DEFAULT_CHAT_FRAME:AddMessage("[" .. coloredName .. "] Auto-disabling stealth...", 1, 0.67, 0)
         end
         SendTargetedBotWhisperCommand(name, "deny add prowl")
     end
 
-    if NCMCONFIG.DISABLE_DANGEROUS_SPELLS then
+    if NCMCONFIG.DISABLE_DANGEROUS_SPELLS == 1 then
         if NCMCONFIG.DANGEROUS_SPELLS[companion.Class] and table.getn(NCMCONFIG.DANGEROUS_SPELLS[companion.Class]) > 0 then
-            if NCMCONFIG.COMPANION_MESSAGES_VERBOSE then
+            if NCMCONFIG.COMPANION_MESSAGES_VERBOSE == 1 then
                 DEFAULT_CHAT_FRAME:AddMessage("[" .. coloredName .. "] Auto-disabling dangerous spells...", 1, 0.67, 0)
             end
             for _, spell in ipairs(NCMCONFIG.DANGEROUS_SPELLS[companion.Class]) do
@@ -222,7 +220,7 @@ end
 --------------------------------------]]
 --[[
     Data structure visualization:
-    companions = {
+    NCMCompanions = {
         [CompanionName1] = {
             Rank = string,
             Class = string,
@@ -266,25 +264,24 @@ function UpdateWithZWhoInfo(whoInfo)
         end
     end
 
-    -- Update the global companions table
+    -- Update the global NCMCompanions table
     for name, data in pairs(tempCompanions) do
-        if not companions[name] then
+        if not NCMCompanions[name] then
             AddCompanion(name, data.Rank, data.Class, data.Race, data.Spec, data.Role, data.Owner, data.Master)
         else
             -- Update specific fields for existing companions
-            companions[name].Rank = data.Rank
-            companions[name].Class = data.Class
-            companions[name].Race = data.Race
-            companions[name].Spec = data.Spec
-            companions[name].Role = data.Role
-            companions[name].Owner = data.Owner
-            companions[name].Master = data.Master
+            NCMCompanions[name].Rank = data.Rank
+            NCMCompanions[name].Class = data.Class
+            NCMCompanions[name].Race = data.Race
+            NCMCompanions[name].Spec = data.Spec
+            NCMCompanions[name].Role = data.Role
+            NCMCompanions[name].Owner = data.Owner
         end
     end
 
     -- Remove companions that are not in the tempCompanions table (needed to fix any out of state data)
     local companionsToRemove = {}
-    for name, _ in pairs(companions) do
+    for name, _ in pairs(NCMCompanions) do
         if not tempCompanions[name] then
             table.insert(companionsToRemove, name)
         end
@@ -369,7 +366,7 @@ function CompanionMessageListener(logEntry)
     if not leaveName then
         _, _, leaveName = string.find(cleanMessage, "(%S+) has left the raid group")
     end
-    if leaveName and companions[leaveName] then
+    if leaveName and NCMCompanions[leaveName] then
         RemoveCompanion(leaveName)
         return
     end

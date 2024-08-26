@@ -15,7 +15,11 @@ function MageModule:UpdateMenu(NYCTER_SELECTED_UNIT_LEVEL)
     
     -- Portal controls
     if NYCTER_SELECTED_UNIT_LEVEL >= 40 then
-        self.buttons.BOT_OPEN_PORTAL = { text = "|cFF69CCF0Open Portal|r", dist = 0, nested = 1 }
+        local unitName = NYCTER_SELECTED_UNIT_NAME
+        local portalsCurrent = NCMCompanions[unitName] and NCMCompanions[unitName].Mage and NCMCompanions[unitName].Mage.PORTALS_CURRENT or 0
+        local portalsMax = NCMCompanions[unitName] and NCMCompanions[unitName].Mage and NCMCompanions[unitName].Mage.PORTALS_MAX or 0
+        local portalColor = portalsCurrent > 0 and "|cFF00FF00" or "|cFFFF0000"
+        self.buttons.BOT_OPEN_PORTAL = { text = "|cFF69CCF0Open Portal|r " .. portalColor .. "(" .. portalsCurrent .. "/" .. portalsMax .. ")|r", dist = 0, nested = 1 }
         self.menus.BOT_OPEN_PORTAL = {}
         
         local portals = {}
@@ -74,13 +78,32 @@ function MageModule:HandleButtonClick(button, NYCTER_SELECTED_UNIT)
                     return string.upper(first)..string.lower(rest)
                 end)
                 
+                local portalsCurrent = NCMCompanions[unitName] and NCMCompanions[unitName].Mage and NCMCompanions[unitName].Mage.PORTALS_CURRENT or 0
+                
+                if portalsCurrent <= 0 then
+                    StaticPopupDialogs["PORTAL_NO_CHARGES"] = {
+                        text = unitName .. " has used all of their available portals. Hire a new mage companion if you want more portals!",
+                        button1 = OKAY,
+                        timeout = 0,
+                        hideOnEscape = 1,
+                    }
+                    StaticPopup_Show("PORTAL_NO_CHARGES")
+                    return true
+                end
+                
                 local function castPortal()
                     SendTargetedBotWhisperCommand(unitName, command)
+                    -- Decrement the current portal count
+                    if NCMCompanions[unitName] and NCMCompanions[unitName].Mage then
+                        NCMCompanions[unitName].Mage.PORTALS_CURRENT = math.max(0, (NCMCompanions[unitName].Mage.PORTALS_CURRENT or 0) - 1)
+                    end
+                    -- Update the menu to reflect the new portal count
+                    self:UpdateMenu(UnitLevel(NYCTER_SELECTED_UNIT))
                 end
                 -- Check config for confirmation dialog setting
                 if NCMCONFIG.CONFIRM_MAGE_PORTALS then
                     StaticPopupDialogs["PORTAL_CONFIRM"] = {
-                        text = "Are you sure you want " .. unitName .. " to open a mage portal to " .. portalCity .. "? You have a limited number of portals per hire.",
+                        text = "Are you sure you want " .. unitName .. " to open a mage portal to " .. portalCity .. "? You have " .. portalsCurrent .. " portal(s) remaining for this hire.",
                         button1 = OKAY,
                         button2 = CANCEL,
                         OnAccept = castPortal,

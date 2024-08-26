@@ -3,7 +3,7 @@
 ## Notes: Customized right-click context menu commands for controlling party member bots on the Nyctermoon server.
 ## Author: Liminal_Warmth
 ## Version: 1.0
-## SavedVariables: NCMConfig
+## SavedVariables: NCMCONFIG
 ## SavedVariablesPerCharacter: NCMCompanions
 
 # Instantiate UI file functions
