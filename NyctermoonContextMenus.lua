@@ -42,8 +42,8 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     local isValidUnitInPartyOrRaid = false
     isValidUnitInPartyOrRaid = UnitInParty(unit) or UnitInRaid(unit)
 
-    -- If the unit is not in party/raid, fall back to the original menu
-    if not isValidUnitInPartyOrRaid then
+    -- If the unit is not in party/raid, not in the companions table, and not the player, fall back to the original menu
+    if not isValidUnitInPartyOrRaid or (not NCMCompanions[tostring(UnitName(unit))] and unit ~= "player") then
         return originalUnitPopupShowMenu(dropdownMenu, which, unit, name, userData)
     end
 
