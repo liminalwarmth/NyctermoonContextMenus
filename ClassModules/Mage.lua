@@ -6,6 +6,7 @@ MageModule.actions = {}
 NCM_CLASS_DEFAULT_SETTINGS.Mage = {
     PORTALS_MAX = 0,
     PORTALS_CURRENT = 0,
+    AMPLIFY_MAGIC = 2,
 }
 
 function MageModule:UpdateMenu(NYCTER_SELECTED_UNIT_LEVEL)
@@ -45,25 +46,26 @@ function MageModule:UpdateMenu(NYCTER_SELECTED_UNIT_LEVEL)
     end
     
     -- Amplify/Dampen Magic controls
-    self.buttons.BOT_MAGE_AMPLIFY_MAGIC = { text = "|cFF69CCF0Set Amplify Magic|r", dist = 0, nested = 1 }
-    self.buttons.BOT_MAGE_AMPLIFY_USE = { text = "Use Amplify Magic", dist = 0 }
-    self.buttons.BOT_MAGE_DAMPEN_USE = { text = "Use Dampen Magic", dist = 0 }
-    self.buttons.BOT_MAGE_AMPLIFY_NEITHER = { text = "None", dist = 0 }
-    
-    self.actions.BOT_MAGE_AMPLIFY_USE = "set magic amplify"
-    self.actions.BOT_MAGE_DAMPEN_USE = "set magic dampen"
-    self.actions.BOT_MAGE_AMPLIFY_NEITHER = "set magic none"
-    
-    if NYCTER_SELECTED_UNIT_LEVEL >= 12 then
-        self.menus.BOT_MAGE_AMPLIFY_MAGIC = {"BOT_MAGE_AMPLIFY_NEITHER"}
+    self.buttons.BOT_MAGE_AMPLIFY = { text = "|cFF69CCF0Set Amplify Magic|r", dist = 0, nested = 1 }
+    self.menus.BOT_MAGE_AMPLIFY = {}
+
+    local amplifyMagicStatus = NCMCompanions[NYCTER_SELECTED_UNIT_NAME] and NCMCompanions[NYCTER_SELECTED_UNIT_NAME].Mage and NCMCompanions[NYCTER_SELECTED_UNIT_NAME].Mage.AMPLIFY_MAGIC or 0
+
+    local function addAmplifyButton(id, text, value, minLevel)
+        if NYCTER_SELECTED_UNIT_LEVEL >= minLevel then
+            local buttonText = text
+            if amplifyMagicStatus == value then
+                buttonText = buttonText .. " |cFF00FFFF[x]|r"
+            end
+            self.buttons[id] = { text = buttonText, dist = 0 }
+            self.actions[id] = "set magic " .. string.lower(text)
+            table.insert(self.menus.BOT_MAGE_AMPLIFY, id)
+        end
     end
-    if NYCTER_SELECTED_UNIT_LEVEL >= 12 then
-        table.insert(self.menus.BOT_MAGE_AMPLIFY_MAGIC, 1, "BOT_MAGE_DAMPEN_USE")
-    end
-    if NYCTER_SELECTED_UNIT_LEVEL >= 18 then
-        table.insert(self.menus.BOT_MAGE_AMPLIFY_MAGIC, 1, "BOT_MAGE_AMPLIFY_USE")
-    end
-    
+
+    addAmplifyButton("BOT_MAGE_AMPLIFY_USE", "Amplify", 2, 18)
+    addAmplifyButton("BOT_MAGE_AMPLIFY_DAMPEN", "Dampen", 1, 12)
+    addAmplifyButton("BOT_MAGE_AMPLIFY_NONE", "None", 0, 12)
 end
 
 function MageModule:HandleButtonClick(button, NYCTER_SELECTED_UNIT)
@@ -116,6 +118,21 @@ function MageModule:HandleButtonClick(button, NYCTER_SELECTED_UNIT)
                 end
                 return true
             end
+        elseif string.find(button, "^BOT_MAGE_AMPLIFY_") then
+            SendTargetedBotWhisperCommand(unitName, command)
+            -- Update AMPLIFY_MAGIC setting
+            if NCMCompanions[unitName] and NCMCompanions[unitName].Mage then
+                if button == "BOT_MAGE_AMPLIFY_USE" then
+                    NCMCompanions[unitName].Mage.AMPLIFY_MAGIC = 2
+                elseif button == "BOT_MAGE_AMPLIFY_DAMPEN" then
+                    NCMCompanions[unitName].Mage.AMPLIFY_MAGIC = 1
+                elseif button == "BOT_MAGE_AMPLIFY_NONE" then
+                    NCMCompanions[unitName].Mage.AMPLIFY_MAGIC = 0
+                end
+            end
+            -- Update the menu to reflect the new setting
+            self:UpdateMenu(UnitLevel(NYCTER_SELECTED_UNIT))
+            return true
         else
             SendTargetedBotWhisperCommand(unitName, command)
             return true

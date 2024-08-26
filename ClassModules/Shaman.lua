@@ -91,12 +91,13 @@ function ShamanModule:UpdateMenu(NYCTER_SELECTED_UNIT_LEVEL)
 
     -- Reincarnation controls
     if NYCTER_SELECTED_UNIT_LEVEL >= 30 then
-        self.buttons.BOT_SHAMAN_REINCARNATION = { text = "|cFF0070DEReincarnation|r", dist = 0, nested = 1 }
-        self.buttons.BOT_SHAMAN_REINCARNATION_ALLOW = { text = "|cff1EFF00Allow Self-Resurrection|r", dist = 0 }
-        self.buttons.BOT_SHAMAN_REINCARNATION_DENY = { text = "|cffFF0000Deny Self-Resurrection|r", dist = 0 }
-        self.actions.BOT_SHAMAN_REINCARNATION_ALLOW = "deny remove reincarnation"
-        self.actions.BOT_SHAMAN_REINCARNATION_DENY = "deny add reincarnation"
-        self.menus.BOT_SHAMAN_REINCARNATION = { "BOT_SHAMAN_REINCARNATION_ALLOW", "BOT_SHAMAN_REINCARNATION_DENY" }
+        local reincarnationStatus = NCMCompanions[NYCTER_SELECTED_UNIT_NAME] and NCMCompanions[NYCTER_SELECTED_UNIT_NAME].Shaman and NCMCompanions[NYCTER_SELECTED_UNIT_NAME].Shaman.REINCARNATION == 1 and "|cFF00FFFFON|r" or "|cFFFF0000OFF|r"
+        self.buttons.BOT_SHAMAN_REINCARNATION = { text = "|cFF0070DEReincarnation: " .. reincarnationStatus, dist = 0 }
+        if NCMCompanions[NYCTER_SELECTED_UNIT_NAME] and NCMCompanions[NYCTER_SELECTED_UNIT_NAME].Shaman and NCMCompanions[NYCTER_SELECTED_UNIT_NAME].Shaman.REINCARNATION == 1 then
+            self.actions.BOT_SHAMAN_REINCARNATION = "deny add reincarnation"
+        else
+            self.actions.BOT_SHAMAN_REINCARNATION = "deny remove reincarnation"
+        end
         table.insert(self.menuOrder, "BOT_SHAMAN_REINCARNATION")
     end
 end
@@ -126,6 +127,14 @@ function ShamanModule:HandleButtonClick(button, NYCTER_SELECTED_UNIT)
                 NCMCompanions[unitName].Shaman.FIRE_TOTEM = ""
                 NCMCompanions[unitName].Shaman.WATER_TOTEM = ""
                 NCMCompanions[unitName].Shaman.AIR_TOTEM = ""
+            elseif button == "BOT_SHAMAN_REINCARNATION" then
+                NCMCompanions[unitName].Shaman.REINCARNATION = 1 - NCMCompanions[unitName].Shaman.REINCARNATION
+                -- Update the action for the next click
+                if NCMCompanions[unitName].Shaman.REINCARNATION == 1 then
+                    self.actions.BOT_SHAMAN_REINCARNATION = "deny add reincarnation"
+                else
+                    self.actions.BOT_SHAMAN_REINCARNATION = "deny remove reincarnation"
+                end
             end
         end
         return true

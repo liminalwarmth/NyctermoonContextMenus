@@ -164,6 +164,7 @@ function InitializeClassSettings(name)
             DEFAULT_CHAT_FRAME:AddMessage("[" .. coloredName .. "] Auto-disabling combat resurrection...", 1, 0.67, 0)
         end
         SendTargetedBotWhisperCommand(name, "deny add rebirth")
+        companion.Druid.REBIRTH = 0
     end
 
     if companion.Class == "Shaman" and NCMCONFIG.DISABLE_SHAMAN_REINCARNATE == 1 then
@@ -171,6 +172,7 @@ function InitializeClassSettings(name)
             DEFAULT_CHAT_FRAME:AddMessage("[" .. coloredName .. "] Auto-disabling self resurrection...", 1, 0.67, 0)
         end
         SendTargetedBotWhisperCommand(name, "deny add reincarnation")
+        companion.Shaman.REINCARNATION = 0
     end
 
     if companion.Class == "Mage" and NCMCONFIG.DISABLE_MAGE_AMPLIFY_MAGIC == 1 then
@@ -178,6 +180,7 @@ function InitializeClassSettings(name)
             DEFAULT_CHAT_FRAME:AddMessage("[" .. coloredName .. "] Auto-disabling amplify magic...", 1, 0.67, 0)
         end
         SendTargetedBotWhisperCommand(name, "set magic none")
+        companion.Mage.AMPLIFY_MAGIC = 0
     end
 
     if companion.Class == "Rogue" and NCMCONFIG.DISABLE_STEALTH_PROWL == 1 then
@@ -185,11 +188,13 @@ function InitializeClassSettings(name)
             DEFAULT_CHAT_FRAME:AddMessage("[" .. coloredName .. "] Auto-disabling stealth...", 1, 0.67, 0)
         end
         SendTargetedBotWhisperCommand(name, "deny add stealth")
+        companion.Rogue.STEALTH = 0
     elseif companion.Class == "Druid" and NCMCONFIG.DISABLE_STEALTH_PROWL == 1 then
         if NCMCONFIG.COMPANION_MESSAGES_VERBOSE == 1 then
             DEFAULT_CHAT_FRAME:AddMessage("[" .. coloredName .. "] Auto-disabling stealth...", 1, 0.67, 0)
         end
         SendTargetedBotWhisperCommand(name, "deny add prowl")
+        companion.Druid.PROWL = 0
     end
 
     if NCMCONFIG.DISABLE_DANGEROUS_SPELLS == 1 then
