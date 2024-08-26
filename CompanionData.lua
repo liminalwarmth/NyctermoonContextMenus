@@ -81,6 +81,10 @@ function InitializeCompanion(name)
         NCMCompanions[name].UnitID = companionUnit
         NCMCompanions[name].Level = companionLevel
         NCMCompanions[name].ClassColor = getUnitClassColor(companionUnit)
+        -- Initialize universal companion settings
+        NCMCompanions[name].HelmVisible = 1
+        NCMCompanions[name].CloakVisible = 1
+        NCMCompanions[name].AoeEnabled = 1
         -- Initialize class-specific settings
         NCMCompanions[name].ClassSettings = {}
         
@@ -364,6 +368,52 @@ function CompanionMessageListener(logEntry)
     if joinParty or joinRaid then
         -- Perform a ZWho scan when any player joins to update the companions table with all current companions
         ZWhoCompanionsScan()
+    end
+
+    -- Check for helm, cloak, and AoE toggle messages
+    local _, _, companionName, toggleItem = string.find(cleanMessage, "%[(%S+)%] has toggled their (%S+)%.")
+    if companionName and toggleItem and NCMCompanions[companionName] then
+        if toggleItem == "Helm" then
+            NCMCompanions[companionName].HelmVisible = 1 - NCMCompanions[companionName].HelmVisible
+        elseif toggleItem == "Cloak" then
+            NCMCompanions[companionName].CloakVisible = 1 - NCMCompanions[companionName].CloakVisible
+        end
+    end
+
+    local _, _, companionName = string.find(cleanMessage, "%[(%S+)%] will only use Single%-Target spells%.")
+    if companionName and NCMCompanions[companionName] then
+        NCMCompanions[companionName].AoeEnabled = 0
+    end
+
+    local _, _, companionName = string.find(cleanMessage, "%[(%S+)%] is allowed to use Area%-of%-Effect spells%.")
+    if companionName and NCMCompanions[companionName] then
+        NCMCompanions[companionName].AoeEnabled = 1
+    end
+
+    -- Check for role change messages
+    local _, _, companionName, newRole = string.find(cleanMessage, "%[(%S+)%] is set to (%S+%s?%S*)%.")
+    if companionName and newRole and NCMCompanions[companionName] then
+        -- Map the role string to a standardized format
+        local roleMap = {
+            ["Healer"] = "Healer",
+            ["Tank"] = "Tank",
+            ["Melee DPS"] = "Melee DPS",
+            ["Ranged DPS"] = "Range DPS"
+        }
+        local standardizedRole = roleMap[newRole]
+        if standardizedRole then
+            NCMCompanions[companionName].Role = standardizedRole
+        end
+    end
+
+    -- Check for shaman totem toggle messages
+    local _, _, companionName, totemState = string.find(cleanMessage, "%[(%S+)%] has toggled Totems %[(%w+)%]")
+    if companionName and totemState and NCMCompanions[companionName] and NCMCompanions[companionName].Class == "Shaman" then
+        if totemState == "ON" then
+            NCMCompanions[companionName].Shaman.TOTEMS_ENABLED = 1
+        elseif totemState == "OFF" then
+            NCMCompanions[companionName].Shaman.TOTEMS_ENABLED = 0
+        end
     end
 end
 

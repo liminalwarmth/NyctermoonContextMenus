@@ -64,12 +64,18 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     -- Target the PARTY dropdown menu
     local menuFrame = "PARTY"
 
-    -- BOT CONTROL MENU: Declare top level defaults
+    -- BOT CONTROL MENU: Declare top level default toggles (on or off depending on settings)
     UnitPopupButtons["BOT_CONTROL"] = { text = "|cFFFFAA00Companion Settings|r", dist = 0, nested = 1 }
-    UnitPopupButtons["BOT_TOGGLE_HELM"] = {text = "Toggle Helm", dist = 0}
-    UnitPopupButtons["BOT_TOGGLE_CLOAK"] = { text = "Toggle Cloak", dist = 0 }
-    UnitPopupButtons["BOT_TOGGLE_AOE"] = { text = "Toggle AoE", dist = 0 }
-    UnitPopupMenus["BOT_CONTROL"] = { "BOT_TOGGLE_AOE","BOT_TOGGLE_HELM", "BOT_TOGGLE_CLOAK"}
+    
+    local helmStatus = NCMCompanions[NYCTER_SELECTED_UNIT_NAME] and NCMCompanions[NYCTER_SELECTED_UNIT_NAME].HelmVisible == 1 and "|cFF00FFFFON|r" or "|cFFFF0000OFF|r"
+    UnitPopupButtons["BOT_TOGGLE_HELM"] = {text = "Toggle Helm: " .. helmStatus, dist = 0 }
+    
+    local cloakStatus = NCMCompanions[NYCTER_SELECTED_UNIT_NAME] and NCMCompanions[NYCTER_SELECTED_UNIT_NAME].CloakVisible == 1 and "|cFF00FFFFON|r" or "|cFFFF0000OFF|r"
+    UnitPopupButtons["BOT_TOGGLE_CLOAK"] = { text = "Toggle Cloak: " .. cloakStatus, dist = 0 }
+    
+    local aoeStatus = NCMCompanions[NYCTER_SELECTED_UNIT_NAME] and NCMCompanions[NYCTER_SELECTED_UNIT_NAME].AoeEnabled == 1 and "|cFF00FFFFON|r" or "|cFFFF0000OFF|r"
+    UnitPopupButtons["BOT_TOGGLE_AOE"] = { text = "Toggle AoE: " .. aoeStatus, dist = 0 }
+    UnitPopupMenus["BOT_CONTROL"] = { "BOT_TOGGLE_HELM", "BOT_TOGGLE_CLOAK","BOT_TOGGLE_AOE"}
 
     -- BOT CONTROL MENU: Clear prior settings
     -- Remove any existing class-specific menus
@@ -117,9 +123,8 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     local roleButtons = {
         ["BOT_ROLE_TANK"] = "|cFFC79C6ETank|r",
         ["BOT_ROLE_HEALER"] = "|cFFF58CBAHealer|r",
-        ["BOT_ROLE_DPS"] = "|cFF69CCF0DPS|r",
         ["BOT_ROLE_MDPS"] = "|cFFFFF569Melee DPS|r",
-        ["BOT_ROLE_RDPS"] = "|cFFABD473Ranged DPS|r"
+        ["BOT_ROLE_RDPS"] = "|cFFABD473Range DPS|r"
     }
     for id, text in pairs(roleButtons) do
         UnitPopupButtons[id] = { text = "|cFFFFAA00Set Role:|r " .. text, dist = 0 }
@@ -127,11 +132,11 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
 
     -- Add role options to BOT_CONTROL menu based on class and set color of companions menu
     local classSettings = {
-        ["Warrior"] = {color = "C79C6E", roles = {"TANK", "DPS"}},
-        ["Paladin"] = {color = "F58CBA", roles = {"TANK", "HEALER", "DPS"}},
+        ["Warrior"] = {color = "C79C6E", roles = {"TANK", "MDPS"}},
+        ["Paladin"] = {color = "F58CBA", roles = {"TANK", "HEALER", "MDPS"}},
         ["Hunter"] = {color = "ABD473", roles = {}},
         ["Rogue"] = {color = "FFF569", roles = {}},
-        ["Priest"] = {color = "FFFFA0", roles = {"HEALER", "DPS"}},
+        ["Priest"] = {color = "FFFFA0", roles = {"HEALER", "RDPS"}},
         ["Shaman"] = {color = "0070DE", roles = {"TANK", "HEALER", "MDPS", "RDPS"}},
         ["Mage"] = {color = "69CCF0", roles = {}},
         ["Warlock"] = {color = "9482C9", roles = {}},
@@ -139,9 +144,24 @@ function UnitPopup_ShowMenu(dropdownMenu, which, unit, name, userData)
     }
 
     local classInfo = classSettings[NYCTER_SELECTED_UNIT_CLASS]
-    UnitPopupButtons["BOT_CONTROL"].text = "|cFF" .. classInfo.color .. "Companion Settings|r"
-    for _, role in ipairs(classInfo.roles) do
-        table.insert(UnitPopupMenus["BOT_CONTROL"], "BOT_ROLE_" .. role)
+    if classInfo then
+        UnitPopupButtons["BOT_CONTROL"].text = "|cFF" .. classInfo.color .. "Companion Settings|r"
+    end
+    
+    local companionData = NCMCompanions[NYCTER_SELECTED_UNIT_NAME]
+    local currentRole = companionData and companionData.Role
+
+    if classInfo then
+        for _, role in ipairs(classInfo.roles) do
+            local buttonId = "BOT_ROLE_" .. role
+            if currentRole and roleButtons[buttonId] then
+                local roleText = string.gsub(string.gsub(roleButtons[buttonId], "|c%x%x%x%x%x%x%x%x", ""), "|r", "")
+                if currentRole == roleText then
+                    UnitPopupButtons[buttonId].text = "|cFFFFAA00Set Role:|r " .. roleButtons[buttonId] .. " |cFF00FFFF[x]|r"
+                end
+            end
+            table.insert(UnitPopupMenus["BOT_CONTROL"], buttonId)
+        end
     end
 
     -- Insert BOT_CONTROL into the PARTY menu

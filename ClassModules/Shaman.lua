@@ -4,6 +4,15 @@ ShamanModule.menus = {}
 ShamanModule.actions = {}
 ShamanModule.menuOrder = {}
 
+NCM_CLASS_DEFAULT_SETTINGS.Shaman = {
+    TOTEMS_ENABLED = 1,
+    EARTH_TOTEM = "",
+    FIRE_TOTEM = "",
+    WATER_TOTEM = "",
+    AIR_TOTEM = "",
+    REINCARNATION = 1,
+}
+
 function ShamanModule:UpdateMenu(NYCTER_SELECTED_UNIT_LEVEL)
     self.buttons = {}
     self.menus = {}
@@ -12,7 +21,8 @@ function ShamanModule:UpdateMenu(NYCTER_SELECTED_UNIT_LEVEL)
     
     -- Toggle totem control
     if NYCTER_SELECTED_UNIT_LEVEL >= 10 then
-        self.buttons.BOT_SHAMAN_TOGGLE_TOTEMS = { text = "|cFF0070DEToggle Totems|r", dist = 0 }
+        local totemStatus = NCMCompanions[NYCTER_SELECTED_UNIT_NAME] and NCMCompanions[NYCTER_SELECTED_UNIT_NAME].Shaman and NCMCompanions[NYCTER_SELECTED_UNIT_NAME].Shaman.TOTEMS_ENABLED == 1 and "|cFF00FFFFON|r" or "|cFFFF0000OFF|r"
+        self.buttons.BOT_SHAMAN_TOGGLE_TOTEMS = { text = "|cFF0070DEToggle Totems: " .. totemStatus, dist = 0 }
         self.actions.BOT_SHAMAN_TOGGLE_TOTEMS = "toggle totems"
         table.insert(self.menuOrder, "BOT_SHAMAN_TOGGLE_TOTEMS")
     end
@@ -58,7 +68,11 @@ function ShamanModule:UpdateMenu(NYCTER_SELECTED_UNIT_LEVEL)
         self.menus["BOT_SHAMAN_" .. string.upper(element) .. "_TOTEM"] = {}
         for _, totem in ipairs(totems[element]) do
             if NYCTER_SELECTED_UNIT_LEVEL >= totem.level then
-                self.buttons[totem.id] = { text = totem.name, dist = 0 }
+                local buttonText = totem.name
+                if NCMCompanions[NYCTER_SELECTED_UNIT_NAME] and NCMCompanions[NYCTER_SELECTED_UNIT_NAME].Shaman[string.upper(element) .. "_TOTEM"] == totem.name then
+                    buttonText = buttonText .. " |cFF00FFFF[x]|r"
+                end
+                self.buttons[totem.id] = { text = buttonText, dist = 0 }
                 self.actions[totem.id] = "set totem " .. totem.name .. " Totem"
                 table.insert(self.menus["BOT_SHAMAN_" .. string.upper(element) .. "_TOTEM"], totem.id)
             end
@@ -91,10 +105,28 @@ function ShamanModule:HandleButtonClick(button, NYCTER_SELECTED_UNIT)
     local command = self.actions[button]
     if command then
         local unitName = UnitName(NYCTER_SELECTED_UNIT)
+        
         if button == "BOT_SHAMAN_TOGGLE_TOTEMS" then
             SendTargetedBotZCommand(NYCTER_SELECTED_UNIT, command)
         else
             SendTargetedBotWhisperCommand(unitName, command)
+            
+            -- Update totem settings
+            if string.find(button, "^BOT_SHAMAN_%w+_TOTEM_") then
+                local _, _, totemName = string.find(command, "set totem (.+)")
+                if totemName then
+                    -- Remove " Totem" from the end of totemName
+                    totemName = string.gsub(totemName, " Totem$", "")
+                    local _, _, element = string.find(button, "BOT_SHAMAN_(%w+)_TOTEM_")
+                    element = string.upper(element)
+                    NCMCompanions[unitName].Shaman[element .. "_TOTEM"] = totemName
+                end
+            elseif button == "BOT_SHAMAN_CLEAR_TOTEMS" then
+                NCMCompanions[unitName].Shaman.EARTH_TOTEM = ""
+                NCMCompanions[unitName].Shaman.FIRE_TOTEM = ""
+                NCMCompanions[unitName].Shaman.WATER_TOTEM = ""
+                NCMCompanions[unitName].Shaman.AIR_TOTEM = ""
+            end
         end
         return true
     end
