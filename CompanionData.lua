@@ -297,6 +297,25 @@ function ZWhoCompanionsScan()
     local capturingInfo = false
     local captureComplete = false
     
+    --[[
+    This has bugs. Data can look like this:
+    ----------
+    [Tim] Dungeon:None Raid:T4R
+    
+    1. [Bob]:T0D - Mage Human - Frost - Range DPS
+    O:[Raelyn] M:[Tim] P:[None]
+    ----------
+    [Redbank] Dungeon:None Raid:None
+    ----------
+    [Raelyn] Dungeon:None Raid:T4R
+    
+    1. [Farrell]:T0D - Mage Human - Frost - Range DPS
+    O:[Raelyn] M:[Raelyn] P:[None]
+    ----------
+    [Cody] Dungeon:None Raid:None
+    ----------
+
+    --]]
     -- Override the AddMessage function to capture who info
     DEFAULT_CHAT_FRAME.AddMessage = function(self, text, r, g, b, id)
         local cleanText = CleanMessage(text)
