@@ -88,9 +88,9 @@ function WarlockModule:HandleButtonClick(button, NYCTER_SELECTED_UNIT)
         end
 
         local targetName = UnitName("target")
-        if not UnitInParty("target") and not UnitInRaid("target") then
+        if not targetName or (not UnitInParty("target") and not UnitInRaid("target")) or targetName == unitName then
             StaticPopupDialogs["SUMMON_INVALID_TARGET"] = {
-                text = "You don't have a valid player targeted for Ritual of Summoning. Please target a player in your party or raid group.",
+                text = "You don't have a valid player targeted for Ritual of Summoning. Please target a player in your party or raid group, other than the warlock companion.",
                 button1 = OKAY,
                 timeout = 0,
                 hideOnEscape = 1,

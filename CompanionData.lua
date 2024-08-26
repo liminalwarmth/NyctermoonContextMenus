@@ -69,28 +69,13 @@ function InitializeCompanion(name)
     local companionUnit = nil
     local companionLevel = nil
     
-    -- Check if the companion is in the raid
-    for i = 1, 40 do
-        local unitID = "raid" .. i
-        if UnitName(unitID) == name then
-            companionUnit = unitID
-            companionLevel = UnitLevel(unitID)
-            break
-        end
-    end
+    -- Get the unit ID for the companion
+    local unitID = GetUnitID(name)
     
-    -- If not found in raid, check party
-    if not companionUnit then
-        for i = 1, 4 do
-            local unitID = "party" .. i
-            if UnitName(unitID) == name then
-                companionUnit = unitID
-                companionLevel = UnitLevel(unitID)
-                break
-            end
-        end
+    if unitID then
+        companionUnit = unitID
+        companionLevel = UnitLevel(unitID)
     end
-    
     -- Create new entries for UnitID, Level, and ClassColor in the companion's data
     if companionUnit and companionLevel then
         NCMCompanions[name].UnitID = companionUnit
@@ -361,13 +346,14 @@ function CompanionMessageListener(logEntry)
     -- Source only works to identify speaker of whispers (System is other source)
     local source = logEntry.source 
     
-    -- Check for companion leaving and remove them from the companions table
+    -- Check for companion leaving and schedule their removal from the companions table
     local _, _, leaveName = string.find(cleanMessage, "(%S+) leaves the party%.")
     if not leaveName then
         _, _, leaveName = string.find(cleanMessage, "(%S+) has left the raid group")
     end
     if leaveName and NCMCompanions[leaveName] then
-        RemoveCompanion(leaveName)
+        -- Schedule the removal of the companion after .5 second
+        AddNCMTimer("RemoveCompanion_" .. leaveName, .5, RemoveCompanion, 3, leaveName)
         return
     end
     

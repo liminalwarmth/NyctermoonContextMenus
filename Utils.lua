@@ -131,6 +131,38 @@ function getUnitClassColor(unit)
 end
 
 --[[------------------------------------
+    Get Unit ID for Raid or Party Member
+--------------------------------------]]
+function GetUnitID(name)
+    -- Check if the player is in a raid
+    if UnitInRaid("player") then
+        for i = 1, 40 do
+            local unitID = "raid" .. i
+            if UnitName(unitID) == name then
+                return unitID
+            end
+        end
+    -- If not in raid, check party
+    else
+        for i = 1, 4 do
+            local unitID = "party" .. i
+            if UnitName(unitID) == name then
+                return unitID
+            end
+        end
+    end
+    
+    -- If the name matches the player, return "player"
+    if UnitName("player") == name then
+        return "player"
+    end
+    
+    -- If no match found, return nil
+    return nil
+end
+
+
+--[[------------------------------------
     Define Raid Group for Unit
 --------------------------------------]]
 function GetUnitRaidGroup(unit)
