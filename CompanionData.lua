@@ -290,6 +290,7 @@ end
 function ZWhoCompanionsScan()
     --[[
     Data can look like this:
+
 ----------
 [Tim] Dungeon:None Raid:T4R
 
@@ -297,6 +298,8 @@ function ZWhoCompanionsScan()
 O:[Raelyn] M:[Tim] P:[None]
 ----------
 [Redbank] Dungeon:None Raid:None
+----------
+[Bluebank] Dungeon:None Raid:None
 ----------
 [Raelyn] Dungeon:None Raid:T4R
 
