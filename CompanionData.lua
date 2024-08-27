@@ -288,50 +288,87 @@ end
 
 -- Does an invisible .z who scan and returns a current companions data structure
 function ZWhoCompanionsScan()
-    -- Create an invisible frame to capture chat messages
-    local captureFrame = CreateFrame("Frame")
-    captureFrame:Hide()
-    
+    --[[
+    Data can look like this:
+----------
+[Tim] Dungeon:None Raid:T4R
+
+1. [Bob]:T0D - Mage Human - Frost - Range DPS
+O:[Raelyn] M:[Tim] P:[None]
+----------
+[Redbank] Dungeon:None Raid:None
+----------
+[Raelyn] Dungeon:None Raid:T4R
+
+1. [Farrell]:T0D - Mage Human - Frost - Range DPS
+O:[Raelyn] M:[Raelyn] P:[None]
+----------
+[Cody] Dungeon:None Raid:None
+----------
+
+    This needs to use some special tricky logic because of the ways that the z who message can be different.
+        1. The first time we see "----------", we need to start capturingInfo on every message until we stop capturing. That "----------" line should be the first line captured in capturedInfo.
+        2. On every subsequent line, we need to check if the format matches "[<PlayerName>] Dungeon:<rank> Raid:<rank>" like [Cody] Dungeon:None Raid:None or [Tim] Dungeon:None Raid:T4R.
+        3. If it does not match, and the prior line is "----------", we set capturingInfo to false.
+        4. If the format does match, we need to check if the player name matches the current player. If it does, we also want to start a second capturing process and put the lines in a 2nd data structure capturedInfoForParsing (in addition to capturedInfo) beginning with that line. Now each line will be logged in both structures.
+        5. The next time we see "----------", we are done with our 2nd capturing info for parsing process and can stop logging lines in the second structure, but need to continue checking lines for captured info and reviewing the prior line.
+        6. When we are done capturing ALL data, we should call update with JUST the data intended for parsing using UpdateWithZWhoInfo(capturedInfoForParsing) and restore the original AddMessage function.
+    --]]
     local originalAddMessage = DEFAULT_CHAT_FRAME.AddMessage
     local capturedInfo = {}
+    local capturedInfoForParsing = {}
     local capturingInfo = false
+    local capturingInfoForParsing = false
+    local priorLine = ""
     local captureComplete = false
     
-    --[[
-    This has bugs. Data can look like this:
-    ----------
-    [Tim] Dungeon:None Raid:T4R
-    
-    1. [Bob]:T0D - Mage Human - Frost - Range DPS
-    O:[Raelyn] M:[Tim] P:[None]
-    ----------
-    [Redbank] Dungeon:None Raid:None
-    ----------
-    [Raelyn] Dungeon:None Raid:T4R
-    
-    1. [Farrell]:T0D - Mage Human - Frost - Range DPS
-    O:[Raelyn] M:[Raelyn] P:[None]
-    ----------
-    [Cody] Dungeon:None Raid:None
-    ----------
-
-    --]]
     -- Override the AddMessage function to capture who info
     DEFAULT_CHAT_FRAME.AddMessage = function(self, text, r, g, b, id)
         local cleanText = CleanMessage(text)
-        if string.find(cleanText, "^%-%-%-%-%-%-%-%-%-%-$") then
-            capturingInfo = not capturingInfo
-            if not capturingInfo then
-                -- Parse and update companions table with the captured info
-                UpdateWithZWhoInfo(capturedInfo)
-                -- Clear the captured info
-                capturedInfo = {}
-                -- Restore original AddMessage function
-                DEFAULT_CHAT_FRAME.AddMessage = originalAddMessage
-                captureComplete = true
+        -- Start capturing info if we see the first "----------" line and we aren't already capturing
+        if string.find(cleanText, "^%-%-%-%-%-%-%-%-%-%-$") and not capturingInfo then
+            capturingInfo = true
+            table.insert(capturedInfo, cleanText)
+        -- If we are capturing AND parsing, add the line to both tables and check if we should stop
+        elseif capturingInfo and capturingInfoForParsing then
+            table.insert(capturedInfo, cleanText)
+            table.insert(capturedInfoForParsing, cleanText)
+            -- Stop parsing when we see the "----------" line
+            if string.find(cleanText, "^%-%-%-%-%-%-%-%-%-%-$") then
+                capturingInfoForParsing = false
             end
+            priorLine = cleanText
+        -- If we are capturing info but not parsing, add the line to the capturedInfo table and check if we should start parsing
         elseif capturingInfo then
             table.insert(capturedInfo, cleanText)
+            -- If the string matches "[<PlayerName>] Dungeon:<rank> Raid:<rank>"
+            local playerName = nil
+            if string.find(cleanText, "%[.+%] Dungeon:.+ Raid:.+") then
+                playerName = string.sub(cleanText, string.find(cleanText, "%[") + 1, string.find(cleanText, "%]") - 1)
+            end
+            -- If the a name was found AND it's the current player's info then we start capturing the info for parsing
+            if playerName and playerName == UnitName("player") then
+                -- Start parsing if it's the current player's info
+                capturingInfoForParsing = true
+                table.insert(capturedInfoForParsing, cleanText)
+            -- ERROR: the issue is that these can stack when comps join/leave on a party switch
+            -- If we encounter any other line, check if the prior line was "----------", and if so, stop capturing info and run the update function
+            else
+                if string.find(priorLine, "^%-%-%-%-%-%-%-%-%-%-$") then
+                    capturingInfo = false
+                    -- Parse and update companions table with the captured info if data exists
+                    if table.getn(capturedInfoForParsing) > 0 then
+                        UpdateWithZWhoInfo(capturedInfoForParsing)
+                    end
+                    -- Clear the captured info
+                    capturedInfo = {}
+                    capturedInfoForParsing = {}
+                    -- Restore original AddMessage function
+                    DEFAULT_CHAT_FRAME.AddMessage = originalAddMessage
+                    captureComplete = true
+                end
+            end
+            priorLine = cleanText
         else
             originalAddMessage(self, text, r, g, b, id)
         end
